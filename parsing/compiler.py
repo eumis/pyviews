@@ -1,4 +1,5 @@
 from common.reflection.activator import create
+from importlib import import_module
 
 def compile_view(node):
     return compile_node(node)
@@ -14,11 +15,12 @@ def compile_widget(node, parent):
 
 def apply_attributes(node, widget):
     for attr in node.items():
-        apply_attr(widget, attr)
+        if hasattr(widget, attr[0]):
+            apply_attr(widget, attr)
+        else:
+            apply_command(widget, attr)
 
 def apply_attr(widget, attr):
-    if not hasattr(widget, attr[0]):
-        return
     item = getattr(widget, attr[0])
     if callable(item):
         apply_method(widget, attr)
@@ -35,6 +37,18 @@ def apply_text(node, widget):
     text = node.text.strip()
     if text:
         widget.configure(text=text)
+
+def apply_command(widget, attr):
+    if not attr[0].startswith('on-'):
+        return
+    eventName = '<' + attr[0][3:] + '>'
+    handler = lambda event, command=attr[1]: run_command(command)
+    widget.bind(eventName, handler)
+
+def run_command(command):
+    command = command.split(":")
+    module = import_module(command[0])
+    exec('module.' + command[1])
 
 def compile_children(node, widget):
     for child in list(node):

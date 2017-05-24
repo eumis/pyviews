@@ -5,7 +5,9 @@ def init(appPath):
     tk = loadApp(appPath)
     tk.state('zoomed')
 
-def showPage(pagePath):
+def show_page(pagePath):
+    for widget in tk.winfo_children():
+        widget.destroy()
     controls = loadPage(pagePath, tk)
 
 def show():

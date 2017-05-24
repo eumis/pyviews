@@ -1,8 +1,9 @@
 import os
-import window
+from window import init, show as show_window
+from sandbox.commands import show_page
 
-window.init(os.path.abspath('sandbox/app.xml'))
-window.showPage(os.path.abspath('sandbox/hellopage.xml'))
+init(os.path.abspath('sandbox/app.xml'))
+show_page('changepage')
 
 
-window.show()
+show_window()
