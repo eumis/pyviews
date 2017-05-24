@@ -11,6 +11,9 @@ def compile_widget(node, parent):
     widget = compile_node(node, parent)
     for attr in node.items():
         apply_attr(widget, attr)
+    text = node.text.strip()
+    if text:
+        widget.configure(text=text)
     for child in list(node):
         compile_widget(child, widget)
 

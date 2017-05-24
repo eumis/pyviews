@@ -1,6 +1,9 @@
 <?xml version="1.0"?>
 <page xmlns:tk="tkinter">
-    <tk:Button grid="row=0, column=0"
-               config="text='temp button'">
+    <tk:Button grid="row=0, column=0">
+        temp button
     </tk:Button>
+    <tk:Label grid="row=0, column=1">
+        temp label
+    </tk:Label>
 </page>
