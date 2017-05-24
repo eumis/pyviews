@@ -6,5 +6,12 @@
     ],
     "python.linting.pylintArgs": [
         "--disable=C0111"   
-    ]
+    ],
+    "files.exclude":
+    {
+        "**/.git": true,
+        "**/__pycache__": true,
+        "**/*.pyc": true,
+        "**/*.sublime-project": true
+    }
 }

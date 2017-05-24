@@ -2,9 +2,11 @@
 <view xmlns:tk="tkinter">
     <tk:Button grid="row=0, column=0"
                on-Button-1="application:show_view('messagebox')">
-        change page
+        Message box
     </tk:Button>
-    <tk:Label grid="row=0, column=1">
-        temp label
-    </tk:Label>
+
+    <tk:Button grid="row=0, column=1"
+               on-Button-1="application:show_view('counter')">
+        Counter
+    </tk:Button>
 </view>

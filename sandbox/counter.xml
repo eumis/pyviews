@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<view xmlns:tk="tkinter"
+      view-model='sandbox.counter:Counter'>
+    <tk:Button grid="row=0, column=0">
+        + 1
+    </tk:Button>
+
+    <tk:Entry grid="row=0, column=1">
+    </tk:Entry>
+</view>

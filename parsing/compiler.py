@@ -1,9 +1,9 @@
 from importlib import import_module
-from common.reflection.activator import create
+from common.reflection.activator import create_inst
 
 def compile_view(node, parent):
     if node.tag == 'view':
-        compile_children(node, parent)
+        return compile_children(node, parent)
     else:
         return compile_widget(node, parent)
 
@@ -42,9 +42,9 @@ def apply_text(node, widget):
 def apply_command(widget, attr):
     if not attr[0].startswith('on-'):
         return
-    eventName = '<' + attr[0][3:] + '>'
+    event = '<' + attr[0][3:] + '>'
     handler = lambda event, command=attr[1]: run_command(command)
-    widget.bind(eventName, handler)
+    widget.bind(event, handler)
 
 def run_command(command):
     command = command.split(":")
@@ -52,10 +52,12 @@ def run_command(command):
     exec('module.' + command[1])
 
 def compile_children(node, widget):
+    children = []
     for child in list(node):
-        compile_widget(child, widget)
+        children.append(compile_widget(child, widget))
+    return children
 
 def compile_node(node, *args):
     # tag = "{namespace}name"
-    typeDescription = node.tag.split('}')
-    return create(typeDescription[0][1:], typeDescription[1], *args)
+    type_desc = node.tag.split('}')
+    return create_inst(type_desc[0][1:], type_desc[1], *args)

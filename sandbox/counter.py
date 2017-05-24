@@ -3,7 +3,7 @@ from viewmodel.base import ViewModel
 class Counter(ViewModel):
     def __init__(self):
         ViewModel.__init__(self)
-        self.count = 0
+        self.__count = 0
 
     @property
     def count(self):
@@ -11,5 +11,7 @@ class Counter(ViewModel):
 
     @count.setter
     def count(self, val):
+        old = self.__count
         self.__count = val
-        self.notify('count')
+        self.notify('count', val, old)
+        
