@@ -1,17 +1,18 @@
-from common.reflection.activator import create
 from importlib import import_module
+from common.reflection.activator import create
 
-def compile_view(node):
-    return compile_node(node)
-
-def compile_page(node, parent):
-    compile_children(node, parent)
+def compile_view(node, parent):
+    if node.tag == 'view':
+        compile_children(node, parent)
+    else:
+        return compile_widget(node, parent)
 
 def compile_widget(node, parent):
     widget = compile_node(node, parent)
     apply_attributes(node, widget)
     apply_text(node, widget)
     compile_children(node, widget)
+    return widget
 
 def apply_attributes(node, widget):
     for attr in node.items():

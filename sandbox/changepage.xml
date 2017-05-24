@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
-<page xmlns:tk="tkinter">
+<view xmlns:tk="tkinter">
     <tk:Button grid="row=0, column=0"
-               on-Button-1="sandbox.commands:show_page('messagebox')">
+               on-Button-1="application:show_view('messagebox')">
         change page
     </tk:Button>
     <tk:Label grid="row=0, column=1">
         temp label
     </tk:Label>
-</page>
+</view>

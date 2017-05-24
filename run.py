@@ -1,9 +1,7 @@
 import os
-from window import init, show as show_window
-from sandbox.commands import show_page
+from application import init as init_app, run, show_view
 
-init(os.path.abspath('sandbox/app.xml'))
-show_page('changepage')
+init_app('app')
+show_view('changepage')
 
-
-show_window()
+run()

@@ -1,3 +1,10 @@
 // Place your settings in this file to overwrite default and user settings.
 {
+    "python.linting.mypyArgs": [
+        "--ignore-missing-imports",
+        "--follow-imports=silent"        
+    ],
+    "python.linting.pylintArgs": [
+        "--disable=C0111"   
+    ]
 }

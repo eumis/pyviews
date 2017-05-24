@@ -1,3 +1,4 @@
 <?xml version="1.0"?>
-<tkinter:Tk xmlns:tkinter="tkinter">
+<tkinter:Tk xmlns:tkinter="tkinter"
+            state="'zoomed'">
 </tkinter:Tk>
