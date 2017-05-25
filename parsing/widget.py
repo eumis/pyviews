@@ -1,10 +1,11 @@
 from common.reflection.activator import create_inst
 from parsing.expressions import parse_tag, get_apply
+from parsing.exceptions import BindingException
 
 def compile_widget(node, parent, view_model):
     widget = compile_node(node, parent)
     apply_attributes(node, widget, view_model)
-    apply_text(node, widget)
+    apply_text(node, widget, view_model)
     compile_children(node, widget, view_model)
     return widget
 
@@ -14,15 +15,19 @@ def apply_attributes(node, widget, view_model):
 
 def apply_attr(widget, attr, view_model):
     apply = get_apply(widget, attr)
+    if not apply:
+        name = attr[0]
+        widget_name = type(widget).__name__
+        raise BindingException('There is no binding for property ' + name + ' of ' + widget_name)
     apply(widget, attr, view_model)
 
 def apply_property(widget, attr):
     widget.__dict__[attr[0]] = attr[1]
 
-def apply_text(node, widget):
+def apply_text(node, widget, view_model):
     text = node.text.strip()
     if text:
-        widget.configure(text=text)
+        apply_attr(widget, ('text', text), view_model)
 
 def compile_children(node, widget, view_model):
     children = []

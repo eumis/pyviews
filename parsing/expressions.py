@@ -40,12 +40,11 @@ def apply_command(widget, attr, view_model):
 def run_command(expression, view_model):
     (module_name, method_call) = parse_command_expression(expression)
     args = {VIEW_MODEL_LOC:view_model}
-    if module_name == VIEW_MODEL_LOC:
-        method_call = VIEW_MODEL_LOC + '.' + method_call
-    elif module_name:
+    method_container = VIEW_MODEL_LOC
+    if module_name:
         args['module'] = import_module(module_name)
-        method_call = 'module.' + method_call
-    run(method_call, args)
+        method_container = 'module'
+    run(method_container + '.' + method_call, args)
 
 def parse_command_expression(expr):
     parts = expr.split('(', maxsplit=1)
@@ -62,11 +61,40 @@ def split_by_last_dot(expr, res=None):
     return (res[:last_dot], res[last_dot+1:])
 
 def apply_call(widget, attr, view_model):
-    (name, expression) = attr
-    run('widget.' + name + "(" + expression + ")", {VIEW_MODEL_LOC:view_model, 'widget':widget})
+    (name, expr) = attr
+    run('widget.' + name + "(" + expr + ")", {VIEW_MODEL_LOC:view_model, 'widget':widget})
 
+def apply_prop(widget, attr, view_model):
+    (name, expr) = attr
+    set_val = lambda new_val, old_val, w=widget, a=name: setattr(w, a, new_val)
+    if is_binding(expr):
+        expr = parse_binding(expr)
+        view_model.observe(expr, set_val)
+        set_val(getattr(view_model, expr), None)
+    else:
+        set_val(expr, None)
+
+def apply_config(widget, attr, view_model):
+    (name, expr) = attr
+    set_val = lambda new_val, old_val, w=widget, a=name: call_config(w, a, new_val)
+    if is_binding(expr):
+        expr = parse_binding(expr)
+        view_model.observe(expr, set_val)
+        set_val(getattr(view_model, expr), None)
+    else:
+        set_val(expr, None)
+
+def call_config(widget, param, value):
+    args = {}
+    args[param] = str(value)
+    widget.configure(**args)
+
+def hasmethod(ent, attr):
+    return hasattr(ent, attr) and callable(getattr(ent, attr))
 
 APPLIES = [
-    (lambda widget,name,expr: name.startswith(COMM_PREFIX), apply_command),
-    (lambda widget,name,expr: callable(getattr(widget, name)), apply_call)
+    (lambda widget, name, expr: name.startswith(COMM_PREFIX), apply_command),
+    (lambda widget, name, expr: hasmethod(widget, name), apply_call),
+    (lambda widget, name, expr: hasattr(widget, name), apply_prop),
+    (lambda widget, name, expr: True, apply_config)
 ]
