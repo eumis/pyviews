@@ -1,27 +1,30 @@
 from importlib import import_module
 from common.reflection.activator import create_inst
-from parsing.expressions import parse_tag, parse_attr
+from parsing.expressions import parse_tag, parse_attr, get_apply
 
 def compile_widget(node, parent, vm):
     widget = compile_node(node, parent)
-    apply_attributes(node, widget)
+    apply_attributes(node, widget, vm)
     apply_text(node, widget)
     compile_children(node, widget, vm)
     return widget
 
-def apply_attributes(node, widget):
+def apply_attributes(node, widget, vm):
     for attr in node.items():
-        if hasattr(widget, attr[0]):
-            apply_attr(widget, attr)
-        else:
-            apply_command(widget, attr)
+        apply_attr(widget, attr, vm)
+        # if hasattr(widget, attr[0]):
+        #     apply_attr(widget, attr)
+        # else:
+        #     apply_command(widget, attr)
 
-def apply_attr(widget, attr):
-    item = getattr(widget, attr[0])
-    if callable(item):
-        apply_method(widget, attr)
-    else:
-        apply_property(widget, attr)
+def apply_attr(widget, attr, vm):
+    apply = get_apply(widget, attr)
+    apply(widget, attr, vm)
+    # item = getattr(widget, attr[0])
+    # if callable(item):
+    #     apply_method(widget, attr)
+    # else:
+    #     apply_property(widget, attr)
 
 def apply_method(widget, attr):
     exec('widget.' + attr[0] + "(" + attr[1] + ")")
