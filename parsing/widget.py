@@ -1,6 +1,8 @@
+from tkinter import Frame
 from common.reflection.activator import create_inst
 from parsing.expressions import parse_tag, get_apply
-from parsing.exceptions import BindingException
+from parsing.exceptions import BindingException, UnsupportedNodeException
+from view.tree import CompileNode, WidgetNode
 
 def compile_widget(node, parent, view_model):
     widget = compile_node(node, parent)
@@ -37,5 +39,11 @@ def compile_children(node, widget, view_model):
 
 def compile_node(node, *args):
     type_desc = parse_tag(node.tag)
-    return create_inst(type_desc[0], type_desc[1], *args)
+    inst = create_inst(type_desc[0], type_desc[1], *args)
+    if issubclass(inst, Frame):
+        inst = WidgetNode(inst)
+    if not issubclass(inst, CompileNode):
+        raise UnsupportedNodeException(type(inst).__name__ + ' type is not supported as node')
+    inst.set_node(node)
+    return inst
     

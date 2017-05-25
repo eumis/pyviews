@@ -6,4 +6,7 @@ class CommandException(Exception):
 
 class InstanceException(Exception):
     pass
+
+class UnsupportedNodeException(Exception):
+    pass
     
