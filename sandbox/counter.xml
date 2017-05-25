@@ -6,7 +6,8 @@
         + 1
     </tk:Button>
 
-    <tk:Entry grid="row=0, column=1">
+    <tk:Entry grid="row=0, column=1"
+              textvariable='{{tkinter.IntVar:count}}'>
     </tk:Entry>
 
     <tk:Label grid="row=0, column=2">
