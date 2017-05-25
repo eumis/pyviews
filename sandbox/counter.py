@@ -14,4 +14,6 @@ class Counter(ViewModel):
         old = self.__count
         self.__count = val
         self.notify('count', val, old)
-        
+
+    def up_count(self):
+        self.count += 1

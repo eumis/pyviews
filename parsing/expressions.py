@@ -40,7 +40,9 @@ def apply_command(widget, attr, view_model):
 def run_command(expression, view_model):
     (module_name, method_call) = parse_command_expression(expression)
     args = {VIEW_MODEL_LOC:view_model}
-    if module_name:
+    if module_name == VIEW_MODEL_LOC:
+        method_call = VIEW_MODEL_LOC + '.' + method_call
+    elif module_name:
         args['module'] = import_module(module_name)
         method_call = 'module.' + method_call
     run(method_call, args)

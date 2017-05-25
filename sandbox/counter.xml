@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 <view xmlns:tk="tkinter"
       view-model='{sandbox.counter.Counter}'>
-    <tk:Button grid="row=0, column=0">
+    <tk:Button grid="row=0, column=0"
+            bind-Button-1="{vm.up_count()}">
         + 1
     </tk:Button>
 

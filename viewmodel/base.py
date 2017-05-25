@@ -2,13 +2,13 @@ class ViewModel:
     def __init__(self):
         self.callbacks = {}
 
-    def notify(self, property, newValue, oldValue):
-        if self.callbacks[property] is None or newValue == oldValue:
+    def notify(self, prop, new_val, old_val):
+        if prop not in self.callbacks or new_val == old_val:
             return
-        for callback in self.callbacks[property]:
-            callback(newValue, oldValue)
+        for callback in self.callbacks[prop]:
+            callback(new_val, old_val)
 
-    def observe(self, property, callback):
-        if self.callbacks[property] is None:
-            self.callbacks[property] = []
-        self.callbacks[property].append(callback)
+    def observe(self, prop, callback):
+        if prop not in self.callbacks:
+            self.callbacks[prop] = []
+        self.callbacks[prop].append(callback)
