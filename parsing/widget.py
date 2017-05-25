@@ -1,33 +1,20 @@
-from importlib import import_module
 from common.reflection.activator import create_inst
-from parsing.expressions import parse_tag, parse_attr, get_apply
+from parsing.expressions import parse_tag, get_apply
 
-def compile_widget(node, parent, vm):
+def compile_widget(node, parent, view_model):
     widget = compile_node(node, parent)
-    apply_attributes(node, widget, vm)
+    apply_attributes(node, widget, view_model)
     apply_text(node, widget)
-    compile_children(node, widget, vm)
+    compile_children(node, widget, view_model)
     return widget
 
-def apply_attributes(node, widget, vm):
+def apply_attributes(node, widget, view_model):
     for attr in node.items():
-        apply_attr(widget, attr, vm)
-        # if hasattr(widget, attr[0]):
-        #     apply_attr(widget, attr)
-        # else:
-        #     apply_command(widget, attr)
+        apply_attr(widget, attr, view_model)
 
-def apply_attr(widget, attr, vm):
+def apply_attr(widget, attr, view_model):
     apply = get_apply(widget, attr)
-    apply(widget, attr, vm)
-    # item = getattr(widget, attr[0])
-    # if callable(item):
-    #     apply_method(widget, attr)
-    # else:
-    #     apply_property(widget, attr)
-
-def apply_method(widget, attr):
-    exec('widget.' + attr[0] + "(" + attr[1] + ")")
+    apply(widget, attr, view_model)
 
 def apply_property(widget, attr):
     widget.__dict__[attr[0]] = attr[1]
@@ -37,24 +24,13 @@ def apply_text(node, widget):
     if text:
         widget.configure(text=text)
 
-def apply_command(widget, attr):
-    if not attr[0].startswith('on-'):
-        return
-    event = '<' + attr[0][3:] + '>'
-    handler = lambda event, command=attr[1]: run_command(command)
-    widget.bind(event, handler)
-
-def run_command(command):
-    command = parse_attr(command)
-    module = import_module(command[0])
-    exec('module.' + command[1])
-
-def compile_children(node, widget, vm):
+def compile_children(node, widget, view_model):
     children = []
     for child in list(node):
-        children.append(compile_widget(child, widget, vm))
+        children.append(compile_widget(child, widget, view_model))
     return children
 
 def compile_node(node, *args):
     type_desc = parse_tag(node.tag)
     return create_inst(type_desc[0], type_desc[1], *args)
+    

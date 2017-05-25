@@ -3,4 +3,7 @@ class BindingException(Exception):
 
 class CommandException(Exception):
     pass
+
+class InstanceException(Exception):
+    pass
     

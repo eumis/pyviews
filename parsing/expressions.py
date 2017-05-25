@@ -1,15 +1,19 @@
 from importlib import import_module
-from importlib.util import find_spec as find_module
-from parsing.exceptions import CommandException
+from parsing.exceptions import CommandException, InstanceException
+from common.reflection.execution import run
 
 COMM_PREFIX = 'bind-'
+VIEW_MODEL_LOC = 'vm'
 
-def parse_tag(expression):
-    type_desc = expression.split('}')
+def parse_tag(tag):
+    type_desc = tag.split('}')
     return (type_desc[0][1:], type_desc[1])
 
-def parse_attr(expression):
-    return expression.split(":")
+def parse_inst(expr):
+    if not is_binding(expr):
+        raise InstanceException('"' + expr + '" value should be instance expression')
+    expr = parse_binding(expr)
+    return split_by_last_dot(expr)
 
 def get_apply(widget, attr):
     (name, expression) = attr
@@ -24,36 +28,43 @@ def is_binding(expression):
 def parse_binding(binding):
     return binding[1:-1]
 
-def apply_command(widget, attr, vm):
-    (name, expression) = attr
-    if not is_binding(expression):
+def apply_command(widget, attr, view_model):
+    (name, expr) = attr
+    if not is_binding(expr):
         raise CommandException(name + ' value should be binding expression')
-    expression = parse_binding(expression)
+    expr = parse_binding(expr)
     event = '<' + name[len(COMM_PREFIX):] + '>'
-    handler = lambda event_name, expr=expression, vm=vm: run_command(expr, vm)
+    handler = lambda event_name, e=expr, vm=view_model: run_command(e, vm)
     widget.bind(event, handler)
 
-def run_command(expression, vm):
+def run_command(expression, view_model):
     (module_name, method_call) = parse_command_expression(expression)
+    args = {VIEW_MODEL_LOC:view_model}
     if module_name:
-        module = import_module(module_name)
+        args['module'] = import_module(module_name)
         method_call = 'module.' + method_call
-    exec(method_call)
+    run(method_call, args)
 
-def parse_command_expression(expression):
-    parts = expression.split('(', maxsplit=1)
+def parse_command_expression(expr):
+    parts = expr.split('(', maxsplit=1)
     if len(parts) == 1:
-        raise CommandException('"' + expression + '" expression is not valid')
-    last_dot = parts[0].rfind('.')
-    if last_dot == -1:
-        return('', expression)
-    return (expression[:last_dot], expression[last_dot+1:])
+        raise CommandException('"' + expr + '" expression is not valid')
+    return split_by_last_dot(parts[0], expr)
 
-def apply_call(widget, attr, vm):
+def split_by_last_dot(expr, res=None):
+    if res is None:
+        res = expr
+    last_dot = expr.rfind('.')
+    if last_dot == -1:
+        return('', res)
+    return (res[:last_dot], res[last_dot+1:])
+
+def apply_call(widget, attr, view_model):
     (name, expression) = attr
-    exec('widget.' + name + "(" + expression + ")")
+    run('widget.' + name + "(" + expression + ")", {VIEW_MODEL_LOC:view_model, 'widget':widget})
+
 
 APPLIES = [
-    (lambda widget,name,expression: name.startswith(COMM_PREFIX), apply_command),
-    (lambda widget,name,expression: callable(getattr(widget, name)), apply_call)
+    (lambda widget,name,expr: name.startswith(COMM_PREFIX), apply_command),
+    (lambda widget,name,expr: callable(getattr(widget, name)), apply_call)
 ]

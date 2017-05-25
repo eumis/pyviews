@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <view xmlns:tk="tkinter">
     <tk:Button grid="row=0, column=0"
-               on-Button-1="sandbox.commands:show_message('message title', 'hohohoho')">
+               bind-Button-1="{sandbox.commands.show_message('message title', 'hohohoho')}">
         show message
     </tk:Button>
 </view>
