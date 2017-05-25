@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <view xmlns:tk="tkinter"
+      xmlns:d="views.directives"
       view-model='{sandbox.counter.Counter}'>
     <tk:Button grid="row=0, column=0"
                bind-Button-1="{up_count()}">
@@ -13,4 +14,10 @@
     <tk:Label grid="row=0, column=2">
         {count}
     </tk:Label>
+
+    <!--<d:for item='item' collection='{count}'>
+        <tk:Label grid="row=item+1, column=0">
+            {item}
+        </tk:Label>
+    </d:for>-->
 </view>

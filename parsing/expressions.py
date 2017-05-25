@@ -105,9 +105,9 @@ def apply_var(widget, attr, view_model):
     var = create_var(var_expr)
     set_val = lambda new_val, old_val, content=var: content.set(new_val)
     view_model.observe(val_expr, set_val)
-    set_val(getattr(view_model, val_expr), None)
     update_vm = lambda *args, v=view_model, a=val_expr, content=var: setattr(v, a, content.get())
     var.trace('w', update_vm)
+    set_val(getattr(view_model, val_expr), None)
     widget.configure(**{name:var})
 
 def split_two_way(expr):
