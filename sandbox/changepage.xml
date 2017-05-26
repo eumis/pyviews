@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<view xmlns:tk="tkinter">
+<t:View xmlns:tk="tkinter"
+        xmlns:t="view.tree">
     <tk:Button grid="row=0, column=0"
                bind-Button-1="{application.show_view('messagebox')}">
         Message box
@@ -9,4 +10,4 @@
                bind-Button-1="{application.show_view('counter')}">
         Counter
     </tk:Button>
-</view>
+</t:View>

@@ -1,49 +1,50 @@
-from tkinter import Frame
+from tkinter import Frame, Tk, Widget
 from common.reflection.activator import create_inst
-from parsing.expressions import parse_tag, get_apply
+from parsing.attribute import get_compile
+from parsing.binding import parse_tag
 from parsing.exceptions import BindingException, UnsupportedNodeException
-from view.tree import CompileNode, WidgetNode
+from view.tree import CompileNode, WidgetNode, AppNode
 
-def compile_widget(node, parent, view_model):
-    widget = compile_node(node, parent)
-    apply_attributes(node, widget, view_model)
-    apply_text(node, widget, view_model)
-    compile_children(node, widget, view_model)
-    return widget
+def compile_widget(xml_node, parent, view_model):
+    node = compile_node(xml_node, view_model, parent)
+    compile_attributes(node)
+    apply_text(node)
+    compile_children(node)
+    return node
 
-def apply_attributes(node, widget, view_model):
-    for attr in node.items():
-        apply_attr(widget, attr, view_model)
+def compile_attributes(node):
+    for attr in node.xml_attrs():
+        compile_attr(node, attr)
 
-def apply_attr(widget, attr, view_model):
-    apply = get_apply(widget, attr)
-    if not apply:
+def compile_attr(node, attr):
+    compile_ = get_compile(node, attr)
+    if not compile_:
         name = attr[0]
-        widget_name = type(widget).__name__
-        raise BindingException('There is no binding for property ' + name + ' of ' + widget_name)
-    apply(widget, attr, view_model)
+        node_name = type(node).__name__
+        raise BindingException('There is no binding for property ' + name + ' of ' + node_name)
+    compile_(node, attr)
 
-def apply_property(widget, attr):
-    widget.__dict__[attr[0]] = attr[1]
-
-def apply_text(node, widget, view_model):
-    text = node.text.strip()
+def apply_text(node):
+    text = node.get_text()
     if text:
-        apply_attr(widget, ('text', text), view_model)
+        compile_attr(node, ('text', text))
 
-def compile_children(node, widget, view_model):
+def compile_children(node):
     children = []
-    for child in list(node):
-        children.append(compile_widget(child, widget, view_model))
+    for child in node.get_xml_children():
+        children.append(compile_widget(child, node.get_container_for_child(), node.get_view_model()))
     return children
 
-def compile_node(node, *args):
-    type_desc = parse_tag(node.tag)
-    inst = create_inst(type_desc[0], type_desc[1], *args)
-    if issubclass(inst, Frame):
+def compile_node(node, view_model, *args):
+    (module_name, class_name) = parse_tag(node.tag)
+    inst = create_inst(module_name, class_name, *args)
+    if isinstance(inst, Widget):
         inst = WidgetNode(inst)
-    if not issubclass(inst, CompileNode):
+    if isinstance(inst, Tk):
+        inst = AppNode(inst)
+    if not isinstance(inst, CompileNode):
         raise UnsupportedNodeException(type(inst).__name__ + ' type is not supported as node')
     inst.set_node(node)
+    inst.set_view_model(view_model)
     return inst
     

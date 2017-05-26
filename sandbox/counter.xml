@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <t:View xmlns:tk="tkinter"
-        xmlns:d="view.tree"
+        xmlns:t="view.tree"
         view-model='{sandbox.counter.Counter}'>
     <tk:Button grid="row=0, column=0"
                bind-Button-1="{up_count()}">
