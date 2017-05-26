@@ -14,9 +14,10 @@ def set_prop(node, attr):
     (name, expr) = attr
     if binding.is_two_way_binding(expr):
         apply_two_way_binding(node, attr)
-    if binding.is_one_way_binding(expr):
+    elif binding.is_one_way_binding(expr):
         apply_one_way_binding(node, attr)
-    node.set_attr(name, expr)
+    else:
+        node.set_attr(name, expr)
 
 def apply_two_way_binding(node, attr):
     (name, expr) = attr

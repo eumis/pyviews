@@ -2,16 +2,19 @@
 <t:View xmlns:tk="tkinter"
         xmlns:t="view.tree"
         view-model='{sandbox.counter.Counter}'>
-    <tk:Button grid="row=0, column=0"
+    <tk:Button grid_row="0"
+               grid_column="0"
                bind-Button-1="{up_count()}">
         + 1
     </tk:Button>
 
-    <tk:Entry grid="row=0, column=1"
+    <tk:Entry grid_row="0"
+              grid_column="1"
               textvariable='{{tkinter.IntVar:count}}'>
     </tk:Entry>
 
-    <tk:Label grid="row=0, column=2">
+    <tk:Label grid_row="0"
+              grid_column="2">
         {count}
     </tk:Label>
 

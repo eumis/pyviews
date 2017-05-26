@@ -30,6 +30,9 @@ class CompileNode:
     def clear(self):
         pass
 
+    def render(self):
+        pass
+
 class View(CompileNode):
     def __init__(self, parent_widget):
         CompileNode.__init__(self)
@@ -42,13 +45,16 @@ class WidgetNode(CompileNode):
     def __init__(self, widget):
         CompileNode.__init__(self)
         self._widget = widget
+        self.grid_row = None
+        self.grid_column = None
 
     def get_container_for_child(self):
         return self._widget
 
     def bind(self, event, command):
-        locs = {'vm':1}
-        handler = lambda e, com=command, args=locs: com.run(locs + {'$event':e})
+        view_model = self.get_view_model()
+        keys = [key for key in dir(view_model) if not key.startswith('_')] if view_model else {}
+        handler = lambda e, com=command, v=view_model, k=keys: com.run({**{key: getattr(v, key) for key in k}, **{'$event':e}})
         self._widget.bind('<'+event+'>', handler)
 
     def has_attr(self, name):
@@ -65,6 +71,9 @@ class WidgetNode(CompileNode):
     def clear(self):
         for widget in self._widget.winfo_children():
             widget.destroy()
+
+    def render(self):
+        self._widget.grid(row=int(self.grid_row), column=int(self.grid_column))
 
 class AppNode(CompileNode):
     def __init__(self, tk):

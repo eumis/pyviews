@@ -9,6 +9,7 @@ def compile_widget(xml_node, parent, view_model):
     node = compile_node(xml_node, view_model, parent)
     compile_attributes(node)
     apply_text(node)
+    node.render()
     compile_children(node)
     return node
 
@@ -18,11 +19,12 @@ def compile_attributes(node):
 
 def compile_attr(node, attr):
     compile_ = get_compile(node, attr)
-    if not compile_:
-        name = attr[0]
-        node_name = type(node).__name__
-        raise BindingException('There is no binding for property ' + name + ' of ' + node_name)
-    compile_(node, attr)
+    # if not compile_:
+    #     name = attr[0]
+    #     node_name = type(node).__name__
+    #     raise BindingException('There is no binding for property ' + name + ' of ' + node_name)
+    if compile_:
+        compile_(node, attr)
 
 def apply_text(node):
     text = node.get_text()
@@ -31,8 +33,10 @@ def apply_text(node):
 
 def compile_children(node):
     children = []
+    parent = node.get_container_for_child()
+    view_model = node.get_view_model()
     for child in node.get_xml_children():
-        children.append(compile_widget(child, node.get_container_for_child(), node.get_view_model()))
+        children.append(compile_widget(child, parent, view_model))
     return children
 
 def compile_node(node, view_model, *args):

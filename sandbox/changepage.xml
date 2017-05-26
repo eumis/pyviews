@@ -1,13 +1,15 @@
 <?xml version="1.0"?>
 <t:View xmlns:tk="tkinter"
         xmlns:t="view.tree">
-    <tk:Button grid="row=0, column=0"
-               bind-Button-1="{application.show_view('messagebox')}">
+    <tk:Button grid_row="0"
+               grid_column="0"
+               bind-Button-1="{application.api.show_view('messagebox')}">
         Message box
     </tk:Button>
 
-    <tk:Button grid="row=0, column=1"
-               bind-Button-1="{application.show_view('counter')}">
+    <tk:Button grid_row="0"
+               grid_column="1"
+               bind-Button-1="{application.api.show_view('counter')}">
         Counter
     </tk:Button>
 </t:View>

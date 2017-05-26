@@ -1,8 +1,9 @@
 from os.path import abspath, join
 from parsing.compiler import compile_view
 from parsing.parser import parse_xml
+from common.values import VIEW_EXT
 
-VIEW_EXT = '.xml'
+
 
 class App:
     def __init__(self, views_folder, app_view='app'):
