@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <t:View xmlns:tk="tkinter"
         xmlns:t="view.tree"
-        view-model='{sandbox.counter.Counter}'>
+        view-model='{sandbox.counter.Counter()}'>
     <tk:Button grid_row="0"
                grid_column="0"
-               bind-Button-1="{up_count()}">
+               bind-Button-1="{up_count}">
         + 1
     </tk:Button>
 

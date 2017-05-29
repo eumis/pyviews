@@ -3,7 +3,7 @@
         xmlns:t="view.tree">
     <tk:Button grid_row="0"
                grid_column="0"
-               bind-Button-1="{application.api.show_view('messagebox')}">
+               bind-Button-1="{com:application.api.show_view('messagebox')}">
         Message box
     </tk:Button>
 
