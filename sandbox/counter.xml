@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <t:View xmlns:tk="tkinter"
         xmlns:t="view.tree"
+        xmlns:c="view.controls"
         import="sandbox.counter.Counter:Counter,viewmodel.variables.IntBinding:IntBinding"
         view_model="{Counter()}">
     <tk:Button grid_row="0"
@@ -19,9 +20,10 @@
         {count}
     </tk:Label>
 
-    <!--<d:for item='item' collection='{count}'>
-        <tk:Label grid="row=item+1, column=0">
+    <c:for item='item' collection='{count}'>
+        <tk:Label grid_row="{item+1}"
+                  grid_column="0">
             {item}
         </tk:Label>
-    </d:for>-->
+    </c:for>
 </t:View>

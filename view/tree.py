@@ -1,5 +1,3 @@
-from common.values import EVENT_KEY
-
 class CompileNode:
     def __init__(self):
         self._node = None
