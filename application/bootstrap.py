@@ -17,7 +17,7 @@ class App:
     def show_view(self, view):
         self._tk.clear()
         view_path = self.get_view_path(view)
-        load_view(view_path, self._tk.get_container_for_child())
+        load_view(view_path, self._tk)
 
     def run(self):
         self._tk.run()

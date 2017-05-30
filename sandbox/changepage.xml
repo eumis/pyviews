@@ -1,15 +1,16 @@
 <?xml version="1.0"?>
 <t:View xmlns:tk="tkinter"
-        xmlns:t="view.tree">
+        xmlns:t="view.tree"
+        import="application.api.show_view:show_view">
     <tk:Button grid_row="0"
                grid_column="0"
-               bind-Button-1="{application.api.show_view('messagebox')}">
+               bind-Button-1="{lambda:show_view('messagebox')}">
         Message box
     </tk:Button>
 
     <tk:Button grid_row="0"
                grid_column="1"
-               bind-Button-1="{application.api.show_view('counter')}">
+               bind-Button-1="{lambda:show_view('counter')}">
         Counter
     </tk:Button>
 </t:View>

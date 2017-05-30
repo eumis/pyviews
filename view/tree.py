@@ -1,16 +1,16 @@
+from common.values import EVENT_KEY
+
 class CompileNode:
     def __init__(self):
         self._node = None
-        self._view_model = None
+        self._context = {}
+        self.view_model = None
 
     def set_node(self, node):
         self._node = node
 
-    def set_view_model(self, view_model):
-        self._view_model = view_model
-
     def get_view_model(self):
-        return self._view_model
+        return self.view_model
 
     def xml_attrs(self):
         return self._node.items()
@@ -27,11 +27,23 @@ class CompileNode:
     def set_attr(self, name, value):
         setattr(self, name, value)
 
+    def set_context(self, key, value=None):
+        if isinstance(key, dict):
+            self._context = {**self._context, **key}
+        else:
+            self._context[key] = value
+
+    def get_context(self):
+        return self._context
+
     def clear(self):
         pass
 
     def render(self):
         pass
+
+    def get_container_for_child(self):
+        return None
 
 class View(CompileNode):
     def __init__(self, parent_widget):
@@ -52,10 +64,7 @@ class WidgetNode(CompileNode):
         return self._widget
 
     def bind(self, event, command):
-        view_model = self.get_view_model()
-        keys = [key for key in dir(view_model) if not key.startswith('_')] if view_model else {}
-        handler = lambda e, com=command, v=view_model, k=keys: com.run({**{key: getattr(v, key) for key in k}, **{'$event':e}})
-        self._widget.bind('<'+event+'>', handler)
+        self._widget.bind('<'+event+'>', get_handler(command))
 
     def has_attr(self, name):
         return True
@@ -84,9 +93,7 @@ class AppNode(CompileNode):
         return self._tk
 
     def bind(self, event, command):
-        locs = {'vm':1}
-        handler = lambda e, com=command, args=locs: com.run(locs + {'$event':e})
-        self._tk.bind('<'+event+'>', handler)
+        self._tk.bind('<'+event+'>', get_handler(command))
 
     def has_attr(self, name):
         return hasattr(self, name) or hasattr(self._tk, name)
@@ -101,3 +108,6 @@ class AppNode(CompileNode):
 
     def run(self):
         self._tk.mainloop()
+
+def get_handler(command):
+    return lambda e, com=command: com()

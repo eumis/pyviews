@@ -1,5 +1,6 @@
 from parsing.exceptions import CommandException, InstanceException, BindingException
 from common.reflection.activator import create_inst
+from common.reflection.execution import run
 from view.actions import Command
 
 COMM_PREFIX = 'bind-'
@@ -8,13 +9,7 @@ VIEW_MODEL_LOC = 'vm'
 def parse_tag(tag):
     type_desc = tag.split('}')
     return (type_desc[0][1:], type_desc[1])
-
-def parse_inst(expr):
-    if not is_one_way_binding(expr):
-        raise InstanceException('"' + expr + '" value should be one way binding')
-    expr = parse_one_way_binding(expr)
-    return split_by_last_dot(expr)
-
+    
 def is_one_way_binding(expression):
     return is_binding(expression) and not is_two_way_binding(expression)
 
@@ -23,6 +18,19 @@ def is_binding(expression):
 
 def is_two_way_binding(expression):
     return expression.startswith('{{') and expression.endswith('}}')
+
+def eval_one_way(binding, node):
+    code = parse_one_way_binding(binding)
+    vm_dict = to_dictionary(node.view_model)
+    return run(code, node.get_context(), vm_dict)
+
+def to_dictionary(view_model):
+    keys = [key for key in dir(view_model) if not key.startswith('_')]
+    return {key: get_vm_value(view_model, key) for key in keys}
+
+def get_vm_value(view_model, key):
+    value = getattr(view_model, key)
+    return value
 
 def parse_one_way_binding(binding):
     return binding[1:-1]

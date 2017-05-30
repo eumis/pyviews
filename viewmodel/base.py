@@ -9,6 +9,8 @@ class ViewModel:
             callback(new_val, old_val)
 
     def observe(self, prop, callback):
+        if not hasattr(self, prop):
+            return
         if prop not in self.callbacks:
             self.callbacks[prop] = []
         self.callbacks[prop].append(callback)
