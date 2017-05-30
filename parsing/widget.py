@@ -1,7 +1,6 @@
 from tkinter import Tk, Widget
 from common.reflection.activator import create_inst
 from parsing.attribute import get_compile
-from parsing.binding import parse_tag
 from parsing.exceptions import UnsupportedNodeException
 from view.tree import CompileNode, WidgetNode, AppNode
 
@@ -49,4 +48,8 @@ def compile_node(node, parent, view_model):
     if parent:
         inst.set_context(parent.get_context())
     return inst
+
+def parse_tag(tag):
+    type_desc = tag.split('}')
+    return (type_desc[0][1:], type_desc[1])
     
