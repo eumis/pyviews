@@ -8,8 +8,7 @@ def compile_widget(xml_node, parent, view_model):
     node = compile_node(xml_node, parent, view_model)
     compile_attributes(node)
     apply_text(node)
-    node.render()
-    compile_children(node)
+    node.render(compile_children)
     return node
 
 def compile_attributes(node):
@@ -26,11 +25,12 @@ def apply_text(node):
     if text:
         compile_attr(node, ('text', text))
 
-def compile_children(node):
-    children = []
-    for child in node.get_xml_children():
-        children.append(compile_widget(child, node, node.view_model))
-    return children
+def compile_children(node, children=None):
+    compiled = []
+    children = children if children else node.get_children()
+    for child in children:
+        compiled.append(compile_widget(child.xml_node, node, child.view_model))
+    return compiled
 
 def compile_node(node, parent, view_model):
     (module_name, class_name) = parse_tag(node.tag)
@@ -43,7 +43,7 @@ def compile_node(node, parent, view_model):
     if not isinstance(inst, CompileNode):
         raise UnsupportedNodeException(type(inst).__name__ + ' type is not supported as node')
     inst.set_node(node)
-    if not inst.view_model:
+    if view_model:
         inst.view_model = view_model
     if parent:
         inst.set_context(parent.get_context())

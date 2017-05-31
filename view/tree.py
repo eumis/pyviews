@@ -16,8 +16,8 @@ class CompileNode:
     def get_text(self):
         return self._node.text.strip()
 
-    def get_xml_children(self):
-        return list(self._node)
+    def get_children(self):
+        return [NodeChild(xml_node, self.view_model) for xml_node in list(self._node)]
 
     def has_attr(self, name):
         return hasattr(self, name)
@@ -37,19 +37,37 @@ class CompileNode:
     def clear(self):
         pass
 
-    def render(self):
-        pass
+    def destroy(self):
+        self.clear()
+
+    def render(self, render_children):
+        render_children(self)
 
     def get_container_for_child(self):
         return None
+
+class NodeChild:
+    def __init__(self, xml_node, view_model=None):
+        self.xml_node = xml_node
+        self.view_model = view_model
 
 class View(CompileNode):
     def __init__(self, parent_widget):
         CompileNode.__init__(self)
         self._parent_widget = parent_widget
+        self._widgets = None
 
     def get_container_for_child(self):
         return self._parent_widget
+
+    def render(self, render_children):
+        self._widgets = render_children(self)
+
+    def clear(self):
+        if self._widgets:
+            for widget in self._widgets:
+                widget.destroy()
+            self._widgets = None
 
 class WidgetNode(CompileNode):
     def __init__(self, widget):
@@ -79,8 +97,12 @@ class WidgetNode(CompileNode):
         for widget in self._widget.winfo_children():
             widget.destroy()
 
-    def render(self):
+    def destroy(self):
+        self._widget.destroy()
+
+    def render(self, render_children):
         self._widget.grid(row=int(self.grid_row), column=int(self.grid_column))
+        CompileNode.render(self, render_children)
 
 class AppNode(CompileNode):
     def __init__(self, tk):

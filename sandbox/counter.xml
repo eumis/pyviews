@@ -20,10 +20,10 @@
         {count}
     </tk:Label>
 
-    <c:for item='item' collection='{count}'>
+    <c:For items='{range(count)}'>
         <tk:Label grid_row="{item+1}"
                   grid_column="0">
             {item}
         </tk:Label>
-    </c:for>
+    </c:For>
 </t:View>
