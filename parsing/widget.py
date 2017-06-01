@@ -1,8 +1,9 @@
-from tkinter import Tk, Widget
+from tkinter import Widget
 from common.reflection.activator import create_inst
 from parsing.attribute import get_compile
 from parsing.exceptions import UnsupportedNodeException
-from view.tree import CompileNode, WidgetNode, AppNode
+from view.base import CompileNode
+from view.core import WidgetNode
 
 def compile_widget(xml_node, parent, view_model):
     node = compile_node(xml_node, parent, view_model)
@@ -38,10 +39,8 @@ def compile_node(node, parent, view_model):
     inst = create_inst(module_name, class_name, *args)
     if isinstance(inst, Widget):
         inst = WidgetNode(inst)
-    if isinstance(inst, Tk):
-        inst = AppNode(inst)
     if not isinstance(inst, CompileNode):
-        raise UnsupportedNodeException(type(inst).__name__ + ' type is not supported as node')
+        raise UnsupportedNodeException(type(inst).__name__)
     inst.set_node(node)
     if view_model:
         inst.view_model = view_model

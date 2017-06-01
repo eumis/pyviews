@@ -1,9 +1,10 @@
-from view.tree import View, NodeChild
+from view.core import Container
+from view.base import NodeChild
 from viewmodel.base import ViewModel
 
-class For(View):
+class For(Container):
     def __init__(self, parent_widget):
-        View.__init__(self, parent_widget)
+        Container.__init__(self, parent_widget)
         self._items = []
         self._render_children = None
 
@@ -27,11 +28,11 @@ class For(View):
         if not self._render_children:
             return
         self.clear()
-        View.render(self, self._render_children)
+        super().render(self._render_children)
 
     def render(self, render_children):
         self._render_children = render_children
-        View.render(self, render_children)
+        Container.render(self, render_children)
 
 class ItemViewModel(ViewModel):
     def __init__(self, item, parent):

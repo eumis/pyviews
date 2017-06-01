@@ -8,5 +8,6 @@ class InstanceException(Exception):
     pass
 
 class UnsupportedNodeException(Exception):
-    pass
+    def __init__(self, type):
+        Exception.__init__(self, type + ' type element should be of type view.base.CompileNode')
     

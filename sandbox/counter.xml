@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
-<t:View xmlns:tk="tkinter"
-        xmlns:t="view.tree"
-        xmlns:c="view.controls"
-        import="sandbox.counter.Counter:Counter,viewmodel.variables.IntBinding:IntBinding"
-        view_model="{Counter()}">
+<core:Container xmlns:tk="tkinter"
+             xmlns:core="view.core"
+             xmlns:cs="view.containers"
+             import="sandbox.counter.Counter:Counter,viewmodel.binding.IntBinding:IntBinding"
+             view_model="{Counter()}">
     <tk:Button grid_row="0"
                grid_column="0"
                bind-Button-1="{up_count}">
@@ -20,10 +20,10 @@
         {count}
     </tk:Label>
 
-    <c:For items='{range(count)}'>
+    <cs:For items='{range(count)}'>
         <tk:Label grid_row="{item+1}"
                   grid_column="0">
             {item}
         </tk:Label>
-    </c:For>
-</t:View>
+    </cs:For>
+</core:Container>

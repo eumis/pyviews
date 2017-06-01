@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
-<t:View xmlns:tk="tkinter"
-      xmlns:t="view.tree"
-      import="sandbox.commands.show_message:show_message">
+<core:Container xmlns:tk="tkinter"
+                xmlns:core="view.core"
+                import="sandbox.commands.show_message:show_message">
     <tk:Button grid_row="0"
                grid_column="0"
                bind-Button-1="{lambda:show_message('message title', 'hohohoho')}">
         show message
     </tk:Button>
-</t:View>
+</core:Container>
