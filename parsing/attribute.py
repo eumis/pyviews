@@ -1,7 +1,7 @@
 from importlib import import_module
 import parsing.binding as binding
 from parsing.exceptions import CommandException
-from common.values import COMM_PREFIX, IMPORT_ATTR
+from common.values import COMM_PREFIX, IMPORT_NAMESPACE
 
 def bind_command(node, attr):
     (name, expr) = attr
@@ -30,15 +30,11 @@ def set_node_attr(node, attr):
     node.set_attr(name, binding.eval_one_way(expr, node))
 
 def import_local(node, attr):
-    imports = attr[1].split(',')
-    for import_item in imports:
-        import_to_local(node, import_item)
-
-def import_to_local(node, import_item):
-    [path, name] = import_item.split(':')
-    value = import_path(path)
-    if value:
-        node.set_context(name, value)
+    (name, path) = attr
+    name = name.split('}', maxsplit=1)[1]
+    imported = import_path(path)
+    if imported:
+        node.set_context(name, imported)
 
 def import_path(path):
     if not path:
@@ -62,7 +58,7 @@ def hasmethod(ent, attr):
     return hasattr(ent, attr) and callable(getattr(ent, attr))
 
 APPLIES = [
-    (lambda node, name, expr: name == IMPORT_ATTR, import_local),
+    (lambda node, name, expr: name.startswith('{' + IMPORT_NAMESPACE), import_local),
     (lambda node, name, expr: name.startswith(COMM_PREFIX), bind_command),
     (lambda node, name, expr: node.has_attr(name), set_prop)
 ]

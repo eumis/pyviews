@@ -1,9 +1,10 @@
 <?xml version="1.0"?>
 <core:Container xmlns:tk="tkinter"
-             xmlns:core="view.core"
-             xmlns:cs="view.containers"
-             import="sandbox.counter.Counter:Counter,viewmodel.binding.IntBinding:IntBinding"
-             view_model="{Counter()}">
+                xmlns:core="view.core"
+                xmlns:cs="view.containers"
+                import:Counter="sandbox.counter.Counter"
+                import:IntBinding="viewmodel.binding.IntBinding"
+                view_model="{Counter()}">
     <tk:Button grid_row="0"
                grid_column="0"
                bind-Button-1="{up_count}">
