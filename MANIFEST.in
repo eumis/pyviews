@@ -1,0 +1,6 @@
+include application.py
+
+recursive-include common *.py
+recursive-include parsing *.py
+recursive-include view *.py
+recursive-include viewmodel *.py

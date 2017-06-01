@@ -1,1 +1,4 @@
 *.pyc
+dist/
+build/
+pyvies.egg-info/
