@@ -10,8 +10,8 @@ class For(Container):
 
     def get_children(self):
         children = []
-        for item in self.items:
-            item_vm = ItemViewModel(item, self.view_model)
+        for index, item in enumerate(self.items):
+            item_vm = ItemViewModel(item, self.view_model, index)
             children += [NodeChild(xml_node, item_vm) for xml_node in list(self._node)]
         return children
 
@@ -35,27 +35,8 @@ class For(Container):
         Container.render(self, render_children)
 
 class ItemViewModel(ViewModel):
-    def __init__(self, item, parent):
+    def __init__(self, item, parent, index):
         ViewModel.__init__(self)
-        self._item = item
-        self._parent = parent
-
-    @property
-    def item(self):
-        return self._item
-
-    @item.setter
-    def item(self, val):
-        old = self._item
-        self._item = val
-        self.notify('item', val, old)
-
-    @property
-    def parent(self):
-        return self._parent
-
-    @parent.setter
-    def parent(self, val):
-        old = self._parent
-        self._parent = val
-        self.notify('parent', val, old)
+        self.define_prop('item', item)
+        self.define_prop('parent', parent)
+        self.define_prop('index', index)

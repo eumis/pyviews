@@ -24,7 +24,7 @@
     <cs:For items='{range(count)}'>
         <tk:Label grid_row="{item+1}"
                   grid_column="0">
-            {item}
+            {str(item+1) + ' ' + str(index)}
         </tk:Label>
     </cs:For>
 </core:Container>
