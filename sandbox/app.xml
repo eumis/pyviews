@@ -1,4 +1,4 @@
 <?xml version="1.0"?>
-<core:App xmlns:core="view.core"
+<core:App xmlns:core="pyviews.view.core"
           state="zoomed">
 </core:App>

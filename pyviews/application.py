@@ -1,7 +1,7 @@
 from os.path import abspath, join
-from parsing.compiler import compile_view as compile_xml_view
-from parsing.parser import parse_xml
-from common.values import VIEW_EXT
+from pyviews.parsing.compiler import compile_view as compile_xml_view
+from pyviews.parsing.parser import parse_xml
+from pyviews.common.values import VIEW_EXT
 
 def init(views_folder, app_view='app'):
     global VIEWS_PATH

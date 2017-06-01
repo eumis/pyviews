@@ -1,4 +1,4 @@
-import application as app
+import pyviews.application as app
 
 app.init('sandbox')
 app.show_view('changepage')

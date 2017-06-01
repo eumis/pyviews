@@ -1,4 +1,4 @@
-from viewmodel.base import ViewModel
+from pyviews.viewmodel.base import ViewModel
 
 class Counter(ViewModel):
     def __init__(self):

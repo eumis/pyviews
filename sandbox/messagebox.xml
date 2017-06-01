@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <core:Container xmlns:tk="tkinter"
-                xmlns:core="view.core"
+                xmlns:core="pyviews.view.core"
                 import:show_message="sandbox.commands.show_message">
     <tk:Button grid_row="0"
                grid_column="0"

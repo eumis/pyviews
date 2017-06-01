@@ -1,5 +1,5 @@
 from tkinter import Tk
-from view.base import CompileNode, get_handler
+from pyviews.view.base import CompileNode, get_handler
 
 class App(CompileNode):
     def __init__(self):

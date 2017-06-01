@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <c:Container xmlns:tk="tkinter"
-             xmlns:c="view.core"
-             import:show_view="application.show_view">
+             xmlns:c="pyviews.view.core"
+             import:show_view="pyviews.application.show_view">
     <tk:Button grid_row="0"
                grid_column="0"
                bind-Button-1="{lambda:show_view('messagebox')}">

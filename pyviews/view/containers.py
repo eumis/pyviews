@@ -1,6 +1,6 @@
-from view.core import Container
-from view.base import NodeChild
-from viewmodel.base import ViewModel
+from pyviews.view.core import Container
+from pyviews.view.base import NodeChild
+from pyviews.viewmodel.base import ViewModel
 
 class For(Container):
     def __init__(self, parent_widget):

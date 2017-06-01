@@ -1,5 +1,5 @@
-from common.reflection.execution import run
-from common.values import VM_KEY
+from pyviews.common.reflection.execution import run
+from pyviews.common.values import VM_KEY
 
 def is_binding(expression):
     return expression.startswith('{') and expression.endswith('}')

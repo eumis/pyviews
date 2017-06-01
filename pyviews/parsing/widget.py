@@ -1,9 +1,9 @@
 from tkinter import Widget
-from common.reflection.activator import create_inst
-from parsing.attribute import get_compile
-from parsing.exceptions import UnsupportedNodeException
-from view.base import CompileNode
-from view.core import WidgetNode
+from pyviews.common.reflection.activator import create_inst
+from pyviews.parsing.attribute import get_compile
+from pyviews.parsing.exceptions import UnsupportedNodeException
+from pyviews.view.base import CompileNode
+from pyviews.view.core import WidgetNode
 
 def compile_widget(xml_node, parent, view_model):
     node = compile_node(xml_node, parent, view_model)

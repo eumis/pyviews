@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <core:Container xmlns:tk="tkinter"
-                xmlns:core="view.core"
-                xmlns:cs="view.containers"
+                xmlns:core="pyviews.view.core"
+                xmlns:cs="pyviews.view.containers"
                 import:Counter="sandbox.counter.Counter"
-                import:IntBinding="viewmodel.binding.IntBinding"
+                import:IntBinding="pyviews.viewmodel.binding.IntBinding"
                 view_model="{Counter()}">
     <tk:Button grid_row="0"
                grid_column="0"

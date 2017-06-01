@@ -1,7 +1,7 @@
 from importlib import import_module
-import parsing.binding as binding
-from parsing.exceptions import CommandException
-from common.values import COMM_PREFIX, IMPORT_NAMESPACE
+from pyviews.parsing import binding
+from pyviews.parsing.exceptions import CommandException
+from pyviews.common.values import COMM_PREFIX, IMPORT_NAMESPACE
 
 def bind_command(node, attr):
     (name, expr) = attr
