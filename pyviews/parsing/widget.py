@@ -1,9 +1,10 @@
 from tkinter import Widget
 from pyviews.common.reflection.activator import create_inst
-from pyviews.parsing.attribute import get_compile
+from pyviews.parsing.attribute import compile_attr
 from pyviews.parsing.exceptions import UnsupportedNodeException
 from pyviews.view.base import CompileNode
 from pyviews.view.core import WidgetNode
+from pyviews.parsing.namespace import parse_namespace
 
 def compile_widget(xml_node, parent, view_model):
     node = compile_node(xml_node, parent, view_model)
@@ -15,11 +16,6 @@ def compile_widget(xml_node, parent, view_model):
 def compile_attributes(node):
     for attr in node.xml_attrs():
         compile_attr(node, attr)
-
-def compile_attr(node, attr):
-    compile_ = get_compile(node, attr)
-    if compile_:
-        compile_(node, attr)
 
 def apply_text(node):
     text = node.get_text()
@@ -34,7 +30,7 @@ def compile_children(node, children=None):
     return compiled
 
 def compile_node(node, parent, view_model):
-    (module_name, class_name) = parse_tag(node.tag)
+    (module_name, class_name) = parse_namespace(node.tag)
     args = (parent.get_container_for_child(),) if parent else ()
     inst = create_inst(module_name, class_name, *args)
     if isinstance(inst, Widget):
@@ -47,8 +43,4 @@ def compile_node(node, parent, view_model):
     if parent:
         inst.set_context(parent.get_context())
     return inst
-
-def parse_tag(tag):
-    type_desc = tag.split('}')
-    return (type_desc[0][1:], type_desc[1])
     

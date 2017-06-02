@@ -1,5 +1,2 @@
-COMM_PREFIX = 'bind-'
 VIEW_EXT = '.xml'
-IMPORT_NAMESPACE = 'import'
-EVENT_KEY = 'event'
 VM_KEY = 'self'

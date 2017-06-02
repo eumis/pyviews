@@ -24,3 +24,10 @@ def split_by_last_dot(expr, res=None):
     if last_dot == -1:
         return('', res)
     return (res[:last_dot], res[last_dot+1:])
+
+def apply(node, attr, apply_changes):
+    handler = lambda new, old, n=node, b=attr[1], a=apply_changes: a(eval_one_way(b, n))
+    keys = [key for key in to_dictionary(node.view_model).keys() if key in attr[1]]
+    for key in keys:
+        node.view_model.observe(key, handler)
+    handler(None, None)

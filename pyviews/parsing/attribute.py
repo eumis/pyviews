@@ -1,64 +1,21 @@
 from importlib import import_module
-from pyviews.parsing import binding
-from pyviews.parsing.exceptions import CommandException
-from pyviews.common.values import COMM_PREFIX, IMPORT_NAMESPACE
+from pyviews.modifiers.core import set_prop as default_modify
+from pyviews.parsing.namespace import has_namespace, parse_namespace
+from pyviews.parsing.binding import split_by_last_dot, is_binding, apply as apply_binding
 
-def bind_command(node, attr):
+def compile_attr(node, attr):
+    modify = default_modify
     (name, expr) = attr
-    if not binding.is_binding(expr):
-        raise CommandException(name + ' value should be one way binding')
-    event = name[len(COMM_PREFIX):]
-    command = binding.eval_one_way(expr, node)
-    node.bind(event, command)
-
-def set_prop(node, attr):
-    (name, expr) = attr
-    if binding.is_binding(expr):
-        apply_one_way_binding(node, attr)
+    if has_namespace(name):
+        (namespace, name) = parse_namespace(name)
+        modify = get_modify(namespace)
+    apply = lambda value, n=node, key=name, mod=modify: mod(n, (key, value))
+    if is_binding(expr):
+        apply_binding(node, attr, apply)
     else:
-        node.set_attr(name, expr)
+        apply(expr)
 
-def apply_one_way_binding(node, attr):
-    update_view = lambda new_val, old_val, n=node, a=attr: set_node_attr(n, a)
-    keys = [key for key in binding.to_dictionary(node.view_model).keys() if key in attr[1]]
-    for key in keys:
-        node.view_model.observe(key, update_view)
-    update_view(None, None)
-
-def set_node_attr(node, attr):
-    (name, expr) = attr
-    node.set_attr(name, binding.eval_one_way(expr, node))
-
-def import_local(node, attr):
-    (name, path) = attr
-    name = name.split('}', maxsplit=1)[1]
-    imported = import_path(path)
-    if imported:
-        node.set_context(name, imported)
-
-def import_path(path):
-    if not path:
-        return None
-    try:
-        return import_module(path)
-    except ImportError:
-        pass
-    (path, name) = binding.split_by_last_dot(path)
-    module = import_path(path)
-    return module.__dict__[name] if module else None
-
-def get_compile(node, attr):
-    (name, expression) = attr
-    for (check, apply) in APPLIES:
-        if check(node, name, expression):
-            return apply
-    return
-
-def hasmethod(ent, attr):
-    return hasattr(ent, attr) and callable(getattr(ent, attr))
-
-APPLIES = [
-    (lambda node, name, expr: name.startswith('{' + IMPORT_NAMESPACE), import_local),
-    (lambda node, name, expr: name.startswith(COMM_PREFIX), bind_command),
-    (lambda node, name, expr: node.has_attr(name), set_prop)
-]
+def get_modify(namespace):
+    (module, modifier) = split_by_last_dot(namespace)
+    module = import_module(module)
+    return getattr(module, modifier)

@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <core:Container xmlns:tk="tkinter"
                 xmlns:core="pyviews.view.core"
+                xmlns:import="pyviews.modifiers.core.import_global"
+                xmlns:bind="pyviews.modifiers.core.bind"
                 import:show_message="sandbox.commands.show_message">
-    <tk:Button grid_row="0"
-               grid_column="0"
-               bind-Button-1="{lambda:show_message('message title', 'hohohoho')}">
+    <tk:Button bind:Button-1="{lambda:show_message('message title', 'hohohoho')}">
         show message
     </tk:Button>
 </core:Container>

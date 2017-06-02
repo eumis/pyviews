@@ -1,16 +1,21 @@
 <?xml version="1.0"?>
 <c:Container xmlns:tk="tkinter"
              xmlns:c="pyviews.view.core"
-             import:show_view="pyviews.application.show_view">
-    <tk:Button grid_row="0"
-               grid_column="0"
-               bind-Button-1="{lambda:show_view('messagebox')}">
+             xmlns:import="pyviews.modifiers.core.import_global"
+             xmlns:bind="pyviews.modifiers.core.bind"
+             xmlns:grid="pyviews.modifiers.widget.grid"
+             import:show_view="pyviews.application.show_view"
+             import:tk="tkinter">
+    <tk:Button grid:row="0"
+               grid:column="0"
+               bind:Button-1="{lambda:show_view('messagebox')}">
         Message box
     </tk:Button>
 
-    <tk:Button grid_row="0"
-               grid_column="1"
-               bind-Button-1="{lambda:show_view('counter')}">
+    <tk:Button grid:row="0"
+               grid:column="1"
+               grid:sticky="{tk.E}"
+               bind:Button-1="{lambda:show_view('counter')}">
         Counter
     </tk:Button>
 </c:Container>

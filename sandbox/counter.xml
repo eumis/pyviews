@@ -2,28 +2,31 @@
 <core:Container xmlns:tk="tkinter"
                 xmlns:core="pyviews.view.core"
                 xmlns:cs="pyviews.view.containers"
+                xmlns:import="pyviews.modifiers.core.import_global"
+                xmlns:bind="pyviews.modifiers.core.bind"
+                xmlns:grid="pyviews.modifiers.widget.grid"
                 import:Counter="sandbox.counter.Counter"
                 import:IntBinding="pyviews.viewmodel.binding.IntBinding"
                 view_model="{Counter()}">
-    <tk:Button grid_row="0"
-               grid_column="0"
-               bind-Button-1="{up_count}">
+    <tk:Button grid:row="0"
+               grid:column="0"
+               bind:Button-1="{up_count}">
         + 1
     </tk:Button>
 
-    <tk:Entry grid_row="0"
-              grid_column="1"
+    <tk:Entry grid:row="0"
+              grid:column="1"
               textvariable="{IntBinding(self, 'count', 0).get_var()}">
     </tk:Entry>
 
-    <tk:Label grid_row="0"
-              grid_column="2">
+    <tk:Label grid:row="0"
+              grid:column="2">
         {count}
     </tk:Label>
 
     <cs:For items='{range(count)}'>
-        <tk:Label grid_row="{item+1}"
-                  grid_column="0">
+        <tk:Label grid:row="{item+1}"
+                  grid:column="0">
             {str(item+1) + ' ' + str(index)}
         </tk:Label>
     </cs:For>

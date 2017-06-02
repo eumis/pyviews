@@ -36,8 +36,7 @@ class WidgetNode(CompileNode):
     def __init__(self, widget):
         CompileNode.__init__(self)
         self._widget = widget
-        self.grid_row = None
-        self.grid_column = None
+        self._grid_args = {}
 
     def get_container_for_child(self):
         return self._widget
@@ -63,8 +62,11 @@ class WidgetNode(CompileNode):
     def destroy(self):
         self._widget.destroy()
 
+    def grid(self, key, value):
+        self._grid_args[key] = value
+
     def render(self, render_children):
-        self._widget.grid(row=int(self.grid_row), column=int(self.grid_column))
+        self._widget.grid(self._grid_args)
         CompileNode.render(self, render_children)
 
 class Container(CompileNode):
