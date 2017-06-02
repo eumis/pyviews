@@ -1,4 +1,6 @@
 <?xml version="1.0"?>
 <core:App xmlns:core="pyviews.view.core"
+          xmlns:config="pyviews.modifiers.widget.config"
+          config:background="white"
           state="zoomed">
 </core:App>

@@ -29,6 +29,9 @@ class App(CompileNode):
             self._tk.state(self.state)
         render_children(self)
 
+    def config(self, key, value):
+        self._tk.configure({key: value})
+
     def run(self):
         self._tk.mainloop()
 
