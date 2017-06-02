@@ -36,4 +36,3 @@ def apply_to_source_binding(var, view_model, prop):
 def apply_to_view_binding(var, view_model, prop):
     update_view = lambda new_val, old_val, content=var: content.set(new_val)
     view_model.observe(prop, update_view)
-    update_view(getattr(view_model, prop), None)
