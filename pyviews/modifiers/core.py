@@ -1,5 +1,5 @@
 from importlib import import_module
-from pyviews.parsing import binding
+from pyviews.binding.expressions import split_by_last_dot
 
 def import_global(node, attr):
     (name, path) = attr
@@ -14,7 +14,7 @@ def import_path(path):
         return import_module(path)
     except ImportError:
         pass
-    (path, name) = binding.split_by_last_dot(path)
+    (path, name) = split_by_last_dot(path)
     module = import_path(path)
     return module.__dict__[name] if module else None
 

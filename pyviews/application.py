@@ -1,6 +1,6 @@
 from os.path import abspath, join
-from pyviews.parsing.compiler import compile_view as compile_xml_view
-from pyviews.parsing.parser import parse_xml
+from pyviews.compiling.view import compile_view as compile_xml_view
+from pyviews.compiling.parser import parse_xml
 from pyviews.common.values import VIEW_EXT
 
 def init(views_folder, app_view='app'):

@@ -52,8 +52,6 @@ class WidgetNode(CompileNode):
             setattr(self, name, value)
         elif hasattr(self._widget, name):
             setattr(self._widget, name, value)
-        else:
-            self._widget.configure(**{name:value})
 
     def clear(self):
         for widget in self._widget.winfo_children():
@@ -64,6 +62,9 @@ class WidgetNode(CompileNode):
 
     def grid(self, key, value):
         self._grid_args[key] = value
+
+    def config(self, key, value):
+        self._widget.configure({key: value})
 
     def render(self, render_children):
         self._widget.grid(self._grid_args)

@@ -5,8 +5,9 @@
                 xmlns:import="pyviews.modifiers.core.import_global"
                 xmlns:bind="pyviews.modifiers.core.bind"
                 xmlns:grid="pyviews.modifiers.widget.grid"
+                xmlns:config="pyviews.modifiers.widget.config"
                 import:Counter="sandbox.counter.Counter"
-                import:IntBinding="pyviews.viewmodel.binding.IntBinding"
+                import:create_int_var="pyviews.binding.vars.create_int_var"
                 view_model="{Counter()}">
     <tk:Button grid:row="0"
                grid:column="0"
@@ -16,7 +17,7 @@
 
     <tk:Entry grid:row="0"
               grid:column="1"
-              textvariable="{IntBinding(self, 'count', 0).get_var()}">
+              config:textvariable="{create_int_var(self, 'count', 0)}">
     </tk:Entry>
 
     <tk:Label grid:row="0"

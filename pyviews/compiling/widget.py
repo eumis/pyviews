@@ -1,15 +1,15 @@
 from tkinter import Widget
 from pyviews.common.reflection.activator import create_inst
-from pyviews.parsing.attribute import compile_attr
-from pyviews.parsing.exceptions import UnsupportedNodeException
+from pyviews.compiling.attribute import compile_attr
+from pyviews.compiling.exceptions import UnsupportedNodeException
+from pyviews.compiling.namespace import parse_namespace
 from pyviews.view.base import CompileNode
 from pyviews.view.core import WidgetNode
-from pyviews.parsing.namespace import parse_namespace
 
 def compile_widget(xml_node, parent, view_model):
     node = compile_node(xml_node, parent, view_model)
     compile_attributes(node)
-    apply_text(node)
+    compile_text(node)
     node.render(compile_children)
     return node
 
@@ -17,10 +17,10 @@ def compile_attributes(node):
     for attr in node.xml_attrs():
         compile_attr(node, attr)
 
-def apply_text(node):
+def compile_text(node):
     text = node.get_text()
     if text:
-        compile_attr(node, ('text', text))
+        compile_attr(node, ('{pyviews.modifiers.widget.config}text', text))
 
 def compile_children(node, children=None):
     compiled = []
