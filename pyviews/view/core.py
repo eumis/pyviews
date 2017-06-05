@@ -10,6 +10,9 @@ class App(CompileNode):
     def get_container_for_child(self):
         return self._tk
 
+    def get_widget(self):
+        return self._tk
+
     def bind(self, event, command):
         self._tk.bind('<'+event+'>', get_handler(command))
 
@@ -42,6 +45,9 @@ class WidgetNode(CompileNode):
         self.geometry = None
 
     def get_container_for_child(self):
+        return self._widget
+        
+    def get_widget(self):
         return self._widget
 
     def bind(self, event, command):

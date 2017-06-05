@@ -43,6 +43,9 @@ class CompileNode:
     def get_container_for_child(self):
         return None
 
+    def get_widget(self):
+        return None
+
 class NodeChild:
     def __init__(self, xml_node, view_model=None):
         self.xml_node = xml_node

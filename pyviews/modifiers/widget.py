@@ -15,3 +15,8 @@ def pack(node, attr):
 def config(node, attr):
     (key, value) = attr
     node.config(key, value)
+
+def style(node, attr):
+    applies = [attr[1]] if callable(attr[1]) else attr[1]
+    for apply in applies:
+        apply(node.get_widget())

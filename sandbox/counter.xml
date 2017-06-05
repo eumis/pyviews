@@ -7,8 +7,10 @@
                 xmlns:grid="pyviews.modifiers.widget.grid"
                 xmlns:pack="pyviews.modifiers.widget.pack"
                 xmlns:config="pyviews.modifiers.widget.config"
+
                 import:Counter="sandbox.counter.Counter"
                 import:create_int_var="pyviews.binding.vars.create_int_var"
+
                 view_model="{Counter()}">
     <tk:Button grid:row="0"
                grid:column="0"
