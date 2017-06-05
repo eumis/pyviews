@@ -14,7 +14,7 @@
 
     <tk:Button grid:row="0"
                grid:column="1"
-               grid:sticky="{tk.E}"
+               grid:sticky="e"
                bind:Button-1="{lambda:show_view('counter')}">
         Counter
     </tk:Button>

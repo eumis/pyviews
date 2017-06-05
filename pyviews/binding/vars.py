@@ -14,6 +14,7 @@ class Variable(StringVar):
 def create_int_var(view_model, prop, default=None):
     convert = lambda value, default_=default: parse_int(value, default)
     var = Variable(convert)
+    var.set(getattr(view_model, prop))
     return create_var(view_model, prop, var)
 
 def parse_int(value, default):
