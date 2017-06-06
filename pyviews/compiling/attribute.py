@@ -4,6 +4,7 @@ from pyviews.compiling.namespace import has_namespace, parse_namespace
 from pyviews.binding.vars import Variable
 from pyviews.binding.expressions import split_by_last_dot, is_binding, eval_exp
 from pyviews.viewmodel.base import ViewModel
+from pyviews.view.base import Watcher
 
 def compile_attr(node, attr):
     modify = default_modify
@@ -31,6 +32,7 @@ def observe_view_model(node, view_model, expr, handler):
     expr_keys = [key for key in view_model.get_observable_keys() if key in expr]
     for key, value in [(key, getattr(view_model, key)) for key in expr_keys]:
         view_model.observe(key, handler)
+        node.add_watcher(Watcher(view_model, key, handler))
         if isinstance(value, ViewModel):
             observe_view_model(node, value, expr, handler)
 

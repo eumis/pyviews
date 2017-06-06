@@ -22,17 +22,12 @@ class For(Container):
     @items.setter
     def items(self, val):
         self._items = val if val else []
-        self._update()
+        self.render()
 
-    def _update(self):
-        if not self._render_children:
-            return
-        self.clear()
-        super().render(self._render_children)
-
-    def render(self, render_children):
-        self._render_children = render_children
-        super().render(render_children)
+    def render(self, render_children=None):
+        self._render_children = render_children if render_children else self._render_children
+        if self._render_children:
+            super().render(self._render_children)
 
 class ItemViewModel(ViewModel):
     def __init__(self, item, parent, index):
