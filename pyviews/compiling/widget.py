@@ -37,7 +37,7 @@ def compile_node(node, parent, view_model):
         inst = WidgetNode(inst)
     if not isinstance(inst, CompileNode):
         raise UnsupportedNodeException(type(inst).__name__)
-    inst.set_node(node)
+    inst.set_xml_node(node)
     if view_model:
         inst.view_model = view_model
     if parent:

@@ -1,20 +1,22 @@
 class CompileNode:
     def __init__(self):
-        self._node = None
+        self._xml_node = None
         self._context = {}
+        self._watchers = []
+        self._nodes = []
         self.view_model = None
 
-    def set_node(self, node):
-        self._node = node
+    def set_xml_node(self, node):
+        self._xml_node = node
 
     def xml_attrs(self):
-        return self._node.items()
+        return self._xml_node.items()
 
     def get_text(self):
-        return self._node.text.strip()
+        return self._xml_node.text.strip()
 
     def get_children(self):
-        return [NodeChild(xml_node, self.view_model) for xml_node in list(self._node)]
+        return [NodeChild(xml_node, self.view_model) for xml_node in list(self._xml_node)]
 
     def has_attr(self, name):
         return hasattr(self, name)
@@ -32,19 +34,27 @@ class CompileNode:
         return self._context
 
     def clear(self):
-        pass
+        for child in self._nodes:
+            child.destroy()
+        self._nodes = []
 
     def destroy(self):
-        pass
+        self.clear()
+        for watcher in self._watchers:
+            watcher.dispose()
 
     def render(self, render_children):
-        render_children(self)
+        self.clear()
+        self._nodes = render_children(self)
 
     def get_container_for_child(self):
         return None
 
     def get_widget(self):
         return None
+
+    def add_watcher(self, watcher):
+        self._watchers.append(watcher)
 
 class NodeChild:
     def __init__(self, xml_node, view_model=None):
@@ -53,3 +63,7 @@ class NodeChild:
 
 def get_handler(command):
     return lambda e, com=command: com()
+
+class Watcher:
+    def __init__(self, view_model, key, handler):
+        self.dispose = lambda: view_model.release_callback(key, handler)

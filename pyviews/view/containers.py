@@ -12,7 +12,7 @@ class For(Container):
         children = []
         for index, item in enumerate(self.items):
             item_vm = ItemViewModel(item, self.view_model, index)
-            children += [NodeChild(xml_node, item_vm) for xml_node in list(self._node)]
+            children += [NodeChild(xml_node, item_vm) for xml_node in list(self._xml_node)]
         return children
 
     @property
@@ -32,7 +32,7 @@ class For(Container):
 
     def render(self, render_children):
         self._render_children = render_children
-        Container.render(self, render_children)
+        super().render(render_children)
 
 class ItemViewModel(ViewModel):
     def __init__(self, item, parent, index):

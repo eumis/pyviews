@@ -13,6 +13,11 @@ class ViewModel:
         if prop in self._callbacks:
             self._callbacks[prop].append(callback)
 
+    def release_callback(self, prop, callback):
+        if prop in self._callbacks:
+            if callback in self._callbacks[prop]:
+                self._callbacks[prop].remove(callback)
+
     def get_observable_keys(self):
         return self._callbacks.keys()
 

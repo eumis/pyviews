@@ -14,7 +14,6 @@ def get_view_path(view):
     return join(VIEWS_PATH, view + VIEW_EXT)
 
 def show_view(view):
-    app.clear()
     view_path = get_view_path(view)
     compile_view(view_path, app)
 

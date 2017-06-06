@@ -25,14 +25,14 @@ def apply_binding(node, attr, apply_changes):
         return
     if node.view_model:
         handler = lambda new, old, n=node, b=expr, a=apply_changes: a(eval_exp(b, n))
-        observe_view_model(node.view_model, expr, handler)
+        observe_view_model(node, node.view_model, expr, handler)
 
-def observe_view_model(view_model, expr, handler):
+def observe_view_model(node, view_model, expr, handler):
     expr_keys = [key for key in view_model.get_observable_keys() if key in expr]
     for key, value in [(key, getattr(view_model, key)) for key in expr_keys]:
         view_model.observe(key, handler)
         if isinstance(value, ViewModel):
-            observe_view_model(value, expr, handler)
+            observe_view_model(node, value, expr, handler)
 
 def get_modify(namespace):
     (module, modifier) = split_by_last_dot(namespace)

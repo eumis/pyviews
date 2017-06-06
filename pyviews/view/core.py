@@ -23,14 +23,10 @@ class App(CompileNode):
         attr_inst = self if hasattr(self, name) else self._tk
         setattr(attr_inst, name, value)
 
-    def clear(self):
-        for widget in self._tk.winfo_children():
-            widget.destroy()
-
     def render(self, render_children):
         if self.state:
             self._tk.state(self.state)
-        render_children(self)
+        super().render(render_children)
 
     def config(self, key, value):
         self._tk.configure({key: value})
@@ -62,11 +58,8 @@ class WidgetNode(CompileNode):
         elif hasattr(self._widget, name):
             setattr(self._widget, name, value)
 
-    def clear(self):
-        for widget in self._widget.winfo_children():
-            widget.destroy()
-
     def destroy(self):
+        super().destroy()
         self._widget.destroy()
 
     def config(self, key, value):
@@ -80,17 +73,7 @@ class Container(CompileNode):
     def __init__(self, parent_widget):
         CompileNode.__init__(self)
         self._parent_widget = parent_widget
-        self._widgets = None
 
     def get_container_for_child(self):
         return self._parent_widget
-
-    def render(self, render_children):
-        self._widgets = render_children(self)
-
-    def clear(self):
-        if self._widgets:
-            for widget in self._widgets:
-                widget.destroy()
-            self._widgets = None
             
