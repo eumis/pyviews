@@ -1,4 +1,4 @@
-from tkinter import Tk
+from tkinter import Tk, Widget
 from pyviews.view.base import CompileNode, get_handler
 
 class App(CompileNode):
@@ -6,6 +6,7 @@ class App(CompileNode):
         CompileNode.__init__(self)
         self._tk = Tk()
         self.state = None
+        self._tk.bind_all('<Button-1>', lambda e: prop_focus(e.widget), '+')
 
     def get_container_for_child(self):
         return self._tk
@@ -76,4 +77,12 @@ class Container(CompileNode):
 
     def get_container_for_child(self):
         return self._parent_widget
-            
+
+def prop_focus(widget):
+    print(widget)
+    if not isinstance(widget, Widget):
+        return
+    if widget['takefocus'] == '1':
+        widget.focus_set()
+    elif widget.master:
+        prop_focus(widget.master)
