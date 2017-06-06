@@ -37,6 +37,6 @@ class For(Container):
 class ItemViewModel(ViewModel):
     def __init__(self, item, parent, index):
         ViewModel.__init__(self)
-        self.define_prop('item', item)
-        self.define_prop('parent', parent)
-        self.define_prop('index', index)
+        self.item = item
+        self.parent = parent
+        self.index = index

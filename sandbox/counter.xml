@@ -10,6 +10,7 @@
 
                 import:Counter="sandbox.counter.Counter"
                 import:create_int_var="pyviews.binding.vars.create_int_var"
+                import:get_color="sandbox.commands.get_color"
 
                 view_model="{Counter()}">
     <tk:Button grid:row="0"
@@ -34,7 +35,7 @@
         <cs:For items='{range(count)}'>
             <tk:Label pack:fill="both"
                       pack:expand="True"
-                      config:background="{'yellow' if index % 2 != 0 else 'white'}">
+                      config:background="{get_color(index)}">
                 {str(item+1) + ' ' + str(index)}
             </tk:Label>
         </cs:For>

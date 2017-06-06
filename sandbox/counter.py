@@ -4,7 +4,7 @@ from pyviews.viewmodel.base import ViewModel
 class Counter(ViewModel):
     def __init__(self):
         ViewModel.__init__(self)
-        self.define_prop('count', 0)
+        self.count = 0
 
     def up_count(self):
         self.count += 1

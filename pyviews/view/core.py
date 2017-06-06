@@ -46,7 +46,7 @@ class WidgetNode(CompileNode):
 
     def get_container_for_child(self):
         return self._widget
-        
+
     def get_widget(self):
         return self._widget
 

@@ -6,13 +6,12 @@ def is_binding(expression):
 
 def eval_exp(expression, node):
     code = parse_one_way_binding(expression)
-    vm_dict = to_dictionary(node.view_model)
+    vm_dict = {} if node.view_model is None else to_dictionary(node.view_model)
     vm_dict[VM_KEY] = node.view_model
     return run(code, node.get_context(), vm_dict)
 
 def to_dictionary(view_model):
-    keys = [key for key in dir(view_model) if not key.startswith('_')]
-    return {key: getattr(view_model, key) for key in keys}
+    return {key: getattr(view_model, key) for key in view_model.get_observable_keys()}
 
 def parse_one_way_binding(binding):
     return binding[1:-1]
