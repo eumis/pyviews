@@ -1,3 +1,6 @@
+from inspect import getfullargspec
+from pyviews.common.values import EVENT_KEY
+
 class CompileNode:
     def __init__(self):
         self._xml_node = None
@@ -12,11 +15,11 @@ class CompileNode:
     def xml_attrs(self):
         return self._xml_node.items()
 
+    def get_xml_children(self):
+        return [NodeChild(xml_node, self.view_model) for xml_node in list(self._xml_node)]
+
     def get_text(self):
         return self._xml_node.text.strip()
-
-    def get_children(self):
-        return [NodeChild(xml_node, self.view_model) for xml_node in list(self._xml_node)]
 
     def has_attr(self, name):
         return hasattr(self, name)
@@ -24,14 +27,17 @@ class CompileNode:
     def set_attr(self, name, value):
         setattr(self, name, value)
 
+    def get_context(self):
+        return self._context
+
     def set_context(self, key, value=None):
         if isinstance(key, dict):
             self._context = {**self._context, **key}
         else:
             self._context[key] = value
 
-    def get_context(self):
-        return self._context
+    def bind(self, event, command):
+        pass
 
     def clear(self):
         for child in self._nodes:
@@ -47,7 +53,7 @@ class CompileNode:
         self.clear()
         self._nodes = render_children(self)
 
-    def get_container_for_child(self):
+    def get_widget_master(self):
         return None
 
     def get_widget(self):
@@ -61,8 +67,15 @@ class NodeChild:
         self.xml_node = xml_node
         self.view_model = view_model
 
+# pylint: disable=W1505
+# https://docs.python.org/3/library/inspect.html#inspect.getfullargspec
 def get_handler(command):
-    return lambda e, com=command: com()
+    spec = getfullargspec(command)
+    arg = spec[0][0] if spec[0] else ''
+    if arg == EVENT_KEY:
+        return lambda e, com=command: com(e)
+    else:
+        return lambda e, com=command: com()
 
 class Watcher:
     def __init__(self, view_model, key, handler):

@@ -8,7 +8,7 @@ class For(Container):
         self._items = []
         self._render_children = None
 
-    def get_children(self):
+    def get_xml_children(self):
         children = []
         for index, item in enumerate(self.items):
             item_vm = ItemViewModel(item, self.view_model, index)

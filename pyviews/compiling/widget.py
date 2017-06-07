@@ -24,14 +24,14 @@ def compile_text(node):
 
 def compile_children(node, children=None):
     compiled = []
-    children = children if children else node.get_children()
+    children = children if children else node.get_xml_children()
     for child in children:
         compiled.append(compile_widget(child.xml_node, node, child.view_model))
     return compiled
 
 def compile_node(node, parent, view_model):
     (module_name, class_name) = parse_namespace(node.tag)
-    args = (parent.get_container_for_child(),) if parent else ()
+    args = (parent.get_widget_master(),) if parent else ()
     inst = create_inst(module_name, class_name, *args)
     if isinstance(inst, Widget):
         inst = WidgetNode(inst)

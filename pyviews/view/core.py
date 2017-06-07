@@ -3,12 +3,12 @@ from pyviews.view.base import CompileNode, get_handler
 
 class App(CompileNode):
     def __init__(self):
-        CompileNode.__init__(self)
+        super().__init__()
         self._tk = Tk()
         self.state = None
         self._tk.bind_all('<Button-1>', lambda e: prop_focus(e.widget), '+')
 
-    def get_container_for_child(self):
+    def get_widget_master(self):
         return self._tk
 
     def get_widget(self):
@@ -41,7 +41,7 @@ class WidgetNode(CompileNode):
         self._widget = widget
         self.geometry = None
 
-    def get_container_for_child(self):
+    def get_widget_master(self):
         return self._widget
 
     def get_widget(self):
@@ -68,14 +68,14 @@ class WidgetNode(CompileNode):
 
     def render(self, render_children):
         self.geometry.apply(self._widget)
-        CompileNode.render(self, render_children)
+        super().render(render_children)
 
 class Container(CompileNode):
     def __init__(self, parent_widget):
-        CompileNode.__init__(self)
+        super().__init__()
         self._parent_widget = parent_widget
 
-    def get_container_for_child(self):
+    def get_widget_master(self):
         return self._parent_widget
 
 def prop_focus(widget):
