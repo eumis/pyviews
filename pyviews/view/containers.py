@@ -1,6 +1,7 @@
 from pyviews.view.core import Container
 from pyviews.view.base import NodeChild
 from pyviews.viewmodel.base import ViewModel
+from pyviews.application import compile_view
 
 class For(Container):
     def __init__(self, parent_widget):
@@ -37,3 +38,12 @@ class ItemViewModel(ViewModel):
         self.item = item
         self.parent = parent
         self.index = index
+
+class View(Container):
+    def __init__(self, parent_widget):
+        super().__init__(parent_widget)
+        self.path = None
+
+    def render(self, render_children, parent=None):
+        if self.path:
+            compile_view(self.path, self)

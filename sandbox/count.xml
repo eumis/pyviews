@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<core:Container xmlns:tk="tkinter"
+                xmlns:core="pyviews.view.core"
+                xmlns:grid="pyviews.modifiers.widget.grid"
+                xmlns:config="pyviews.modifiers.widget.config"
+                xmlns:bind="pyviews.modifiers.core.bind">
+    <tk:Entry grid:row="0"
+              grid:column="1"
+              config:textvariable="{create_int_var(self, 'count', 0)}">
+    </tk:Entry>
+
+    <tk:Label grid:row="0"
+              grid:column="2"
+              style="background"
+              bind:Button-1="{lambda event: print(event)}">
+        {count}
+    </tk:Label>
+</core:Container>

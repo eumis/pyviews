@@ -27,17 +27,8 @@
         + 1
     </tk:Button>
 
-    <tk:Entry grid:row="0"
-              grid:column="1"
-              config:textvariable="{create_int_var(self, 'count', 0)}">
-    </tk:Entry>
-
-    <tk:Label grid:row="0"
-              grid:column="2"
-              style="background"
-              bind:Button-1="{lambda event: print(event)}">
-        {count}
-    </tk:Label>
+    <cs:View path='count'>
+    </cs:View>
 
     <tk:Frame grid:row="1"
               grid:column="0"
