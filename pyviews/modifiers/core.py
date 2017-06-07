@@ -5,7 +5,7 @@ def import_global(node, attr):
     (name, path) = attr
     imported = import_path(path)
     if imported:
-        node.set_context(name, imported)
+        node.context.globals[name] = imported
 
 def import_path(path):
     if not path:

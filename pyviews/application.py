@@ -21,5 +21,10 @@ def compile_view(xml_path, parent=None):
     xml_node = parse_xml(xml_path)
     return compile_xml_view(xml_node, parent)
 
+def load_styles(path):
+    xml_path = get_view_path(path)
+    node = compile_view(xml_path)
+    return node.context.styles
+
 def run():
     app.run()

@@ -8,6 +8,7 @@ class CompileNode:
         self._watchers = []
         self._nodes = []
         self.view_model = None
+        self.context = NodeContext()
 
     def set_xml_node(self, node):
         self._xml_node = node
@@ -19,7 +20,7 @@ class CompileNode:
         return [NodeChild(xml_node, self.view_model) for xml_node in list(self._xml_node)]
 
     def get_text(self):
-        return self._xml_node.text.strip()
+        return self._xml_node.text.strip() if self._xml_node.text else ''
 
     def has_attr(self, name):
         return hasattr(self, name)
@@ -27,16 +28,10 @@ class CompileNode:
     def set_attr(self, name, value):
         setattr(self, name, value)
 
-    def get_context(self):
-        return self._context
-
-    def set_context(self, key, value=None):
-        if isinstance(key, dict):
-            self._context = {**self._context, **key}
-        else:
-            self._context[key] = value
-
     def bind(self, event, command):
+        pass
+
+    def config(self, key, value):
         pass
 
     def clear(self):
@@ -49,7 +44,7 @@ class CompileNode:
         for watcher in self._watchers:
             watcher.dispose()
 
-    def render(self, render_children):
+    def render(self, render_children, parent=None):
         self.clear()
         self._nodes = render_children(self)
 
@@ -80,3 +75,8 @@ def get_handler(command):
 class Watcher:
     def __init__(self, view_model, key, handler):
         self.dispose = lambda: view_model.release_callback(key, handler)
+
+class NodeContext:
+    def __init__(self, source=None):
+        self.globals = source.globals.copy() if source else {}
+        self.styles = source.styles.copy() if source else {}

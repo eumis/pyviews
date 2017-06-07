@@ -1,5 +1,6 @@
 from tkinter import Tk, Widget
 from pyviews.view.base import CompileNode, get_handler
+from pyviews.common.values import STYLE
 
 class App(CompileNode):
     def __init__(self):
@@ -24,10 +25,10 @@ class App(CompileNode):
         attr_inst = self if hasattr(self, name) else self._tk
         setattr(attr_inst, name, value)
 
-    def render(self, render_children):
+    def render(self, render_children, parent=None):
         if self.state:
             self._tk.state(self.state)
-        super().render(render_children)
+        super().render(render_children, parent)
 
     def config(self, key, value):
         self._tk.configure({key: value})
@@ -54,6 +55,8 @@ class WidgetNode(CompileNode):
         return True
 
     def set_attr(self, name, value):
+        if name == STYLE:
+            apply_style(self, value)
         if hasattr(self, name):
             setattr(self, name, value)
         elif hasattr(self._widget, name):
@@ -66,9 +69,9 @@ class WidgetNode(CompileNode):
     def config(self, key, value):
         self._widget.configure({key: value})
 
-    def render(self, render_children):
+    def render(self, render_children, parent=None):
         self.geometry.apply(self._widget)
-        super().render(render_children)
+        super().render(render_children, parent)
 
 class Container(CompileNode):
     def __init__(self, parent_widget):
@@ -85,3 +88,9 @@ def prop_focus(widget):
         widget.focus_set()
     elif widget.master:
         prop_focus(widget.master)
+
+def apply_style(node, value):
+    if isinstance(value, str):
+        value = value.split(',')
+    for key in [key for key in value if key in node.context.styles]:
+        node.context.styles[key](node)

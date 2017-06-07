@@ -7,15 +7,23 @@
                 xmlns:grid="pyviews.modifiers.widget.grid"
                 xmlns:pack="pyviews.modifiers.widget.pack"
                 xmlns:config="pyviews.modifiers.widget.config"
+                xmlns:style="pyviews.view.style"
 
                 import:Counter="sandbox.counter.Counter"
                 import:create_int_var="pyviews.binding.vars.create_int_var"
                 import:get_color="sandbox.commands.get_color"
 
                 view_model="{Counter()}">
+
+    <style:Style name='background'
+                 path='styles'
+                 path_name='yellowbg'
+                 config:background='blue'/>
+    
     <tk:Button grid:row="0"
                grid:column="0"
-               bind:Button-1="{up_count}">
+               bind:Button-1="{up_count}"
+               style="background">
         + 1
     </tk:Button>
 
@@ -26,6 +34,7 @@
 
     <tk:Label grid:row="0"
               grid:column="2"
+              style="background"
               bind:Button-1="{lambda event: print(event)}">
         {count}
     </tk:Label>

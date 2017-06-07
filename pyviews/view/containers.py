@@ -7,6 +7,7 @@ class For(Container):
         Container.__init__(self, parent_widget)
         self._items = []
         self._render_children = None
+        self._parent = None
 
     def get_xml_children(self):
         children = []
@@ -22,12 +23,13 @@ class For(Container):
     @items.setter
     def items(self, val):
         self._items = val if val else []
-        self.render()
+        self.render(self._render_children, self._parent)
 
-    def render(self, render_children=None):
-        self._render_children = render_children if render_children else self._render_children
+    def render(self, render_children, parent=None):
+        self._render_children = render_children
+        self._parent = parent
         if self._render_children:
-            super().render(self._render_children)
+            super().render(self._render_children, self._parent)
 
 class ItemViewModel(ViewModel):
     def __init__(self, item, parent, index):
