@@ -79,7 +79,6 @@ class Container(CompileNode):
         return self._parent_widget
 
 def prop_focus(widget):
-    print(widget)
     if not isinstance(widget, Widget):
         return
     if widget['takefocus'] == '1':
