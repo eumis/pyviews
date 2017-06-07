@@ -84,7 +84,7 @@ class Container(CompileNode):
 def prop_focus(widget):
     if not isinstance(widget, Widget):
         return
-    if widget['takefocus'] == '1':
+    elif widget['takefocus'] == '1':
         widget.focus_set()
     elif widget.master:
         prop_focus(widget.master)

@@ -29,5 +29,6 @@ pyviews/view/base.py
 pyviews/view/containers.py
 pyviews/view/core.py
 pyviews/view/geometry.py
+pyviews/view/style.py
 pyviews/viewmodel/__init__.py
 pyviews/viewmodel/base.py
