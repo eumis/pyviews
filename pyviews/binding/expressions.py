@@ -23,3 +23,7 @@ def split_by_last_dot(expr, res=None):
     if last_dot == -1:
         return('', res)
     return (res[:last_dot], res[last_dot+1:])
+
+def parse_dictionary(expr):
+    code = '{' + expr + '}'
+    return run(code, {}, {})

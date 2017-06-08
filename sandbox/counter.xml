@@ -8,6 +8,8 @@
                 xmlns:pack="pyviews.modifiers.widget.pack"
                 xmlns:config="pyviews.modifiers.widget.config"
                 xmlns:style="pyviews.view.style"
+                xmlns:rconfig="pyviews.modifiers.widget.row_config"
+                xmlns:cconfig="pyviews.modifiers.widget.col_config"
 
                 import:Counter="sandbox.counter.Counter"
                 import:create_int_var="pyviews.binding.vars.create_int_var"
@@ -32,13 +34,18 @@
 
     <tk:Frame grid:row="1"
               grid:column="0"
-              grid:columnspan="3">
-        <cs:For items='{range(count)}'>
-            <tk:Label pack:fill="both"
-                      pack:expand="True"
-                      config:background="{get_color(index)}">
-                {str(item+1) + ' ' + str(index)}
-            </tk:Label>
-        </cs:For>
+              grid:columnspan="3"
+              rconfig:_0="'weight': 1"
+              cconfig:_0="'weight': 1">
+        <tk:Frame grid:row="0"
+                  grid:column="0">
+            <cs:For items='{range(count)}'>
+                <tk:Label pack:fill="both"
+                        pack:expand="True"
+                        config:background="{get_color(index)}">
+                    {str(item+1) + ' ' + str(index)}
+                </tk:Label>
+            </cs:For>
+        </tk:Frame>
     </tk:Frame>
 </core:Container>

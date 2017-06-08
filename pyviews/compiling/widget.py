@@ -31,7 +31,6 @@ def compile_children(node, children=None):
     children = children if children else node.get_xml_children()
     for child in children:
         child = compile_widget(child.xml_node, node, child.view_model)
-        child
         compiled.append(child)
     return compiled
 

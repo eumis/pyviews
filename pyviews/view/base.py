@@ -57,6 +57,18 @@ class CompileNode:
     def add_watcher(self, watcher):
         self._watchers.append(watcher)
 
+    def row_config(self, row, args):
+        widget = self.get_widget()
+        if not widget:
+            return
+        widget.rowconfigure(row, **args)
+
+    def col_config(self, col, args):
+        widget = self.get_widget()
+        if not widget:
+            return
+        widget.columnconfigure(col, **args)
+
 class NodeChild:
     def __init__(self, xml_node, view_model=None):
         self.xml_node = xml_node
