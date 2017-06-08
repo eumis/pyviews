@@ -38,7 +38,10 @@ class Style(CompileNode):
 
     def apply(self, node):
         if self.geometry:
-            node.geometry = self.geometry
+            if node.geometry:
+                node.geometry.merge(self.geometry)
+            else:
+                node.geometry = self.geometry
         for key, value in self._config.items():
             node.config(key, value)
         for event, command in self._bind.items():

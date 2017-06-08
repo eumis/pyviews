@@ -40,8 +40,16 @@
         <tk:Frame grid:row="0"
                   grid:column="0">
             <cs:For items='{range(count)}'>
-                <tk:Label pack:fill="both"
-                        pack:expand="True"
+                <tk:Label grid:row="{index}"
+                            grid:column="{index}"
+                        config:background="{get_color(index)}">
+                    {str(item+1) + ' ' + str(index)}
+                </tk:Label>
+            </cs:For>
+
+            <cs:For items='{range(count)}'>
+                <tk:Label grid:row="{index + parent.count}"
+                            grid:column="{index}"
                         config:background="{get_color(index)}">
                     {str(item+1) + ' ' + str(index)}
                 </tk:Label>
