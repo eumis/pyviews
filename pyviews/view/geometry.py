@@ -4,9 +4,12 @@ class Geometry:
 
     def set(self, key, value):
         self._args[key] = value
-    
-    def merge(self, args):
-        for key, value in args.items:
+
+    def items(self):
+        return self._args.items()
+
+    def merge(self, geometry):
+        for key, value in geometry.items():
             self.set(key, value)
 
     def apply(self, widget):
