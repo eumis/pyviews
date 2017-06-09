@@ -46,14 +46,6 @@
                     {str(item+1) + ' ' + str(index)}
                 </tk:Label>
             </cs:For>
-
-            <cs:For items='{range(count)}'>
-                <tk:Label grid:row="{index + parent.count}"
-                            grid:column="{index}"
-                        config:background="{get_color(index)}">
-                    {str(item+1) + ' ' + str(index)}
-                </tk:Label>
-            </cs:For>
         </tk:Frame>
     </tk:Frame>
 </core:Container>

@@ -5,36 +5,63 @@ from pyviews.viewmodel.base import ViewModel
 from pyviews.application import compile_view
 from pyviews.common.values import STYLE
 
-import pdb
-
 class For(Container):
     def __init__(self, parent_widget):
         Container.__init__(self, parent_widget)
         self._items = []
         self._render_children = None
         self._parent = None
+        self._rendered_count = 0
 
     def get_xml_children(self):
         children = []
-        for index, item in enumerate(self.items):
-            item_vm = ItemViewModel(item, self.view_model, index)
-            children += [NodeChild(xml_node, item_vm) for xml_node in list(self._xml_node)]
+        for item in self._items[self._rendered_count:]:
+            children += [NodeChild(xml_node, item) for xml_node in list(self._xml_node)]
         return children
 
     @property
     def items(self):
-        return self._items
+        return [vm.item for vm in self._items]
 
     @items.setter
     def items(self, val):
-        self._items = val if val else []
+        val = list(val)
+        new_count = len(val)
+        old_count = len(self._items)
+        if val:
+            for index, item in enumerate(val):
+                try:
+                    self._items[index].item = item
+                except IndexError:
+                    self._items.append(ItemViewModel(item, self.view_model, index))
+        else:
+            self._items = []
+
+        self._remove_items(new_count)
+        self._render_items(old_count)
+
+    def _remove_items(self, start_index):
+        items = self._items[start_index:]
+        childs_to_remove = [node for node in self._nodes if node.view_model in items]
+        for child in childs_to_remove:
+            child.destroy()
+        self._nodes = [node for node in self._nodes if node not in childs_to_remove]
+        self._items = self._items[:start_index]
+
+    def _render_items(self, start_index):
+        self._rendered_count = start_index
         self.render(self._render_children, self._parent)
+
+    def clear(self):
+        self._remove_items(self._items)
+        self._rendered_count = 0
 
     def render(self, render_children, parent=None):
         self._render_children = render_children
         self._parent = parent
         if self._render_children:
-            super().render(self._render_children, self._parent)
+            self._nodes += render_children(self)
+            self._rendered_count = len(self._items)
 
 class ItemViewModel(ViewModel):
     def __init__(self, item, parent, index):

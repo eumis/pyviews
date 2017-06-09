@@ -6,7 +6,7 @@
                 xmlns:bind="pyviews.modifiers.core.bind">
     <tk:Entry grid:row="0"
               grid:column="1"
-              config:textvariable="{create_int_var(self, 'count', 0)}">
+              config:textvariable="{create_int_var(self, 'count', 2)}">
     </tk:Entry>
 
     <tk:Label grid:row="0"
