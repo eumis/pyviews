@@ -16,7 +16,7 @@ class App(CompileNode):
         return self._tk
 
     def bind(self, event, command):
-        self._tk.bind('<'+event+'>', get_handler(command))
+        self.get_widget().bind('<'+event+'>', get_handler(command))
 
     def has_attr(self, name):
         return hasattr(self, name) or hasattr(self._tk, name)
@@ -38,7 +38,7 @@ class App(CompileNode):
 
 class WidgetNode(CompileNode):
     def __init__(self, widget):
-        CompileNode.__init__(self)
+        super().__init__()
         self._widget = widget
         self.geometry = None
 
@@ -49,7 +49,7 @@ class WidgetNode(CompileNode):
         return self._widget
 
     def bind(self, event, command):
-        self._widget.bind('<'+event+'>', get_handler(command))
+        self.get_widget().bind('<'+event+'>', get_handler(command))
 
     def has_attr(self, name):
         return True
@@ -57,20 +57,20 @@ class WidgetNode(CompileNode):
     def set_attr(self, name, value):
         if name == STYLE:
             apply_style(self, value)
-        if hasattr(self, name):
+        elif hasattr(self, name):
             setattr(self, name, value)
-        elif hasattr(self._widget, name):
-            setattr(self._widget, name, value)
+        elif hasattr(self.get_widget(), name):
+            setattr(self.get_widget(), name, value)
 
     def destroy(self):
         super().destroy()
-        self._widget.destroy()
+        self.get_widget().destroy()
 
     def config(self, key, value):
-        self._widget.configure({key: value})
+        self.get_widget().configure({key: value})
 
     def render(self, render_children, parent=None):
-        self.geometry.apply(self._widget)
+        self.geometry.apply(self.get_widget())
         super().render(render_children, parent)
 
 class Container(CompileNode):

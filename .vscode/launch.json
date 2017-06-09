@@ -6,8 +6,13 @@
             "type": "python",
             "request": "launch",
             "stopOnEntry": true,
-            "pythonPath": "${config.python.pythonPath}",
-            "program": "${file}",
+            "pythonPath": "${config:python.pythonPath}",
+            "windows": {
+                "program": "${workspaceRoot}\\run.py"
+            },
+            "linux": {
+                "program": "${workspaceRoot}//run.py"
+            },
             "cwd": "${workspaceRoot}",
             "debugOptions": [
                 "WaitOnAbnormalExit",
@@ -42,7 +47,7 @@
             "type": "python",
             "request": "launch",
             "stopOnEntry": true,
-            "pythonPath": "${config.python.pythonPath}",
+            "pythonPath": "${config:python.pythonPath}",
             "module": "module.name",
             "cwd": "${workspaceRoot}",
             "debugOptions": [

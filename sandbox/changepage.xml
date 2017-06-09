@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <c:Container xmlns:tk="tkinter"
              xmlns:c="pyviews.view.core"
+             xmlns:cs="pyviews.view.containers"
              xmlns:import="pyviews.modifiers.core.import_global"
              xmlns:bind="pyviews.modifiers.core.bind"
              xmlns:grid="pyviews.modifiers.widget.grid"
@@ -17,5 +18,12 @@
                grid:sticky="e"
                bind:Button-1="{lambda:show_view('counter')}">
         Counter
+    </tk:Button>
+
+    <tk:Button grid:row="0"
+               grid:column="2"
+               grid:sticky="e"
+               bind:Button-1="{lambda:show_view('scroll')}">
+        Scroll
     </tk:Button>
 </c:Container>

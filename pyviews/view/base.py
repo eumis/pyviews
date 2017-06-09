@@ -58,13 +58,13 @@ class CompileNode:
         self._watchers.append(watcher)
 
     def row_config(self, row, args):
-        widget = self.get_widget()
+        widget = self.get_widget_master()
         if not widget:
             return
         widget.rowconfigure(row, **args)
 
     def col_config(self, col, args):
-        widget = self.get_widget()
+        widget = self.get_widget_master()
         if not widget:
             return
         widget.columnconfigure(col, **args)
