@@ -3,8 +3,20 @@ from pyviews.view.core import Container
 from pyviews.application import load_styles
 
 class Styles(Container):
-    def __init__(self):
-        super().__init__(None)
+    def __init__(self, parent_widget=None):
+        super().__init__(parent_widget)
+        self.path = None
+
+    def render(self, render_children, parent=None):
+        if self.path and parent:
+            self.context.styles = load_styles(self.path)
+        super().render(render_children, parent)
+        if parent:
+            parent_styles = parent.context.styles
+            for key, apply in self.context.styles.items():
+                if key in parent_styles:
+                    apply = merge_styles(parent_styles[key], apply)
+                parent_styles[key] = apply
 
 class Style(CompileNode):
     def __init__(self, parent_widget):
@@ -32,7 +44,7 @@ class Style(CompileNode):
             styles = load_styles(self.path)
             key = self.path_name if self.path_name else self.name
             if key in styles:
-                apply_style = lambda node: merge_styles(node, styles[key], self.apply)
+                apply_style = merge_styles(styles[key], self.apply)
         if parent and self.name:
             parent.context.styles[self.name] = apply_style
 
@@ -47,6 +59,9 @@ class Style(CompileNode):
         for event, command in self._bind.items():
             node.bind(event, command)
 
-def merge_styles(node, one, two):
+def merge_styles(one, two):
+    return lambda node: apply_styles(node, one, two)
+
+def apply_styles(node, one, two):
     one(node)
     two(node)

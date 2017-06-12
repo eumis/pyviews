@@ -11,7 +11,7 @@
 
     <tk:Label grid:row="0"
               grid:column="2"
-              style="background"
+              style="yellowbg"
               bind:Button-1="{lambda event: print(event)}">
         {count}
     </tk:Label>
