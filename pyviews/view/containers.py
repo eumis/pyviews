@@ -103,7 +103,10 @@ class Scroll(CompileNode):
         return self._container
 
     def bind(self, event, command):
-        self.get_widget_master().bind('<'+event+'>', get_handler(command))
+        handler = get_handler(command)
+        self.get_widget_master().bind('<'+event+'>', handler)
+        if 'Button-' in event:
+            self._canvas.bind('<'+event+'>', handler)
 
     def has_attr(self, name):
         return True
