@@ -85,12 +85,13 @@ class Scroll(CompileNode):
         self._canvas = create_canvas(self._frame)
         self._scroll = create_scroll(self._frame, self._canvas)
         self._container = create_container(self._canvas)
-        self._container.bind('<Configure>', self.config_container)
+        self._container.bind('<Configure>', lambda event: self.config_container())
         self._canvas.bind('<Configure>', self.config_canvas)
+        self._canvas.bind_all('<MouseWheel>', self.on_mouse_scroll)
         self.geometry = None
         super().__init__()
 
-    def config_container(self, event):
+    def config_container(self):
         self._canvas.config(scrollregion=self._canvas.bbox("all"))
 
     def config_canvas(self, event):
@@ -118,6 +119,9 @@ class Scroll(CompileNode):
             setattr(self, name, value)
         elif hasattr(self.get_widget_master(), name):
             setattr(self.get_widget_master(), name, value)
+
+    def on_mouse_scroll(self, event):
+        self._canvas.yview_scroll(int(-1*(event.delta/120)), "units")
 
     def render(self, render_children, parent=None):
         self.geometry.apply(self.get_widget())
