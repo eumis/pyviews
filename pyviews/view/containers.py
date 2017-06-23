@@ -1,3 +1,4 @@
+import uuid
 from tkinter import Frame, Scrollbar, Canvas
 from pyviews.view.base import CompileNode, NodeChild, get_handler
 from pyviews.view.core import Container, apply_style
@@ -88,6 +89,8 @@ class Scroll(CompileNode):
         self._container.bind('<Configure>', lambda event: self.config_container())
         self._canvas.bind('<Configure>', self.config_canvas)
         self._canvas.bind_all('<MouseWheel>', self.on_mouse_scroll)
+        self._canvas.bind('<Enter>', lambda event: self.set_canvas_active())
+        self._canvas.bind('<Leave>', lambda event: self.set_canvas_inactive())
         self.geometry = None
         super().__init__()
 
@@ -121,7 +124,15 @@ class Scroll(CompileNode):
             setattr(self.get_widget_master(), name, value)
 
     def on_mouse_scroll(self, event):
-        self._canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        if Scroll.active_canvas:
+            Scroll.active_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
+    def set_canvas_active(self):
+        Scroll.active_canvas = self._canvas
+
+    def set_canvas_inactive(self):
+        if Scroll.active_canvas == self._canvas:
+            Scroll.active_canvas = None
 
     def render(self, render_children, parent=None):
         self.geometry.apply(self.get_widget())
