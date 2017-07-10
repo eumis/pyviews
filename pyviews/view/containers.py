@@ -146,12 +146,12 @@ class Scroll(CompileNode):
     def scroll_to(self, widget):
         widget_offset = (widget.winfo_y() - self._scroll.winfo_y()) / self._container.winfo_height()
         widget_relative_height = widget.winfo_height() / self._scroll.winfo_height()
-        (up_offset, down_offset) = self._scroll.get()
-        if widget_offset > up_offset and widget_offset < down_offset:
-            self.scroll_to_fraction(widget_offset - widget_relative_height)
+        self.scroll_to_fraction(widget_offset - widget_relative_height)
 
     def scroll_to_fraction(self, fraction):
-        self._canvas.yview_moveto(fraction)
+        (up_offset, down_offset) = self._scroll.get()
+        if fraction < up_offset or fraction > down_offset:
+            self._canvas.yview_moveto(fraction)
 
 
 def create_scroll_frame(parent):
