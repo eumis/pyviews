@@ -4,11 +4,28 @@ from pyviews.common.values import EVENT_KEY
 class CompileNode:
     def __init__(self):
         self._xml_node = None
-        self._context = {}
         self._watchers = []
         self._nodes = []
+        self._node_id = ''
         self.view_model = None
         self.context = NodeContext()
+
+    @property
+    def node_id(self):
+        return self._node_id
+
+    @node_id.setter
+    def node_id(self, value):
+        if value == self._node_id:
+            return
+        self._clear_node_id()
+
+        self._node_id = value
+        CompileNode.nodes[self._node_id] = self
+
+    def _clear_node_id(self):
+        if self._node_id:
+            del CompileNode.nodes[self._node_id]
 
     def set_xml_node(self, node):
         self._xml_node = node
@@ -41,6 +58,7 @@ class CompileNode:
 
     def destroy(self):
         self.clear()
+        self._clear_node_id()
         for watcher in self._watchers:
             watcher.dispose()
 
@@ -68,6 +86,8 @@ class CompileNode:
         if not widget:
             return
         widget.columnconfigure(col, **args)
+
+CompileNode.nodes = {}
 
 class NodeChild:
     def __init__(self, xml_node, view_model=None):

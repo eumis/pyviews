@@ -4,7 +4,7 @@ from pyviews.view.base import CompileNode, NodeChild, get_handler
 from pyviews.view.core import Container, apply_style
 from pyviews.viewmodel.base import ViewModel
 from pyviews.application import compile_view
-from pyviews.common.values import STYLE
+from pyviews.common.values import STYLE, REGION
 
 class For(Container):
     def __init__(self, parent_widget):
@@ -143,6 +143,17 @@ class Scroll(CompileNode):
         if key == 'bg' or key == 'background':
             self._canvas.config({key: value})
 
+    def scroll_to(self, widget):
+        widget_offset = (widget.winfo_y() - self._scroll.winfo_y()) / self._container.winfo_height()
+        widget_relative_height = widget.winfo_height() / self._scroll.winfo_height()
+        (up_offset, down_offset) = self._scroll.get()
+        if widget_offset > up_offset and widget_offset < down_offset:
+            self.scroll_to_fraction(widget_offset - widget_relative_height)
+
+    def scroll_to_fraction(self, fraction):
+        self._canvas.yview_moveto(fraction)
+
+
 def create_scroll_frame(parent):
     frame = Frame(parent)
     frame.columnconfigure(0, weight=1)
@@ -158,7 +169,7 @@ def create_scroll(parent, canvas):
     scroll = Scrollbar(parent, orient='vertical', command=canvas.yview)
     scroll.grid(row=0, column=1, sticky='ns')
     canvas.config(yscrollcommand=scroll.set, highlightthickness=0, bg='green')
-    return canvas
+    return scroll
 
 def create_container(canvas):
     container = Frame(canvas)

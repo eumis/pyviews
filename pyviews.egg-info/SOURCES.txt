@@ -6,6 +6,8 @@ pyviews.egg-info/PKG-INFO
 pyviews.egg-info/SOURCES.txt
 pyviews.egg-info/dependency_links.txt
 pyviews.egg-info/top_level.txt
+pyviews/api/__init__.py
+pyviews/api/view.py
 pyviews/binding/__init__.py
 pyviews/binding/expressions.py
 pyviews/binding/vars.py

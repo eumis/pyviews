@@ -5,10 +5,15 @@
                 xmlns:import="pyviews.modifiers.core.import_global"
                 xmlns:bind="pyviews.modifiers.core.bind"
                 xmlns:pack="pyviews.modifiers.widget.pack"
+                import:ScrollVm="sandbox.scroll.ScrollVm"
                 pack:fill='both'
-                pack:expand='True'>
-    <cs:For items='{range(100)}'>
-        <tk:Label pack:fill='x'>
+                pack:expand='True'
+                view_model='{ScrollVm()}'
+                node_id='scroll_id'>
+    <cs:For items='{items}'>
+        <tk:Label pack:fill='x'
+                  node_id='{parent.get_node_id(index)}'
+                  bind:Button-1='{lambda: parent.scroll_to(index)}'>
             asdasdf
         </tk:Label>
     </cs:For>
