@@ -1,14 +1,15 @@
 {
+	"version": "0.1.0",
 	"windows" : {
 		"version": "0.1.0",
-		"command": "python",
-		"args": ["${workspaceRoot}\\run.py"],
+		"command": "pip",
+		"args": ["install", "-e", "${workspaceRoot}", "--upgrade"],
 		"showOutput": "always"
 	},
 	"linux" : {
 		"version": "0.1.0",
-		"command": "python3",
-		"args": ["${workspaceRoot}//run.py"],
+		"command": "pip3",
+		"args": ["install", "-e", "${workspaceRoot}", "--upgrade"],
 		"showOutput": "always"
 	}
 }
