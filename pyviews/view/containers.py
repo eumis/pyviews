@@ -1,10 +1,9 @@
-import uuid
 from tkinter import Frame, Scrollbar, Canvas
 from pyviews.view.base import CompileNode, NodeChild, get_handler
 from pyviews.view.core import Container, apply_style
 from pyviews.viewmodel.base import ViewModel
 from pyviews.application import compile_view
-from pyviews.common.values import STYLE, REGION
+from pyviews.common.values import STYLE
 
 class For(Container):
     def __init__(self, parent_widget):
@@ -124,8 +123,12 @@ class Scroll(CompileNode):
             setattr(self.get_widget_master(), name, value)
 
     def on_mouse_scroll(self, event):
-        if Scroll.active_canvas:
+        if Scroll.active_canvas and self.is_active():
             Scroll.active_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
+    def is_active(self):
+        (up_offset, down_offset) = self._scroll.get()
+        return not (up_offset == 0.0 and down_offset == 1.0)
 
     def set_canvas_active(self):
         Scroll.active_canvas = self._canvas

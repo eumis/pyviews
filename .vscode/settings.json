@@ -12,6 +12,7 @@
         "**/.git": true,
         "**/__pycache__": true,
         "**/*.pyc": true,
-        "**/*.sublime-project": true
+        "**/*.sublime-project": true,
+        "pyviews.egg-info": true
     }
 }

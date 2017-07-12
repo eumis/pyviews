@@ -5,7 +5,7 @@ from pyviews.api.view import scroll_to, find_node
 class ScrollVm(ViewModel):
     def __init__(self):
         ViewModel.__init__(self)
-        self.items = range(100)
+        self.items = range(1000)
 
     def get_node_id(self, index):
         return 'item' + str(index)
