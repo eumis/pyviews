@@ -13,10 +13,13 @@ def compile_attr(node, attr):
         (namespace, name) = parse_namespace(name)
         modify = get_modify(namespace)
     apply = lambda value, n=node, key=name, mod=modify: mod(n, (key, value))
-    if is_binding(expr):
-        apply_binding(node, attr, apply)
-    else:
-        apply(expr)
+    try:
+        if is_binding(expr):
+            apply_binding(node, attr, apply)
+        else:
+            apply(expr)
+    except:
+        print('Expression "' + expr + '" parsing is failed')
 
 def apply_binding(node, attr, apply_changes):
     expr = attr[1]
