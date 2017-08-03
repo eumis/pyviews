@@ -73,11 +73,23 @@ class ItemViewModel(ViewModel):
 class View(Container):
     def __init__(self, parent_widget):
         super().__init__(parent_widget)
-        self.path = None
+        self._path = None
+
+    @property
+    def path(self):
+        return self._path
+
+    @path.setter
+    def path(self, value):
+        if value == self._path:
+            return
+        self._path = value
+        self.render(None)
 
     def render(self, render_children, parent=None):
+        self.clear()
         if self.path:
-            load_view(self.path, self)
+            self._nodes = [load_view(self.path, self)]
 
 class Scroll(CompileNode):
     def __init__(self, parent_widget):

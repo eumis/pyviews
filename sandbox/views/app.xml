@@ -3,6 +3,8 @@
           xmlns:config="pyviews.modifiers.widget.config"
           xmlns:style="pyviews.view.style"
           xmlns:cs="pyviews.view.containers"
+          xmlns:tk='tkinter'
+          xmlns:pack="pyviews.modifiers.widget.pack"
           xmlns:import='pyviews.modifiers.core.import_global'
           import:AppViewModel='view_model.AppViewModel'
           config:background="white"
@@ -10,7 +12,12 @@
           view_model='{AppViewModel()}'>
       <style:Style name='background'
                  config:background='blue'/>
-
-      <cs:View path='{view}' />
+    
+    <tk:Frame pack:fill='x'>
+        <cs:View path='changepage' />
+    </tk:Frame>
+    <tk:Frame pack:fill='both' pack:expand='True'>
+        <cs:View path='{view}' />
+    </tk:Frame>
 
 </core:App>
