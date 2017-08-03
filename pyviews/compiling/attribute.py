@@ -6,6 +6,15 @@ from pyviews.binding.expressions import split_by_last_dot, is_binding, eval_exp
 from pyviews.viewmodel.base import ViewModel
 from pyviews.view.base import Watcher
 
+def compile_attributes(context):
+    for attr in context.node.xml_attrs():
+        compile_attr(context.node, attr)
+
+def compile_text(context):
+    text = context.node.get_text()
+    if text:
+        compile_attr(context.node, ('{pyviews.modifiers.widget.config}text', text))
+
 def compile_attr(node, attr):
     modify = default_modify
     (name, expr) = attr
@@ -18,7 +27,8 @@ def compile_attr(node, attr):
             apply_binding(node, attr, apply)
         else:
             apply(expr)
-    except:
+    except Exception as ex:
+        print(ex)
         print('Expression "' + expr + '" parsing is failed')
 
 def apply_binding(node, attr, apply_changes):

@@ -1,6 +1,6 @@
 from tkinter import Tk, Widget
 from pyviews.view.base import CompileNode, get_handler
-from pyviews.common.values import STYLE
+from pyviews.common.settings import STYLE
 
 class App(CompileNode):
     def __init__(self):

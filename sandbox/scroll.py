@@ -1,5 +1,5 @@
 from pyviews.viewmodel.base import ViewModel
-from pyviews.api.view import scroll_to, find_node
+from pyviews.common.view import scroll_to, find_node
 
 # pylint: disable=E1101
 class ScrollVm(ViewModel):

@@ -1,33 +1,26 @@
-from os.path import abspath, join
-from pyviews.compiling.view import compile_view as compile_xml_view, render_view as render_xml_view
-from pyviews.compiling.parser import parse_xml
-from pyviews.common.values import VIEW_EXT
+from os.path import abspath
+from pyviews.common.parsing import parse_xml
+from pyviews.common import settings
+from pyviews.compiling.core import compile_node, compile_chidlren
+from pyviews.compiling.node import create_node, use_parent_context, user_parent_vm
+from pyviews.compiling.attribute import compile_attributes, compile_text
 
-def init(views_folder, app_view='app'):
-    global VIEWS_PATH
-    VIEWS_PATH = abspath(views_folder)
-    global app
-    app = compile_view(app_view)
+def setup_settings():
+    settings.add_compile_step(create_node)
+    settings.add_compile_step(user_parent_vm)
+    settings.add_compile_step(use_parent_context)
+    settings.add_compile_step(compile_attributes)
+    settings.add_compile_step(compile_text)
+    settings.add_compile_step(compile_chidlren)
+    settings.VIEWS_FOLDER = abspath('views')
 
-def compile_view(view, parent=None):
-    view_path = get_view_path(view)
-    xml_node = parse_xml(view_path)
-    return compile_xml_view(xml_node, parent)
+def compile_app(app_view='app'):
+    return load_view(app_view)
 
-def get_view_path(view):
-    return join(VIEWS_PATH, view + VIEW_EXT)
-
-def show_view(view):
-    render_view(view, app)
-
-def render_view(view, parent_node):
-    view_path = get_view_path(view)
-    xml_node = parse_xml(view_path)
-    return render_xml_view(xml_node, parent_node)
+def load_view(view, parent=None):
+    xml_node = parse_xml(view)
+    return compile_node(xml_node, parent)
 
 def load_styles(path):
-    node = compile_view(path)
+    node = load_view(path)
     return node.context.styles
-
-def run():
-    app.run()

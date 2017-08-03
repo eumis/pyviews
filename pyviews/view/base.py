@@ -1,5 +1,5 @@
 from inspect import getfullargspec
-from pyviews.common.values import EVENT_KEY
+from pyviews.common.settings import EVENT_KEY
 
 class CompileNode:
     def __init__(self):

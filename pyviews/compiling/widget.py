@@ -1,5 +1,5 @@
 from tkinter import Widget
-from pyviews.common.reflection.activator import create_inst
+from pyviews.common.reflection import create_inst
 from pyviews.compiling.attribute import compile_attr
 from pyviews.compiling.exceptions import UnsupportedNodeException
 from pyviews.compiling.namespace import parse_namespace

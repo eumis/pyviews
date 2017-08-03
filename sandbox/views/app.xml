@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<core:App xmlns:core="pyviews.view.core"
+          xmlns:config="pyviews.modifiers.widget.config"
+          xmlns:style="pyviews.view.style"
+          xmlns:cs="pyviews.view.containers"
+          xmlns:import='pyviews.modifiers.core.import_global'
+          import:AppViewModel='view_model.AppViewModel'
+          config:background="white"
+          state="zoomed"
+          view_model='{AppViewModel()}'>
+      <style:Style name='background'
+                 config:background='blue'/>
+
+      <cs:View path='{view}' />
+
+</core:App>

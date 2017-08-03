@@ -2,8 +2,8 @@ from tkinter import Frame, Scrollbar, Canvas
 from pyviews.view.base import CompileNode, NodeChild, get_handler
 from pyviews.view.core import Container, apply_style
 from pyviews.viewmodel.base import ViewModel
-from pyviews.application import compile_view
-from pyviews.common.values import STYLE
+from pyviews.application import load_view
+from pyviews.common.settings import STYLE
 
 class For(Container):
     def __init__(self, parent_widget):
@@ -77,7 +77,7 @@ class View(Container):
 
     def render(self, render_children, parent=None):
         if self.path:
-            compile_view(self.path, self)
+            load_view(self.path, self)
 
 class Scroll(CompileNode):
     def __init__(self, parent_widget):

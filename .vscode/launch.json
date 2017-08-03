@@ -8,12 +8,13 @@
             "stopOnEntry": true,
             "pythonPath": "${config:python.pythonPath}",
             "windows": {
-                "program": "${workspaceRoot}\\run.py"
+                "program": "${workspaceRoot}\\sandbox\\run.py",
+                "cwd": "${workspaceRoot}\\sandbox"
             },
             "linux": {
-                "program": "${workspaceRoot}//run.py"
+                "program": "${workspaceRoot}//sandbox//run.py",
+                "cwd": "${workspaceRoot}//sandbox"
             },
-            "cwd": "${workspaceRoot}",
             "debugOptions": [
                 "WaitOnAbnormalExit",
                 "WaitOnNormalExit",
