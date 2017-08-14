@@ -16,9 +16,18 @@ class Geometry:
         pass
 
 class GridGeometry(Geometry):
+    def __init__(self, row=None, col=None, **args):
+        super().__init__()
+        self._args = args if args else self._args
+        self.set('row', row)
+        self.set('column', col)
+
     def apply(self, widget):
         widget.grid(**self._args)
 
 class PackGeometry(Geometry):
+    def __init__(self, **args):
+        super().__init__()
+
     def apply(self, widget):
         widget.pack(**self._args)

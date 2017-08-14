@@ -1,6 +1,8 @@
 from tkinter import Tk, Widget
-from pyviews.view.base import CompileNode, get_handler
+from pyviews.view.base import CompileNode
 from pyviews.common.settings import STYLE
+from pyviews.common.reflection import get_handler
+from pyviews.common.compiling import CompileContext
 
 class App(CompileNode):
     def __init__(self):
@@ -9,14 +11,8 @@ class App(CompileNode):
         self.state = None
         self._tk.bind_all('<Button-1>', lambda e: prop_focus(e.widget), '+')
 
-    def get_widget_master(self):
-        return self._tk
-
-    def get_widget(self):
-        return self._tk
-
     def bind(self, event, command):
-        self.get_widget().bind('<'+event+'>', get_handler(command))
+        self._tk.bind('<'+event+'>', get_handler(command))
 
     def has_attr(self, name):
         return hasattr(self, name) or hasattr(self._tk, name)
@@ -25,10 +21,13 @@ class App(CompileNode):
         attr_inst = self if hasattr(self, name) else self._tk
         setattr(attr_inst, name, value)
 
-    def render(self, render_children, parent=None):
+    def render(self):
         if self.state:
             self._tk.state(self.state)
-        super().render(render_children, parent)
+        super().render()
+
+    def create_compile_context(self, xml_node):
+        return CompileContext(xml_node, self, self._tk)
 
     def config(self, key, value):
         self._tk.configure({key: value})
@@ -42,14 +41,8 @@ class WidgetNode(CompileNode):
         self._widget = widget
         self.geometry = None
 
-    def get_widget_master(self):
-        return self._widget
-
-    def get_widget(self):
-        return self._widget
-
     def bind(self, event, command):
-        self.get_widget().bind('<'+event+'>', get_handler(command))
+        self._widget.bind('<'+event+'>', get_handler(command))
 
     def has_attr(self, name):
         return True
@@ -59,27 +52,36 @@ class WidgetNode(CompileNode):
             apply_style(self, value)
         elif hasattr(self, name):
             setattr(self, name, value)
-        elif hasattr(self.get_widget(), name):
-            setattr(self.get_widget(), name, value)
+        elif hasattr(self._widget, name):
+            setattr(self._widget, name, value)
 
     def destroy(self):
         super().destroy()
-        self.get_widget().destroy()
+        self._widget.destroy()
 
     def config(self, key, value):
-        self.get_widget().configure({key: value})
+        self._widget.configure({key: value})
 
-    def render(self, render_children, parent=None):
-        self.geometry.apply(self.get_widget())
-        super().render(render_children, parent)
+    def render(self):
+        self.geometry.apply(self._widget)
+        super().render()
+
+    def create_compile_context(self, xml_node):
+        return CompileContext(xml_node, self, self._widget)
+
+    def row_config(self, row, args):
+        self._widget.rowconfigure(row, **args)
+
+    def col_config(self, col, args):
+        self._widget.columnconfigure(col, **args)
 
 class Container(CompileNode):
-    def __init__(self, parent_widget):
+    def __init__(self, master):
         super().__init__()
-        self._parent_widget = parent_widget
+        self._master = master
 
-    def get_widget_master(self):
-        return self._parent_widget
+    def create_compile_context(self, xml_node):
+        return CompileContext(xml_node, self, self._master)
 
 def prop_focus(widget):
     if not isinstance(widget, Widget):

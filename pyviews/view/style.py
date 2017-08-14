@@ -7,10 +7,10 @@ class Styles(Container):
         super().__init__(parent_widget)
         self.path = None
 
-    def render(self, render_children, parent=None):
-        if self.path and parent:
+    def render(self):
+        if self.path:
             self.context.styles = load_styles(self.path)
-        super().render(render_children, parent)
+        super().render()
         if parent:
             parent_styles = parent.context.styles
             for key, apply in self.context.styles.items():

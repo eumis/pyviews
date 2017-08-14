@@ -1,12 +1,11 @@
-from inspect import getfullargspec
-from pyviews.common.settings import EVENT_KEY
+from pyviews.common.compiling import CompileContext
 
 class CompileNode:
     def __init__(self):
-        self._xml_node = None
-        self._watchers = []
+        self._destroy = []
         self._nodes = []
         self._node_id = ''
+        self.xml_node = None
         self.view_model = None
         self.context = NodeContext()
 
@@ -19,7 +18,6 @@ class CompileNode:
         if value == self._node_id:
             return
         self._clear_node_id()
-
         self._node_id = value
         CompileNode.nodes[self._node_id] = self
 
@@ -27,88 +25,48 @@ class CompileNode:
         if self._node_id:
             del CompileNode.nodes[self._node_id]
 
-    def set_xml_node(self, node):
-        self._xml_node = node
-
-    def xml_attrs(self):
-        return self._xml_node.items()
-
-    def get_xml_children(self):
-        return [NodeChild(xml_node, self.view_model) for xml_node in list(self._xml_node)]
-
-    def get_text(self):
-        return self._xml_node.text.strip() if self._xml_node.text else ''
-
     def has_attr(self, name):
         return hasattr(self, name)
 
     def set_attr(self, name, value):
         setattr(self, name, value)
 
-    def bind(self, event, command):
-        pass
-
-    def config(self, key, value):
-        pass
+    def destroy(self):
+        self.clear()
+        self._clear_node_id()
+        for callback in self._destroy:
+            callback()
 
     def clear(self):
         for child in self._nodes:
             child.destroy()
         self._nodes = []
 
-    def destroy(self):
+    def render(self):
         self.clear()
-        self._clear_node_id()
-        for watcher in self._watchers:
-            watcher.dispose()
+        self._nodes = []
+        try:
+            for xml_node in list(self.xml_node):
+                context = self.create_compile_context(xml_node)
+                self._nodes.append(self.compile_xml(context))
+        except RenderException:
+            pass
 
-    def render(self, render_children, parent=None):
-        self.clear()
-        self._nodes = render_children(self)
+    def create_compile_context(self, xml_node):
+        return CompileContext(xml_node, self)
 
-    def get_widget_master(self):
-        return None
+    def compile_xml(self, *args):
+        raise RenderException('compile is not setup yet')
 
-    def get_widget(self):
-        return None
-
-    def add_watcher(self, watcher):
-        self._watchers.append(watcher)
-
-    def row_config(self, row, args):
-        widget = self.get_widget_master()
-        if not widget:
-            return
-        widget.rowconfigure(row, **args)
-
-    def col_config(self, col, args):
-        widget = self.get_widget_master()
-        if not widget:
-            return
-        widget.columnconfigure(col, **args)
+    def on_destroy(self, callback):
+        self._destroy.append(callback)
 
 CompileNode.nodes = {}
-
-class NodeChild:
-    def __init__(self, xml_node, view_model=None):
-        self.xml_node = xml_node
-        self.view_model = view_model
-
-# pylint: disable=W1505
-# https://docs.python.org/3/library/inspect.html#inspect.getfullargspec
-def get_handler(command):
-    spec = getfullargspec(command)
-    arg = spec[0][0] if spec[0] else ''
-    if arg == EVENT_KEY:
-        return lambda e, com=command: com(e)
-    else:
-        return lambda e, com=command: com()
-
-class Watcher:
-    def __init__(self, view_model, key, handler):
-        self.dispose = lambda: view_model.release_callback(key, handler)
 
 class NodeContext:
     def __init__(self, source=None):
         self.globals = source.globals.copy() if source else {}
         self.styles = source.styles.copy() if source else {}
+
+class RenderException(Exception):
+    pass

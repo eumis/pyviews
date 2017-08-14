@@ -6,18 +6,23 @@
           xmlns:tk='tkinter'
           xmlns:pack="pyviews.modifiers.widget.pack"
           xmlns:import='pyviews.modifiers.core.import_global'
+
           import:AppViewModel='view_model.AppViewModel'
+          import:Pack='pyviews.view.geometry.PackGeometry'
+
           config:background="white"
           state="zoomed"
           view_model='{AppViewModel()}'>
-      <style:Style name='background'
-                 config:background='blue'/>
+      <!-- <style:Style name='background'
+                 config:background='blue'/> -->
     
-    <tk:Frame pack:fill='x'>
+    <tk:Frame geometry='{Pack(fill="x")}'>
         <cs:View path='changepage' />
     </tk:Frame>
-    <tk:Frame pack:fill='both' pack:expand='True'>
-        <cs:View path='{view}' />
-    </tk:Frame>
+     <cs:If true='{view}'>
+        <tk:Frame   geometry='{Pack(fill="both", expand=True)}'>
+            <cs:View path='{view}' />
+        </tk:Frame>
+    </cs:If> 
 
 </core:App>

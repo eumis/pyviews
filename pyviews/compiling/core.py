@@ -1,19 +1,12 @@
 from pyviews.common.settings import COMPILE_STEPS
-from pyviews.compiling.context import CompileContext
 
-def compile_node(xml_node, parent_node=None):
-    context = CompileContext(xml_node, parent_node)
+def compile_xml(compile_context):
     for step in COMPILE_STEPS:
-        step(context)
-    return context.node
+        step(compile_context)
+    return compile_context.node
 
-def compile_chidlren(context):
-    context.node.render(_compile_children, context.node)
+def setup_render(context):
+    context.node.compile_xml = compile_xml
 
-def _compile_children(node, children=None):
-    compiled = []
-    children = children if children else node.get_xml_children()
-    for child in children:
-        child = compile_node(child.xml_node, node)
-        compiled.append(child)
-    return compiled
+def render(context):
+    context.node.render()

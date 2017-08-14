@@ -4,13 +4,11 @@
                 xmlns:grid="pyviews.modifiers.widget.grid"
                 xmlns:config="pyviews.modifiers.widget.config"
                 xmlns:bind="pyviews.modifiers.core.bind">
-    <tk:Entry grid:row="0"
-              grid:column="1"
+    <tk:Entry geometry="{GridGeometry(0, 0)}"
               config:textvariable="{create_int_var(self, 'count', 2)}">
     </tk:Entry>
 
-    <tk:Label grid:row="0"
-              grid:column="2"
+    <tk:Label call="{grid(0, 0)}"
               style="yellowbg"
               bind:Button-1="{lambda event: print(event)}">
         {count}
