@@ -2,16 +2,17 @@
 <cs:Scroll xmlns:tk="tkinter"
                 xmlns:core="pyviews.view.core"
                 xmlns:cs="pyviews.view.containers"
-                xmlns:import="pyviews.modifiers.core.import_global"
-                xmlns:bind="pyviews.modifiers.core.bind"
-                xmlns:pack="pyviews.modifiers.widget.pack"
+                xmlns:import="pyviews.modifiers.import_global"
+                xmlns:bind="pyviews.modifiers.bind"
+
+                import:Pack='pyviews.view.geometry.PackGeometry'
                 import:ScrollVm="sandbox.scroll.ScrollVm"
-                pack:fill='both'
-                pack:expand='True'
+
+                geometry='{Pack(fill="both", expand=True)}'
                 view_model='{ScrollVm()}'
                 node_id='scroll_id'>
     <cs:For items='{items}'>
-        <tk:Label pack:fill='x'
+        <tk:Label geometry='{Pack(fill="x")}'
                   node_id='{parent.get_node_id(index)}'
                   bind:Button-1='{lambda: parent.scroll_to(index)}'>
             asdasdf

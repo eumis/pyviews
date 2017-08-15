@@ -81,7 +81,7 @@ class View(Container):
 
     def _clear_xml_node(self):
         # nodes = [node for node in self.xml_node]
-        for node in self.xml_node:
+        for node in list(self.xml_node):
             self.xml_node.remove(node)
 
     def render(self):

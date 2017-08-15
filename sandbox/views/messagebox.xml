@@ -1,12 +1,13 @@
 <?xml version="1.0"?>
 <core:Container xmlns:tk="tkinter"
                 xmlns:core="pyviews.view.core"
-                xmlns:import="pyviews.modifiers.core.import_global"
-                xmlns:bind="pyviews.modifiers.core.bind"
-                xmlns:pack="pyviews.modifiers.widget.pack"
+                xmlns:import="pyviews.modifiers.import_global"
+                xmlns:bind="pyviews.modifiers.bind"
+                
+                import:Pack='pyviews.view.geometry.PackGeometry'
                 import:show_message="sandbox.commands.show_message">
-    <tk:Button bind:Button-1="{lambda:show_message('message title', 'hohohoho')}"
-               pack:fill="x">
+    <tk:Button  geometry='{Pack(fill="x")}'
+                bind:Button-1="{lambda:show_message('message title', 'hohohoho')}">
         show message
     </tk:Button>
 </core:Container>

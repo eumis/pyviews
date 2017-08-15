@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Styles xmlns="pyviews.view.style"
-        xmlns:config="pyviews.modifiers.widget.config">
+        xmlns:config="pyviews.modifiers.config">
     <Style name='yellowbg'
            config:background='yellow'
            config:foreground='white' />

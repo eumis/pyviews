@@ -1,23 +1,23 @@
 <?xml version="1.0"?>
-<c:Container xmlns:tk="tkinter"
-             xmlns:c="pyviews.view.core"
-             xmlns:import="pyviews.modifiers.core.import_global"
-             xmlns:bind="pyviews.modifiers.core.bind"
+<core:Container xmlns:tk="tkinter"
+             xmlns:core="pyviews.view.core"
+             xmlns:import="pyviews.modifiers.import_global"
+             xmlns:bind="pyviews.modifiers.bind"
              
              import:Grid='pyviews.view.geometry.GridGeometry'
              import:show_view='sandbox.commands.show_view'>
     <tk:Button geometry='{Grid(0, 0, sticky="e")}'
-               bind:Button-1="{lambda:show_view(self, 'messagebox')}">
+               bind:Button-1="{lambda:show_view(vm, 'messagebox')}">
         Message box
     </tk:Button>
 
     <tk:Button geometry='{Grid(0, 1, sticky="e")}'
-               bind:Button-1="{lambda:show_view(self, 'counter')}">
+               bind:Button-1="{lambda:show_view(vm, 'counter')}">
         Counter
     </tk:Button>
 
     <tk:Button geometry='{Grid(0, 2, sticky="e")}'
-               bind:Button-1="{lambda:show_view(self, 'scroll')}">
+               bind:Button-1="{lambda:show_view(vm, 'scroll')}">
         Scroll
     </tk:Button>
-</c:Container>
+</core:Container>

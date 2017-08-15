@@ -1,7 +1,7 @@
 VIEW_EXT = '.xml'
 STYLE = 'style'
 NODE_KEY = 'node'
-VM_KEY = 'self'
+VM_KEY = 'vm'
 EVENT_KEY = 'event'
 VIEWS_FOLDER = ''
 

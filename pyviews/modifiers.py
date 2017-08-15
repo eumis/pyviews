@@ -22,8 +22,6 @@ def bind(node, attr):
     (name, command) = attr
     node.bind(name, command)
 
-def set_prop(node, attr):
-    (name, value) = attr
-    if not node.has_attr(name):
-        return
-    node.set_attr(name, value)
+def config(node, attr):
+    (key, value) = attr
+    node.config(key, value)

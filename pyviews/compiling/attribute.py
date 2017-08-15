@@ -1,5 +1,4 @@
 from importlib import import_module
-from pyviews.modifiers.core import set_prop as default_modify
 from pyviews.common.parsing import has_namespace, parse_namespace
 from pyviews.binding.vars import Variable
 from pyviews.binding.expressions import split_by_last_dot, is_binding, eval_exp
@@ -13,10 +12,10 @@ def compile_text(context):
     text = context.node.xml_node.text
     text = text.strip() if text else ''
     if text:
-        compile_attr(context.node, ('{pyviews.modifiers.widget.config}text', text))
+        compile_attr(context.node, ('{pyviews.modifiers.config}text', text))
 
 def compile_attr(node, attr):
-    modify = default_modify
+    modify = set_prop
     (name, expr) = attr
     if has_namespace(name):
         (namespace, name) = parse_namespace(name)
@@ -30,6 +29,12 @@ def compile_attr(node, attr):
     except Exception as ex:
         print(ex)
         print('Expression "' + expr + '" parsing is failed')
+
+def set_prop(node, attr):
+    (name, value) = attr
+    if not node.has_attr(name):
+        return
+    node.set_attr(name, value)
 
 def apply_binding(node, attr, apply_changes):
     expr = attr[1]

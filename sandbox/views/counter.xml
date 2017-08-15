@@ -2,18 +2,15 @@
 <core:Container xmlns:tk="tkinter"
                 xmlns:core="pyviews.view.core"
                 xmlns:cs="pyviews.view.containers"
-                xmlns:import="pyviews.modifiers.core.import_global"
-                xmlns:bind="pyviews.modifiers.core.bind"
-                xmlns:grid="pyviews.modifiers.widget.grid"
-                xmlns:pack="pyviews.modifiers.widget.pack"
-                xmlns:config="pyviews.modifiers.widget.config"
+                xmlns:import="pyviews.modifiers.import_global"
+                xmlns:bind="pyviews.modifiers.bind"
+                xmlns:config="pyviews.modifiers.config"
                 xmlns:style="pyviews.view.style"
-                xmlns:rconfig="pyviews.modifiers.widget.row_config"
-                xmlns:cconfig="pyviews.modifiers.widget.col_config"
 
                 import:Counter="sandbox.counter.Counter"
                 import:create_int_var="pyviews.binding.vars.create_int_var"
                 import:get_color="sandbox.commands.get_color"
+                import:Grid='pyviews.view.geomtery.GridGeometry'
 
                 view_model="{Counter()}">
 
@@ -22,8 +19,7 @@
     <style:Style name='yellowbg'
                  config:background='blue'/>
     
-    <tk:Button grid:row="0"
-               grid:column="0"
+    <tk:Button geometry='{Grid(0, 0)}'
                bind:Button-1="{up_count}"
                style="yellowbg">
         + 1
@@ -32,16 +28,12 @@
     <cs:View path='count'>
     </cs:View>
 
-    <tk:Frame grid:row="1"
-              grid:column="0"
-              grid:columnspan="3"
+    <tk:Frame geometry='{Grid(1, 0, columnspan=3)}'
               rconfig:_0="'weight': 1"
               cconfig:_0="'weight': 1">
-        <tk:Frame grid:row="0"
-                  grid:column="0">
+        <tk:Frame geometry='{Grid(0, 0)}'>
             <cs:For items='{range(count)}'>
-                <tk:Label grid:row="{index}"
-                            grid:column="{index}"
+                <tk:Label geomtery='{Grid(index, index)}'
                         config:background="{get_color(index)}">
                     {str(item+1) + ' ' + str(index)}
                 </tk:Label>

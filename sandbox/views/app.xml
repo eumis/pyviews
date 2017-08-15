@@ -1,11 +1,10 @@
 <?xml version="1.0"?>
 <core:App xmlns:core="pyviews.view.core"
-          xmlns:config="pyviews.modifiers.widget.config"
+          xmlns:config="pyviews.modifiers.config"
           xmlns:style="pyviews.view.style"
           xmlns:cs="pyviews.view.containers"
           xmlns:tk='tkinter'
-          xmlns:pack="pyviews.modifiers.widget.pack"
-          xmlns:import='pyviews.modifiers.core.import_global'
+          xmlns:import='pyviews.modifiers.import_global'
 
           import:AppViewModel='view_model.AppViewModel'
           import:Pack='pyviews.view.geometry.PackGeometry'
@@ -20,7 +19,7 @@
         <cs:View path='changepage' />
     </tk:Frame>
      <cs:If true='{view}'>
-        <tk:Frame   geometry='{Pack(fill="both", expand=True)}'>
+        <tk:Frame geometry='{Pack(fill="both", expand=True)}'>
             <cs:View path='{view}' />
         </tk:Frame>
     </cs:If> 
