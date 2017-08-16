@@ -17,13 +17,6 @@ def setup_settings():
     settings.VIEWS_FOLDER = abspath('views')
 
 def compile_app(app_view='app'):
-    return load_view(app_view)
-
-def load_view(view, parent=None):
-    xml_node = parse_xml(view)
-    context = CompileContext(xml_node, parent)
+    xml_node = parse_xml(app_view)
+    context = CompileContext(xml_node)
     return compile_xml(context)
-
-def load_styles(path):
-    node = load_view(path)
-    return node.context.styles

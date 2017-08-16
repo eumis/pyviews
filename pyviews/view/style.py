@@ -1,22 +1,5 @@
 from pyviews.view.base import CompileNode
 from pyviews.view.core import Container
-from pyviews.application import load_styles
-
-class Styles(Container):
-    def __init__(self, parent_widget=None):
-        super().__init__(parent_widget)
-        self.path = None
-
-    def render(self):
-        if self.path:
-            self.context.styles = load_styles(self.path)
-        super().render()
-        if parent:
-            parent_styles = parent.context.styles
-            for key, apply in self.context.styles.items():
-                if key in parent_styles:
-                    apply = merge_styles(parent_styles[key], apply)
-                parent_styles[key] = apply
 
 class Style(CompileNode):
     def __init__(self, parent_widget):
@@ -38,7 +21,7 @@ class Style(CompileNode):
     def bind(self, event, command):
         self._bind[event] = command
 
-    def render(self, render_children, parent=None):
+    def render(self):
         apply_style = self.apply
         if self.path:
             styles = load_styles(self.path)
