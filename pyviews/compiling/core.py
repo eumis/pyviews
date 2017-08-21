@@ -1,7 +1,11 @@
-from pyviews.common.settings import COMPILE_STEPS
+from pyviews.common.ioc import inject
+from pyviews.common import settings
 
-def compile_xml(compile_context):
-    for step in COMPILE_STEPS:
+@inject('create_node')
+def compile_xml(compile_context, create_node=None):
+    create_node(compile_context)
+    compile_steps = settings.CONTAINER.get('compile_steps', compile_context.node)
+    for step in compile_steps:
         step(compile_context)
     return compile_context.node
 

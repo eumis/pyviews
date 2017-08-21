@@ -1,7 +1,8 @@
-from pyviews.application import setup_settings, compile_app
+from pyviews.application import setup_ioc, setup_injection, compile_app
 
 def run_sandbox():
-    setup_settings()
+    setup_ioc()
+    setup_injection()
     app = compile_app()
     app.run()
 

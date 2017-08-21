@@ -1,9 +1,10 @@
 import xml.etree.ElementTree as ET
 from os.path import join
-from pyviews.common import settings
+from pyviews.common.ioc import inject
 
-def parse_xml(view):
-    view_path = join(settings.VIEWS_FOLDER, view + settings.VIEW_EXT)
+@inject('views_folder', 'view_ext')
+def parse_xml(view, views_folder='views', view_ext='.xml'):
+    view_path = join(views_folder, view + view_ext)
     return ET.parse(view_path).getroot()
 
 def has_namespace(name):
