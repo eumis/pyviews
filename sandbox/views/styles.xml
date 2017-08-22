@@ -1,11 +1,5 @@
 <?xml version="1.0"?>
 <Styles xmlns="pyviews.view.style"
         xmlns:config="pyviews.modifiers.config">
-    <Style name='yellowbg'
-           config:background='yellow'
-           config:foreground='white' />
-
-    <Style name='redbg'
-            config:background='red'
-            config:foreground='green' />
+    
 </Styles>

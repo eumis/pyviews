@@ -7,17 +7,20 @@
              import:Grid='pyviews.view.geometry.GridGeometry'
              import:show_view='sandbox.commands.show_view'>
     <tk:Button geometry='{Grid(0, 0, sticky="e")}'
-               bind:Button-1="{lambda:show_view(vm, 'messagebox')}">
+               bind:Button-1="{lambda:show_view(vm, 'messagebox')}"
+               style='button'>
         Message box
     </tk:Button>
 
     <tk:Button geometry='{Grid(0, 1, sticky="e")}'
-               bind:Button-1="{lambda:show_view(vm, 'counter')}">
+               bind:Button-1="{lambda:show_view(vm, 'counter')}"
+               style='button'>
         Counter
     </tk:Button>
 
     <tk:Button geometry='{Grid(0, 2, sticky="e")}'
-               bind:Button-1="{lambda:show_view(vm, 'scroll')}">
+               bind:Button-1="{lambda:show_view(vm, 'scroll')}"
+               style='button'>
         Scroll
     </tk:Button>
 </core:Container>

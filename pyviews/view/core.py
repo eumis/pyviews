@@ -1,6 +1,5 @@
 from tkinter import Tk, Widget
 from pyviews.view.base import CompileNode
-from pyviews.common.settings import STYLE
 from pyviews.common.reflection import get_handler
 from pyviews.common.compiling import CompileContext
 
@@ -48,9 +47,7 @@ class WidgetNode(CompileNode):
         return True
 
     def set_attr(self, name, value):
-        if name == STYLE:
-            apply_style(self, value)
-        elif hasattr(self, name):
+        if hasattr(self, name):
             setattr(self, name, value)
         elif hasattr(self._widget, name):
             setattr(self._widget, name, value)
@@ -90,9 +87,3 @@ def prop_focus(widget):
         widget.focus_set()
     elif widget.master:
         prop_focus(widget.master)
-
-def apply_style(node, value):
-    if isinstance(value, str):
-        value = value.split(',')
-    for key in [key for key in value if key in node.context.styles]:
-        node.context.styles[key](node)

@@ -1,7 +1,6 @@
 from tkinter import Frame, Scrollbar, Canvas
 from pyviews.view.base import CompileNode
-from pyviews.view.core import Container, apply_style
-from pyviews.common.settings import STYLE
+from pyviews.view.core import Container
 from pyviews.common.reflection import get_handler
 from pyviews.common.compiling import CompileContext
 from pyviews.common.parsing import parse_xml
@@ -155,9 +154,7 @@ class Scroll(CompileNode):
         return True
 
     def set_attr(self, name, value):
-        if name == STYLE:
-            apply_style(self, value)
-        elif hasattr(self, name):
+        if hasattr(self, name):
             setattr(self, name, value)
         elif hasattr(self._container, name):
             setattr(self._container, name, value)

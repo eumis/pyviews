@@ -12,8 +12,17 @@
           config:background="white"
           state="zoomed"
           view_model='{AppViewModel()}'>
-      <!-- <style:Style name='background'
-                 config:background='blue'/> -->
+    <style:Style name='button'
+                config:foreground='white'
+                config:background='black'/>
+
+    <style:Style name='yellowbg'
+           config:background='yellow'
+           config:foreground='white' />
+
+    <style:Style name='redbg'
+            config:background='red'
+            config:foreground='green' />
     
     <tk:Frame geometry='{Pack(fill="x")}'>
         <cs:View path='changepage' />
