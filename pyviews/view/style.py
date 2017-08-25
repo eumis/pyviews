@@ -17,7 +17,7 @@ class Style(CompileNode):
         return self._attrs
 
 class Styles(View):
-    def __init__(self):
+    def __init__(self, *args):
         super().__init__()
         self._styles = {}
 

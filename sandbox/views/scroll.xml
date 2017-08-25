@@ -9,8 +9,7 @@
                 import:ScrollVm="sandbox.scroll.ScrollVm"
 
                 geometry='{Pack(fill="both", expand=True)}'
-                view_model='{ScrollVm()}'
-                node_id='scroll_id'>
+                view_model='{ScrollVm()}'>
     <cs:For items='{items}'>
         <tk:Label geometry='{Pack(fill="x")}'>
             asdasdf

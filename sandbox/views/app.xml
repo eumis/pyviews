@@ -11,17 +11,7 @@
           background="white"
           state="zoomed"
           view_model='{AppViewModel("counter")}'>
-    <style:Style name='button'
-                foreground='white'
-                background='black'/>
-
-    <style:Style name='yellowbg'
-           background='yellow'
-           foreground='white' />
-
-    <style:Style name='redbg'
-            background='red'
-            foreground='green' />
+    <style:Styles path='styles' />
     
     <tk:Frame geometry='{Pack(fill="x")}'>
         <cs:View path='changepage' />
