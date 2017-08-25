@@ -1,4 +1,4 @@
 *.pyc
 dist/
 build/
-pyvies.egg-info/
+pyviews.egg-info/
