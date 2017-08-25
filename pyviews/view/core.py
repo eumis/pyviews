@@ -2,6 +2,7 @@ from tkinter import Tk, Widget
 from pyviews.view.base import CompileNode
 from pyviews.common.reflection import get_handler
 from pyviews.common.compiling import CompileContext
+from pyviews.common.ioc import inject
 
 class App(CompileNode):
     def __init__(self):
@@ -47,6 +48,17 @@ class WidgetNode(CompileNode):
         super().__init__()
         self.widget = widget
         self._geometry = None
+        self._style = None
+
+    @property
+    def style(self):
+        return self._style
+
+    @style.setter
+    @inject('apply_style')
+    def style(self, value, apply_style=None):
+        self._style = value
+        apply_style(self, value)
 
     @property
     def geometry(self):

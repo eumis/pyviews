@@ -12,10 +12,10 @@ def setup_ioc():
     ioc.register_value('container', ioc.CONTAINER)
     ioc.register_call('compile_xml', compilexml)
     ioc.register_call('create_node', create_node)
+    ioc.register_call('apply_style', apply_style)
     ioc.register_value('compile_steps',
                        [use_parent_vm,
                         setup_context,
-                        apply_style,
                         compile_attributes,
                         compile_text,
                         compile_children])

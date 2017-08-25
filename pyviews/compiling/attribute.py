@@ -5,7 +5,7 @@ from pyviews.binding.expressions import split_by_last_dot, is_binding, eval_exp
 from pyviews.viewmodel.base import ViewModel
 
 def compile_attributes(context):
-    for attr in [attr for attr in context.node.xml_node.items() if attr[0] != 'style']:
+    for attr in context.node.xml_node.items():
         compile_attr(context.node, attr)
 
 def compile_text(context):
