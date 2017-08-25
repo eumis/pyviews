@@ -4,6 +4,7 @@ from pyviews.view.core import Container
 from pyviews.common.reflection import get_handler
 from pyviews.common.compiling import CompileContext
 from pyviews.common.parsing import parse_xml
+from pyviews.common.ioc import inject
 
 class For(Container):
     def __init__(self, master):
@@ -105,7 +106,18 @@ class Scroll(CompileNode):
         self._canvas.bind('<Enter>', lambda event: self.set_canvas_active())
         self._canvas.bind('<Leave>', lambda event: self.set_canvas_inactive())
         self._geometry = None
+        self._style = None
         super().__init__()
+
+    @property
+    def style(self):
+        return self._style
+
+    @style.setter
+    @inject('apply_style')
+    def style(self, value, apply_style=None):
+        self._style = value
+        apply_style(self, value)
 
     @property
     def geometry(self):
