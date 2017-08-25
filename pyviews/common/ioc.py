@@ -2,35 +2,35 @@ class Container:
     def __init__(self):
         self._initializers = {}
 
-    def register(self, name, initializer):
-        self._initializers[name] = initializer
+    def register(self, name, initializer, param=None):
+        if name not in self._initializers:
+            self._initializers[name] = {}
+        self._initializers[name][param] = initializer
 
-    def get(self, name, *args):
+    def get(self, name, param=None):
         if name not in self._initializers:
             raise 'Dependency with name ' + name + ' is not found'
-        return self._initializers[name](*args)
+        param = param if param in self._initializers[name] else None
+        return self._initializers[name][param]()
 
 CONTAINER = Container()
 
-def register(name, initializer):
-    CONTAINER.register(name, initializer)
+def register(name, initializer, param=None):
+    CONTAINER.register(name, initializer, param)
 
-def register_call(name, method):
-    CONTAINER.register(name, lambda: method)
+def register_call(name, method, param=None):
+    CONTAINER.register(name, lambda: method, param)
 
-def register_value(name, value):
-    CONTAINER.register(name, lambda: value)
+def register_value(name, value, param=None):
+    CONTAINER.register(name, lambda: value, param)
 
-def get(name, *args):
-    return CONTAINER.get(name, *args)
-
-def inject(*names):
+def inject(*injections):
     def inject_decorator(func):
         def decorated(*args, **kwargs):
             args = list(args)
-            keys_to_inject = [name for name in names if name not in kwargs]
+            keys_to_inject = [name for name in injections if name not in kwargs]
             for key in keys_to_inject:
-                kwargs[key] = get(key)
+                kwargs[key] = CONTAINER.get(key)
             return func(*args, **kwargs)
         return decorated
     return inject_decorator

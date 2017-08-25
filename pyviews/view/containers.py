@@ -6,12 +6,10 @@ from pyviews.common.compiling import CompileContext
 from pyviews.common.parsing import parse_xml
 
 class For(Container):
-    def __init__(self, parent_widget):
-        Container.__init__(self, parent_widget)
+    def __init__(self, master):
+        Container.__init__(self, master)
         self._items = []
-        self._render_children = None
-        self._parent = None
-        self._rendered_count = 0
+        self._rendered = False
 
     @property
     def items(self):
@@ -19,50 +17,25 @@ class For(Container):
 
     @items.setter
     def items(self, val):
-        val = list(val) if val is not None else []
-        self._items = self._items[len(val):]
-        for index, item in enumerate(val):
-            try:
-                if self._items[index] != item:
-                    self._items[index] = item
-            except IndexError:
-                self._items.append(item)
+        self._items = val
+        if self._rendered:
+            self.compile_children()
 
-    def _remove_items(self, start_index):
-        items = self._items[start_index:]
-        childs_to_remove = [node for node in self._nodes if node.view_model in items]
-        for child in childs_to_remove:
-            child.destroy()
-        self._nodes = [node for node in self._nodes if node not in childs_to_remove]
-        self._items = self._items[:start_index]
-
-    def _render_items(self, start_index):
-        self._rendered_count = start_index
-        self.render()
-
-    def clear(self):
-        self._remove_items(self._items)
-        self._rendered_count = 0
-
-    def render(self):
-        if len(self._items) < self._rendered_count:
-            self._remove_items(len(self._items))
-
-        for index, item in enumerate(self._items[self._rendered_count:]):
+    def compile_children(self):
+        self._rendered = True
+        self.remove_children()
+        for index, item in enumerate(self._items):
             for xml_node in list(self.xml_node):
                 context = self.create_compile_context(xml_node)
                 context.globals['item'] = item
                 context.globals['index'] = index
-                self._nodes += self.compile_xml(context)
-        self._rendered_count = len(self._items)
-
-    def create_compile_context(self, xml_node):
-        return CompileContext(xml_node, self)
+                self._nodes.append(self._compile_xml(context))
 
 class View(Container):
     def __init__(self, master):
         super().__init__(master)
         self._path = None
+        self._rendered = False
 
     @property
     def path(self):
@@ -73,21 +46,18 @@ class View(Container):
         if value == self._path:
             return
         self._path = value
-        if self._path:
-            self._clear_xml_node()
-            self.xml_node.append(parse_xml(self._path))
-        self.render()
+        view_nodes = list(self.xml_node)
+        for xml_node in view_nodes:
+            self.xml_node.remove(xml_node)
+        self.xml_node.append(parse_xml(self._path))
+        if self._rendered:
+            self.compile_children()
 
-    def _clear_xml_node(self):
-        # nodes = [node for node in self.xml_node]
-        for node in list(self.xml_node):
-            self.xml_node.remove(node)
-
-    def render(self):
+    def compile_children(self):
+        self._rendered = True
+        super().remove_children()
         if self._path:
-            super().render()
-        else:
-            super().clear()
+            super().compile_children()
 
 class If(Container):
     def __init__(self, master):
@@ -116,17 +86,16 @@ class If(Container):
     def _change_value(self, true_value):
         self._true = true_value
         self._false = not true_value
-        self.render()
+        self.compile_children()
 
     def render(self):
+        super().remove_children()
         if self._true:
-            super().render()
-        else:
-            super().clear()
+            super().compile_children()
 
 class Scroll(CompileNode):
-    def __init__(self, parent_widget):
-        self._frame = create_scroll_frame(parent_widget)
+    def __init__(self, master):
+        self._frame = create_scroll_frame(master)
         self._canvas = create_canvas(self._frame)
         self._scroll = create_scroll(self._frame, self._canvas)
         self._container = create_container(self._canvas)
@@ -135,8 +104,18 @@ class Scroll(CompileNode):
         self._canvas.bind_all('<MouseWheel>', self.on_mouse_scroll)
         self._canvas.bind('<Enter>', lambda event: self.set_canvas_active())
         self._canvas.bind('<Leave>', lambda event: self.set_canvas_inactive())
-        self.geometry = None
+        self._geometry = None
         super().__init__()
+
+    @property
+    def geometry(self):
+        return self._geometry
+
+    @geometry.setter
+    def geometry(self, value):
+        self._geometry = value
+        if self._geometry:
+            self._geometry.apply(self._frame)
 
     def config_container(self):
         self._canvas.config(scrollregion=self._canvas.bbox("all"))
@@ -150,14 +129,15 @@ class Scroll(CompileNode):
         if 'Button-' in event:
             self._canvas.bind('<'+event+'>', handler)
 
-    def has_attr(self, name):
-        return True
-
     def set_attr(self, name, value):
         if hasattr(self, name):
             setattr(self, name, value)
         elif hasattr(self._container, name):
             setattr(self._container, name, value)
+        else:
+            self._container.configure(**{name: value})
+            if name == 'bg' or name == 'background':
+                self._canvas.config(**{name: value})
 
     def on_mouse_scroll(self, event):
         if Scroll.active_canvas and self.is_active():
@@ -174,17 +154,8 @@ class Scroll(CompileNode):
         if Scroll.active_canvas == self._canvas:
             Scroll.active_canvas = None
 
-    def render(self):
-        self.geometry.apply(self._frame)
-        super().render()
-
     def create_compile_context(self, xml_node):
         return CompileContext(xml_node, self, self._container)
-
-    def config(self, key, value):
-        self._container.configure({key: value})
-        if key == 'bg' or key == 'background':
-            self._canvas.config({key: value})
 
     def scroll_to(self, widget):
         widget_offset = (widget.winfo_y() - self._scroll.winfo_y()) / self._container.winfo_height()

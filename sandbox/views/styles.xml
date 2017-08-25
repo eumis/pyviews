@@ -1,5 +1,3 @@
 <?xml version="1.0"?>
-<Styles xmlns="pyviews.view.style"
-        xmlns:config="pyviews.modifiers.config">
-    
+<Styles xmlns="pyviews.view.style">
 </Styles>

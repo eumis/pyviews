@@ -23,3 +23,4 @@ def use_parent_vm(context):
 def setup_context(context):
     if context.parent_node:
         context.node.context = NodeContext(context.parent_node.context)
+    context.node.context.globals.update(context.globals)

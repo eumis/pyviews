@@ -28,6 +28,7 @@ class GridGeometry(Geometry):
 class PackGeometry(Geometry):
     def __init__(self, **args):
         super().__init__()
+        self._args = args if args else self._args
 
     def apply(self, widget):
         widget.pack(**self._args)

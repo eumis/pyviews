@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
 <core:App xmlns:core="pyviews.view.core"
-          xmlns:config="pyviews.modifiers.config"
           xmlns:style="pyviews.view.style"
           xmlns:cs="pyviews.view.containers"
           xmlns:tk='tkinter'
@@ -9,28 +8,28 @@
           import:AppViewModel='view_model.AppViewModel'
           import:Pack='pyviews.view.geometry.PackGeometry'
 
-          config:background="white"
+          background="white"
           state="zoomed"
-          view_model='{AppViewModel()}'>
+          view_model='{AppViewModel("counter")}'>
     <style:Style name='button'
-                config:foreground='white'
-                config:background='black'/>
+                foreground='white'
+                background='black'/>
 
     <style:Style name='yellowbg'
-           config:background='yellow'
-           config:foreground='white' />
+           background='yellow'
+           foreground='white' />
 
     <style:Style name='redbg'
-            config:background='red'
-            config:foreground='green' />
+            background='red'
+            foreground='green' />
     
     <tk:Frame geometry='{Pack(fill="x")}'>
         <cs:View path='changepage' />
     </tk:Frame>
-     <cs:If true='{view}'>
+    <cs:If true='{vm.view}'>
         <tk:Frame geometry='{Pack(fill="both", expand=True)}'>
-            <cs:View path='{view}' />
+            <cs:View path='{vm.view}' />
         </tk:Frame>
-    </cs:If> 
+    </cs:If>
 
 </core:App>

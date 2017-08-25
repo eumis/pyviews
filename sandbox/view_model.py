@@ -1,6 +1,6 @@
 from pyviews.viewmodel.base import ViewModel
 
 class AppViewModel(ViewModel):
-    def __init__(self):
+    def __init__(self, default_view=None):
         super().__init__()
-        self.view = None
+        self.view = default_view

@@ -1,15 +1,16 @@
-from pyviews.common.ioc import inject, get
+from pyviews.common.ioc import inject
 
 @inject('create_node')
 def compile_xml(compile_context, create_node=None):
     create_node(compile_context)
-    compile_steps = get('compile_steps', compile_context.node)
+    return run_compile_steps(compile_context)
+
+@inject('container')
+def run_compile_steps(context, container=None):
+    compile_steps = container.get('compile_steps', context.node.__class__)
     for step in compile_steps:
-        step(compile_context)
-    return compile_context.node
+        step(context)
+    return context.node
 
-def setup_render(context):
-    context.node.compile_xml = compile_xml
-
-def render(context):
-    context.node.render()
+def compile_children(context):
+    context.node.compile_children()

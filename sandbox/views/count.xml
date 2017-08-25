@@ -1,12 +1,11 @@
 <?xml version="1.0"?>
 <core:Container xmlns:tk="tkinter"
                 xmlns:core="pyviews.view.core"
-                xmlns:config="pyviews.modifiers.config"
                 xmlns:bind="pyviews.modifiers.bind"
                 
                 import:Grid='pyviews.view.geometry.GridGeometry'>
     <tk:Entry geometry="{Grid(0, 0)}"
-              config:textvariable="{create_int_var(vm, 'count', 2)}">
+              textvariable="{create_int_var(vm, 'count', 2)}">
     </tk:Entry>
 
     <tk:Label geometry="{Grid(0, 1)}"

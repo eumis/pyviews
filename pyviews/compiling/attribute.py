@@ -5,14 +5,14 @@ from pyviews.binding.expressions import split_by_last_dot, is_binding, eval_exp
 from pyviews.viewmodel.base import ViewModel
 
 def compile_attributes(context):
-    for attr in context.node.xml_node.items():
+    for attr in [attr for attr in context.node.xml_node.items() if attr[0] != 'style']:
         compile_attr(context.node, attr)
 
 def compile_text(context):
     text = context.node.xml_node.text
     text = text.strip() if text else ''
     if text:
-        compile_attr(context.node, ('{pyviews.modifiers.config}text', text))
+        compile_attr(context.node, ('text', text))
 
 def compile_attr(node, attr):
     modify = set_prop
@@ -32,8 +32,6 @@ def compile_attr(node, attr):
 
 def set_prop(node, attr):
     (name, value) = attr
-    if not node.has_attr(name):
-        return
     node.set_attr(name, value)
 
 def apply_binding(node, attr, apply_changes):

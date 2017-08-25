@@ -4,20 +4,19 @@
                 xmlns:cs="pyviews.view.containers"
                 xmlns:import="pyviews.modifiers.import_global"
                 xmlns:bind="pyviews.modifiers.bind"
-                xmlns:config="pyviews.modifiers.config"
                 xmlns:style="pyviews.view.style"
 
                 import:Counter="sandbox.counter.Counter"
                 import:create_int_var="pyviews.binding.vars.create_int_var"
                 import:get_color="sandbox.commands.get_color"
-                import:Grid='pyviews.view.geomtery.GridGeometry'
+                import:Grid='pyviews.view.geometry.GridGeometry'
 
                 view_model="{Counter()}">
 
-    <style:Styles path='styles' />
+    <!-- <style:Styles path='styles' /> -->
 
     <style:Style name='yellowbg'
-                 config:background='blue'/>
+                 background='yellow'/>
     
     <tk:Button geometry='{Grid(0, 0)}'
                bind:Button-1="{up_count}"
@@ -25,16 +24,23 @@
         + 1
     </tk:Button>
 
-    <cs:View path='count'>
-    </cs:View>
+    <tk:Entry geometry="{Grid(0, 1)}"
+              textvariable="{create_int_var(vm, 'count', 2)}">
+    </tk:Entry>
 
-    <tk:Frame geometry='{Grid(1, 0, columnspan=3)}'
-              rconfig:_0="'weight': 1"
-              cconfig:_0="'weight': 1">
+    <tk:Label geometry="{Grid(0, 2)}"
+              style="yellowbg"
+              bind:Button-1="{lambda event: print(event)}">
+        {count}
+    </tk:Label>
+
+    <tk:Frame geometry='{Grid(1, 0, columnspan=3)}'>
+        <!-- <RowConfig row='0' weight='1' />
+        <ColConfig col='0' weight='1' /> -->
         <tk:Frame geometry='{Grid(0, 0)}'>
-            <cs:For items='{range(count)}'>
-                <tk:Label geomtery='{Grid(index, index)}'
-                        config:background="{get_color(index)}">
+            <cs:For items='{range(vm.count)}'>
+                <tk:Label geometry='{Grid(index, index)}'
+                        background="{get_color(index)}">
                     {str(item+1) + ' ' + str(index)}
                 </tk:Label>
             </cs:For>
