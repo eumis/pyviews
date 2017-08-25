@@ -33,7 +33,7 @@ class For(Container):
                 self._nodes.append(self._compile_xml(context))
 
 class View(Container):
-    def __init__(self, master):
+    def __init__(self, master=None):
         super().__init__(master)
         self._path = None
         self._rendered = False

@@ -89,7 +89,7 @@ class WidgetNode(CompileNode):
         return CompileContext(xml_node, self, self.widget)
 
 class Container(CompileNode):
-    def __init__(self, master):
+    def __init__(self, master=None):
         super().__init__()
         self._master = master
 

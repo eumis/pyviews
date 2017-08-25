@@ -8,6 +8,9 @@ def read_attributes(context):
 def render_style(context):
     context.parent_node.context.styles[context.node.name] = context.node
 
+def render_styles(context):
+    context.parent_node.context.styles.update(context.node.get_styles())
+
 def apply_style(node, style):
     styles = style.split(',')
     attrs = {}
