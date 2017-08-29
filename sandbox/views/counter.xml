@@ -7,7 +7,7 @@
                 xmlns:style="pyviews.view.style"
 
                 import:Counter="sandbox.counter.Counter"
-                import:create_int_var="pyviews.binding.vars.create_int_var"
+                import:create_int_var="pyviews.common.vars.create_int_var"
                 import:get_color="sandbox.commands.get_color"
                 import:Grid='pyviews.view.geometry.GridGeometry'
 

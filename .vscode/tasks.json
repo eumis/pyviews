@@ -1,15 +1,63 @@
 {
-	"version": "0.1.0",
-	"windows" : {
-		"version": "0.1.0",
-		"command": "pip",
-		"args": ["install", "-e", "${workspaceRoot}", "--upgrade"],
-		"showOutput": "always"
-	},
-	"linux" : {
-		"version": "0.1.0",
-		"command": "pip3",
-		"args": ["install", "-e", "${workspaceRoot}", "--upgrade"],
-		"showOutput": "always"
-	}
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"taskName": "developer pip install",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"windows" : {
+				"command": "pip",
+				"args": ["install", "-e", "${workspaceRoot}", "--upgrade"]
+			},
+			"linux" : {
+				"command": "pip3",
+				"args": ["install", "-e", "${workspaceRoot}", "--upgrade"]
+			}
+		},
+		{
+			"taskName": "Run file tests",
+			"group": {
+				"kind": "test",
+				"isDefault": true
+			},
+			"windows": {
+				"command": "python"
+			},
+			"linux": {
+				"command": "python3"
+			},
+			"args": ["${file}", "-v"]
+		},
+		{
+			"taskName": "Run all tests",
+			"group": {
+				"kind": "test",
+				"isDefault": true
+			},
+			"windows": {
+				"command": "python",
+				"args": [
+					"-m",
+					"unittest",
+					"discover",
+					"-s",
+					"${workspaceRoot}\\tests", "-v",
+					"-p",
+					"*_test.py"]
+			},
+			"linux": {
+				"command": "python3",
+				"args": [
+					"-m",
+					"unittest",
+					"discover",
+					"-s",
+					"${workspaceRoot}//tests", "-v",
+					"-p",
+					"*_test.py"]
+			}
+		}
+	]
 }

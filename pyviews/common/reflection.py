@@ -7,9 +7,6 @@ def create_inst(module_name, class_name, *args):
     class_ = getattr(module, class_name)
     return class_(*args)
 
-def run(code, run_globals, run_locals):
-    return eval(code, run_globals, run_locals)
-
 @inject('event_key')
 def get_handler(command, event_key='event'):
     spec = getfullargspec(command)

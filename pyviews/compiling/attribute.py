@@ -1,7 +1,7 @@
 from importlib import import_module
 from pyviews.common.parsing import has_namespace, parse_namespace
-from pyviews.binding.vars import Variable
-from pyviews.binding.expressions import split_by_last_dot, is_binding, eval_exp
+from pyviews.common.vars import Variable
+from pyviews.common.expressions import split_by_last_dot, is_binding, eval_exp
 from pyviews.viewmodel.base import ViewModel
 
 def compile_attributes(context):

@@ -1,5 +1,5 @@
 from importlib import import_module
-from pyviews.binding.expressions import split_by_last_dot
+from pyviews.common.expressions import split_by_last_dot
 
 def import_global(node, attr):
     (name, path) = attr
@@ -21,7 +21,3 @@ def _import_path(path):
 def bind(node, attr):
     (name, command) = attr
     node.bind(name, command)
-
-def config(node, attr):
-    (key, value) = attr
-    node.config(key, value)

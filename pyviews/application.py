@@ -15,9 +15,10 @@ def setup_ioc():
     setup_constants()
 
 def setup_calls():
-    ioc.register_call('compile_xml', compilexml)
-    ioc.register_call('create_node', create_node)
-    ioc.register_call('apply_style', apply_style)
+    ioc.register_value('compile_xml', compilexml)
+    ioc.register_value('create_node', create_node)
+    ioc.register_value('apply_style', apply_style)
+    ioc.register_value('run', eval)
 
 def setup_compile_steps():
     ioc.register_value('compile_steps', [use_parent_vm,

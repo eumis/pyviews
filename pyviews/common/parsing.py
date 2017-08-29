@@ -8,10 +8,15 @@ def parse_xml(view, views_folder='views', view_ext='.xml'):
     return ET.parse(view_path).getroot()
 
 def has_namespace(name):
-    return name.startswith('{')
+    return name.startswith('{') and '}' in name
 
 def parse_namespace(name):
+    if not has_namespace(name):
+        raise ParsingException("Name " + name + "doesn't contain namespace")
     splitted = name.split('}', maxsplit=1)
-    name_space = splitted[0][1:]
+    namespace = splitted[0][1:]
     name = splitted[1]
-    return (name_space, name)
+    return (namespace, name)
+
+class ParsingException(Exception):
+    pass
