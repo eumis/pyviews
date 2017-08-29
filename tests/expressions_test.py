@@ -1,22 +1,25 @@
 from unittest import TestCase, main
+from tests.mock import TestViewModel, TestNode
+from tests.utility import case
 import pyviews.common.expressions as tested
 from pyviews import application
 from pyviews.common import ioc
-from tests.mock import TestViewModel, TestNode
 
 application.setup_ioc()
 
 class TestExpressions(TestCase):
-    def test_isbinding(self):
-        self.assertTrue(tested.is_binding('{asdf}'))
-        self.assertTrue(tested.is_binding('{{asdf}}'))
-        self.assertFalse(tested.is_binding('{asdf'))
-        self.assertFalse(tested.is_binding('asdf}'))
-        self.assertFalse(tested.is_binding(' {asdf}'))
+    @case('{asdf}', True)
+    @case('{{asdf}}', True)
+    @case('{asdf', False)
+    @case('asdf}', False)
+    @case(' {asdf}', False)
+    def test_isbinding(self, expr, expected):
+        self.assertEqual(tested.is_binding(expr), expected)
 
-    def test_parse_one_way_binding(self):
-        self.assertEqual(tested.parse_one_way_binding('{asdf}'), 'asdf')
-        self.assertEqual(tested.parse_one_way_binding('asdf'), 'sd')
+    @case('{asdf}', 'asdf')
+    @case('asdf', 'sd')
+    def test_parse_one_way_binding(self, expr, expected):
+        self.assertEqual(tested.parse_one_way_binding(expr), expected)
 
     def test_to_dictionary(self):
         view_model = TestViewModel()
@@ -27,10 +30,11 @@ class TestExpressions(TestCase):
         self.assertEqual(vm_dict['value'], 1)
         self.assertFalse('_private_prop' in vm_dict)
 
-    def test_split_by_last_dot(self):
-        self.assertEqual(tested.split_by_last_dot('package.module.name'), ('package.module', 'name'))
-        self.assertEqual(tested.split_by_last_dot('package.module'), ('package', 'module'))
-        self.assertEqual(tested.split_by_last_dot('package'), ('', 'package'))
+    @case('package.module.name', ('package.module', 'name'))
+    @case('package.module', ('package', 'module'))
+    @case('package', ('', 'package'))
+    def test_split_by_last_dot(self, name, expected):
+        self.assertEqual(tested.split_by_last_dot(name), expected)
 
     def test_eval_exp(self):
         expression = '{some expression}'
