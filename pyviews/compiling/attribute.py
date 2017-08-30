@@ -20,7 +20,7 @@ def compile_attr(node, attr):
     if has_namespace(name):
         (namespace, name) = parse_namespace(name)
         modify = get_modify(namespace)
-    apply = lambda value, n=node, key=name, mod=modify: mod(n, (key, value))
+    apply = lambda value, key=name, mod=modify: mod(node, (key, value))
     try:
         if is_binding(expr):
             apply_binding(node, attr, apply)

@@ -1,7 +1,7 @@
 def case(*params):
     def case_decorator(func):
         def decorated(*args):
-            for params in decorated.params:
+            for params in reversed(decorated.params):
                 case_params = args + params
                 try:
                     func(*case_params)

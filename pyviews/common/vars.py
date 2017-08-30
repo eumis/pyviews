@@ -31,7 +31,7 @@ def create_var(view_model, prop, var=None):
 
 
 def apply_to_source_binding(var, view_model, prop):
-    update_vm = lambda *args, v=view_model, a=prop, content=var: setattr(v, a, content.get())
+    update_vm = lambda *args: setattr(view_model, prop, var.get())
     var.trace('w', update_vm)
 
 def apply_to_view_binding(var, view_model, prop):

@@ -43,7 +43,8 @@ class TestExpressions(TestCase):
         node.context.globals['global_value'] = 1
         node.context.globals['method'] = lambda: 1
 
-        ioc.register_value('run', lambda code, gl, lc, nd=node: self._run(code, gl, lc, nd, 'some expression'))
+        ioc.register_value('run', lambda code, gl, lc, nd=node:
+                           self._run(code, gl, lc, nd, 'some expression'))
         ioc.register_value('node_key', 'node')
         ioc.register_value('vm_key', 'vm')
 
@@ -54,7 +55,7 @@ class TestExpressions(TestCase):
         self.assertEqual(locals_, {})
         self.assertEqual(globals_['node'], actual_node)
         self.assertEqual(globals_['vm'], actual_node.view_model)
-        
+
         for key in actual_node.view_model.get_observable_keys():
             self.assertEqual(globals_[key], getattr(actual_node.view_model, key))
 

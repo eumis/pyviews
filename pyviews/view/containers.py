@@ -1,7 +1,7 @@
 from tkinter import Frame, Scrollbar, Canvas
 from pyviews.view.base import CompileNode
 from pyviews.view.core import Container
-from pyviews.common.reflection import get_handler
+from pyviews.common.reflection import get_event_handler
 from pyviews.common.compiling import CompileContext
 from pyviews.common.parsing import parse_xml
 from pyviews.common.ioc import inject
@@ -136,7 +136,7 @@ class Scroll(CompileNode):
         self._canvas.itemconfig(self._container.win_id, width=event.width)
 
     def bind(self, event, command):
-        handler = get_handler(command)
+        handler = get_event_handler(command)
         self._container.bind('<'+event+'>', handler)
         if 'Button-' in event:
             self._canvas.bind('<'+event+'>', handler)

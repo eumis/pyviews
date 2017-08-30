@@ -1,6 +1,6 @@
 from tkinter import Tk, Widget
 from pyviews.view.base import CompileNode
-from pyviews.common.reflection import get_handler
+from pyviews.common.reflection import get_event_handler
 from pyviews.common.compiling import CompileContext
 from pyviews.common.ioc import inject
 
@@ -19,7 +19,7 @@ class App(CompileNode):
         self.root.state(state)
 
     def bind(self, event, command):
-        self.root.bind('<'+event+'>', get_handler(command))
+        self.root.bind('<'+event+'>', get_event_handler(command))
 
     def set_attr(self, name, value):
         if hasattr(self, name):
@@ -71,7 +71,7 @@ class WidgetNode(CompileNode):
             self._geometry.apply(self.widget)
 
     def bind(self, event, command):
-        self.widget.bind('<'+event+'>', get_handler(command))
+        self.widget.bind('<'+event+'>', get_event_handler(command))
 
     def set_attr(self, name, value):
         if hasattr(self, name):
