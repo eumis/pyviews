@@ -1,7 +1,7 @@
 from importlib import import_module
 from pyviews.common.expressions import split_by_last_dot
 
-def import_global(node, attr):
+def import_(node, attr):
     (name, path) = attr
     imported = _import_path(path)
     if imported:
@@ -17,7 +17,3 @@ def _import_path(path):
     (path, name) = split_by_last_dot(path)
     module = _import_path(path)
     return module.__dict__[name] if module else None
-
-def bind(node, attr):
-    (name, command) = attr
-    node.bind(name, command)

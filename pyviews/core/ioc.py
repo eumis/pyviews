@@ -2,7 +2,7 @@ class Container:
     def __init__(self):
         self._initializers = {}
 
-    def register(self, name, initializer, param=None):
+    def register(self, name, initializer: callable, param=None):
         if not callable(initializer):
             raise ValueError('Initializer should be callable', initializer)
         if name not in self._initializers:
@@ -17,7 +17,7 @@ class Container:
 
 CONTAINER = Container()
 
-def register(name, initializer, param=None):
+def register(name, initializer: callable, param=None):
     CONTAINER.register(name, initializer, param)
 
 def register_value(name, value, param=None):
