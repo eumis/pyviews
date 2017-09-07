@@ -1,5 +1,5 @@
 from unittest import TestCase, main
-import pyviews.common.ioc as tested
+import pyviews.core.ioc as tested
 
 class TestContainer(TestCase):
     def setUp(self):

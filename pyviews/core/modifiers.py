@@ -4,7 +4,7 @@ from pyviews.common.expressions import split_by_last_dot
 def import_(node, attr):
     (name, path) = attr
     imported = _import_path(path)
-    if imported:
+    if imported is not None:
         node.context.globals[name] = imported
 
 def _import_path(path):

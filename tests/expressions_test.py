@@ -1,7 +1,7 @@
 from unittest import TestCase, main
 from tests.mock import TestViewModel, TestNode
 from tests.utility import case
-import pyviews.common.expressions as tested
+from pyviews.common import expressions as tested
 from pyviews import application
 from pyviews.common import ioc
 

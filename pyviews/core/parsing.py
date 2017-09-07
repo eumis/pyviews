@@ -1,27 +1,8 @@
-from os.path import join as join_path
-import xml.etree.ElementTree as ET
 from pyviews.core import ioc
 from pyviews.core.reflection import create_inst, import_path
 from pyviews.core.compilation import Expression
 from pyviews.core.binding import Binding
-
-class XmlNode:
-    def __init__(self, element: ET.Element):
-        self._element = element
-        (self.module_name, self.class_name) = parse_namespace(element.tag)
-
-    def get_children(self):
-        return [XmlNode(el) for el in list(self._element)]
-
-    def get_attrs(self):
-        return [XmlAttr(attr) for attr in self._element.items()]
-
-class XmlAttr:
-    def __init__(self, attr):
-        (self.name, self.value) = attr
-        self.namespace = None
-        if has_namespace(self.name):
-            (self.namespace, self.name) = parse_namespace(self.name)
+from pyviews.core.xml import XmlNode, XmlAttr
 
 class Node:
     def __init__(self, xml_node: XmlNode, parent: Node = None):
@@ -73,10 +54,11 @@ class NodeExpression(Expression):
     def get_parameters(self):
         return {'node_key':self._node, 'vm':self._node.view_model, **self._node.globals}
 
-def read_xml(view, views_folder='views', view_ext='.xml'):
-    view_path = join_path(views_folder, view + view_ext)
-    root_element = ET.parse(view_path).getroot()
-    return XmlNode(root_element)
+# Looks like tkinter specific
+# from os.path import join as join_path
+# def read_xml(view, views_folder='views', view_ext='.xml'):
+#     view_path = join_path(views_folder, view + view_ext)
+#     return get_root(view_path)
 
 def parse(xml_node: XmlNode, args: dict):
     node = create_node(xml_node, args)
@@ -130,20 +112,6 @@ def parse_code_expression(expression):
 
 def parse_children(node):
     node.parse_children()
-
-def has_namespace(name):
-    return name.startswith('{') and '}' in name
-
-def parse_namespace(name):
-    if not has_namespace(name):
-        raise ParsingError("Name " + name + "doesn't contain namespace")
-    splitted = name.split('}', maxsplit=1)
-    namespace = splitted[0][1:]
-    name = splitted[1]
-    return (namespace, name)
-
-class ParsingError(Exception):
-    pass
 
 ioc.register_value('convert_to_node', convert_to_node)
 ioc.register_value('parse', parse)
