@@ -33,5 +33,8 @@ class ParsingError(Exception):
     pass
 
 def get_root(xml_path):
-    root_element = ET.parse(xml_path).getroot()
-    return XmlNode(root_element)
+    try:
+        root_element = ET.parse(xml_path).getroot()
+        return XmlNode(root_element)
+    except ET.ParseError as error:
+        raise ParsingError(error)
