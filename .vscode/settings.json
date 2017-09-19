@@ -13,6 +13,8 @@
         "**/__pycache__": true,
         "**/*.pyc": true,
         "**/*.sublime-project": true,
-        "pyviews.egg-info": true
+        "pyviews.egg-info": true,
+        "**/*.py~": true,
+        "**/*.un~": true
     }
 }

@@ -2,3 +2,6 @@
 dist/
 build/
 pyviews.egg-info/
+*.swp
+*.py~
+*.un~

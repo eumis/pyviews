@@ -1,5 +1,8 @@
 {
 	"version": "2.0.0",
+	"options": {
+		"cwd": "${workspaceRoot}"
+	},
 	"tasks": [
 		{
 			"taskName": "developer pip install",
@@ -23,12 +26,29 @@
 				"isDefault": true
 			},
 			"windows": {
-				"command": "python"
+				"command": "python",
+				"args": [
+					"-m",
+					"unittest",
+					"discover",
+					"-s",
+					"${workspaceRoot}\\tests",
+					"-v",
+					"-p",
+					"${fileBasename}"]
 			},
 			"linux": {
-				"command": "python3"
-			},
-			"args": ["${file}", "-v"]
+				"command": "python3",
+				"args": [
+					"-m",
+					"unittest",
+					"discover",
+					"-s",
+					"${workspaceRoot}//tests",
+					"-v",
+					"-p",
+					"${fileBasename}"]
+			}
 		},
 		{
 			"taskName": "Run all tests",
@@ -43,7 +63,8 @@
 					"unittest",
 					"discover",
 					"-s",
-					"${workspaceRoot}\\tests", "-v",
+					"${workspaceRoot}\\tests",
+					"-v",
 					"-p",
 					"*_test.py"]
 			},

@@ -9,3 +9,4 @@ class TestViewModel(ViewModel):
 
 class TestNode(CompileNode):
     pass
+

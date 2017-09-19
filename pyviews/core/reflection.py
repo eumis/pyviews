@@ -11,7 +11,7 @@ def create_inst(module_name, class_name, args=None, kwargs=None):
     return class_(*args, **kwargs)
 
 def import_path(path):
-    if not path:
+    if path is None:
         return None
     try:
         return import_module(path)
