@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pyviews',
-    version='0.5.0',
+    version='0.6.0',
     description='tkinter MVVM tool',
     long_description='MVVM tool that allows to describe tkinter widgets with xml',
     author='me',
@@ -17,5 +17,5 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3.6',
     ],
-    keywords='mvvm tkinter pyviews',
-    packages=find_packages(exclude=['sandbox']))
+    keywords='mvvm tkinter tk pyviews',
+    packages=find_packages(exclude=['sandbox', 'tests']))

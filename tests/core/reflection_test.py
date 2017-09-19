@@ -1,7 +1,7 @@
 import unittest
 from unittest import TestCase, main
-from tests.utility import case
 from importlib import import_module
+from tests.utility import case
 from pyviews.core import reflection as tested
 
 class SomeObject:

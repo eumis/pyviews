@@ -26,29 +26,12 @@
 				"isDefault": true
 			},
 			"windows": {
-				"command": "python",
-				"args": [
-					"-m",
-					"unittest",
-					"discover",
-					"-s",
-					"${workspaceRoot}\\tests",
-					"-v",
-					"-p",
-					"${fileBasename}"]
+				"command": "python"
 			},
 			"linux": {
-				"command": "python3",
-				"args": [
-					"-m",
-					"unittest",
-					"discover",
-					"-s",
-					"${workspaceRoot}//tests",
-					"-v",
-					"-p",
-					"${fileBasename}"]
-			}
+				"command": "python3"
+			},
+			"args": ["${file}", "-v"]
 		},
 		{
 			"taskName": "Run all tests",

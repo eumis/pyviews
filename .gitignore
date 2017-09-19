@@ -5,3 +5,8 @@ pyviews.egg-info/
 *.swp
 *.py~
 *.un~
+Scripts/
+Include/
+Lib/
+pip-selfcheck.json
+pyvenv.cfg
