@@ -5,20 +5,23 @@ class PropertyGetRecorder:
     def __init__(self, view_model: ViewModel):
         self._view_model = view_model
         self._used_props = []
-        self._recorders = []
+        self._recorders = {}
 
     def __getattribute__(self, prop):
+        if prop in ['_view_model', '_used_props', '_recorders', 'get_used_properties']:
+            return object.__getattribute__(self, prop)
         if self._view_model is not None:
             self._used_props.append(prop)
             value = getattr(self._view_model, prop)
             if isinstance(value, ViewModel):
-                value = PropertyGetRecorder(value)
-                self._recorders.append(value)
+                if value not in self._recorders:
+                    self._recorders[value] = PropertyGetRecorder(value)
+                value = self._recorders[value]
             return value
 
     def get_used_properties(self):
         used_props = {self._view_model: self._used_props}
-        for recorder in self._recorders:
+        for recorder in self._recorders.values():
             used_props.update(recorder.get_used_properties())
         return used_props
 

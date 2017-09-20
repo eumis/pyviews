@@ -25,6 +25,5 @@ class TestExpression(TestCase):
         expression.get_parameters()['some_key'] = 'updated value'
         self.assertEqual(expression.compile(), 'param value', 'get_parameters should return copy of parameters')
 
-
 if __name__ == '__main__':
     main()
