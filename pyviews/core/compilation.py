@@ -8,5 +8,6 @@ class Expression:
 
     def compile(self, parameters=None):
         params = self.get_parameters()
-        params.update(parameters)
-        eval(self.code, params, {})
+        if parameters is not None:
+            params.update(parameters)
+        return eval(self.code, params, {})
