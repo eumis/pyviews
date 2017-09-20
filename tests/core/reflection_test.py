@@ -29,11 +29,10 @@ class TestReflection(TestCase):
 
     @case('package.module.name', ('package.module', 'name'))
     @case('package.module', ('package', 'module'))
-    @case('package', ('', 'package'))
+    @case('package', ('package', None))
     def test_split_by_last_dot(self, name, expected):
         self.assertEqual(tested.split_by_last_dot(name), expected, 'split_by_last_dot returns wrong path parts')
 
-    @case(None, None)
     @case('unittest', unittest)
     @case('unittest.TestCase', TestCase)
     @case('importlib.import_module', import_module)
@@ -41,9 +40,13 @@ class TestReflection(TestCase):
     def test_import_path(self, path, expected):
         self.assertEqual(tested.import_path(path), expected, 'import_path imports wrong item')
 
+    @case(None)
+    @case('')
+    @case('    ')
     @case('asdf')
+    @case('unittest.asdf')
     def test_import_path_raises(self, invalid_path):
-        with self.assertRaises(ImportError, msg='import_path should raise ImportError for invalid path'):
+        with self.assertRaises(ImportError, msg='import_path should raise ImportError for invalid path ' + str(invalid_path)):
             tested.import_path(invalid_path)
 
 def raise_(ex):

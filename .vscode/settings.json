@@ -14,12 +14,10 @@
         "**/*.pyc": true,
         "**/*.sublime-project": true,
         "pyviews.egg-info": true,
-        "**/*.py~": true,
-        "**/*.un~": true,
         "Include": true,
         "Lib": true,
         "Scripts": true,
         "pip-selfcheck.json": true
-    },
-    "python.pythonPath": "C:/Program Files (x86)/Python36-32/python.exe"
+    }
+    // "python.pythonPath": "${workspaceRoot}//venv//Scripts//python.exe"
 }

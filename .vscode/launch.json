@@ -5,8 +5,7 @@
             "name": "Python",
             "type": "python",
             "request": "launch",
-            "stopOnEntry": false,
-            "pythonPath": "${config:python.pythonPath}",
+            "stopOnEntry": true,
             "windows": {
                 "program": "${workspaceRoot}\\sandbox\\run.py",
                 "cwd": "${workspaceRoot}\\sandbox"
@@ -26,7 +25,6 @@
             "type": "python",
             "request": "launch",
             "stopOnEntry": false,
-            "pythonPath": "${config:python.pythonPath}",
             "program": "${file}",
             "cwd": "${workspaceRoot}",
             "args": [
