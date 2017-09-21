@@ -2,14 +2,8 @@ import unittest
 from unittest import TestCase, main
 from importlib import import_module
 from tests.utility import case
+from tests.mock import SomeObject
 from pyviews.core import reflection as tested
-
-class SomeObject:
-    def __init__(self, one, two=None):
-        self.one = one
-        self.two = two
-
-from tests.core.reflection_test import SomeObject
 
 class TestReflection(TestCase):
     @case('tests.core.reflection_test', 'SomeObject', (1,), SomeObject(1))
@@ -18,20 +12,23 @@ class TestReflection(TestCase):
         actual = tested.create_inst(module_name, class_name, args)
 
         self.assertIsInstance(actual, SomeObject, 'create_inst should return right object type')
-        self.assertEqual(actual.one, expected.one, 'create_inst should pass parameters to constructor')
-        self.assertEqual(actual.two, expected.two, 'create_inst should pass parameters to constructor')
+        msg = 'create_inst should pass parameters to constructor'
+        self.assertEqual(actual.one, expected.one, msg)
+        self.assertEqual(actual.two, expected.two, msg)
 
     @case(('', 'SomeObject'), ImportError)
     @case(('tests.core.reflection_test', 'AnotherObject'), AttributeError)
     def test_create_inst_raises(self, args, error):
-        with self.assertRaises(error, msg='create_inst should raise exception in case not existent module or class'):
+        msg = 'create_inst should raise exception in case not existent module or class'
+        with self.assertRaises(error, msg=msg):
             tested.create_inst(*args)
 
     @case('package.module.name', ('package.module', 'name'))
     @case('package.module', ('package', 'module'))
     @case('package', ('package', None))
     def test_split_by_last_dot(self, name, expected):
-        self.assertEqual(tested.split_by_last_dot(name), expected, 'split_by_last_dot returns wrong path parts')
+        msg = 'split_by_last_dot returns wrong path parts'
+        self.assertEqual(tested.split_by_last_dot(name), expected, msg)
 
     @case('unittest', unittest)
     @case('unittest.TestCase', TestCase)
@@ -46,7 +43,8 @@ class TestReflection(TestCase):
     @case('asdf')
     @case('unittest.asdf')
     def test_import_path_raises(self, invalid_path):
-        with self.assertRaises(ImportError, msg='import_path should raise ImportError for invalid path ' + str(invalid_path)):
+        msg = 'import_path should raise ImportError for invalid path ' + str(invalid_path)
+        with self.assertRaises(ImportError, msg=msg):
             tested.import_path(invalid_path)
 
 def raise_(ex):
