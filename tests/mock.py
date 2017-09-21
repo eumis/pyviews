@@ -1,14 +1,14 @@
-# from pyviews.viewmodel.base import ViewModel
-# from pyviews.view.base import CompileNode
+from pyviews.core.viewmodel import ViewModel
 
-# class TestViewModel(ViewModel):
-#     def __init__(self):
-#         super().__init__()
-#         self.name = None
-#         self.value = None
+class TestViewModel(ViewModel):
+    def __init__(self, private, name, value):
+        super().__init__()
+        self._private = private
+        self.name = name
+        self.value = value
 
-# class TestNode(CompileNode):
-#     pass
+    def get_private(self):
+        return self._private
 
 class SomeObject:
     def __init__(self, one, two=None):

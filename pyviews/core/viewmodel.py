@@ -7,12 +7,6 @@ class ViewModel:
         if prop in self._callbacks:
             self._callbacks[prop].append(callback)
 
-    def notify(self, prop, new_val, old_val):
-        if new_val == old_val or prop not in self._callbacks:
-            return
-        for callback in self._callbacks[prop]:
-            callback(new_val, old_val)
-
     def release_callback(self, prop, callback):
         if prop in self._callbacks:
             if callback in self._callbacks[prop]:
@@ -29,7 +23,13 @@ class ViewModel:
         if name not in self._callbacks:
             self._callbacks[name] = []
         else:
-            self.notify(name, new_val, old_val)
+            self._notify(name, new_val, old_val)
+
+    def _notify(self, prop, new_val, old_val):
+        if new_val == old_val or prop not in self._callbacks:
+            return
+        for callback in self._callbacks[prop]:
+            callback(new_val, old_val)
 
 def _is_public(key: str):
     return not key.startswith('_')
