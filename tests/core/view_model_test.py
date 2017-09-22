@@ -1,6 +1,7 @@
 from unittest import TestCase, main
 from unittest.mock import Mock, call
 from tests.mock import TestViewModel as ViewModel
+from pyviews.core.viewmodel import Dictionary
 
 class TestViewModel(TestCase):
     def test_get_observable_keys(self):
@@ -48,6 +49,13 @@ class TestViewModel(TestCase):
 
         msg = 'callback should be called only for observed properties'
         self.assertEqual(callback.call_args, call('new value', 'some value'), msg)
+
+class TestDictionary(TestCase):
+    def test_dictionary_length(self):
+        dictionary = Dictionary()
+
+        self.assertEqual(len(dictionary), 0, 'dictionary is empty by default')
+
 
 if __name__ == '__main__':
     main()

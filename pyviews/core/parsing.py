@@ -5,7 +5,7 @@ from pyviews.core.binding import Binding
 from pyviews.core.xml import XmlNode, XmlAttr
 
 class Node:
-    def __init__(self, xml_node: XmlNode, parent = None):
+    def __init__(self, xml_node: XmlNode, parent=None):
         self._destroy = []
         self._child_nodes = []
         self._view_model = None if parent is None else parent.view_model
