@@ -41,20 +41,9 @@ class Node:
     def __init__(self, xml_node: XmlNode, parent=None):
         self._destroy = []
         self._child_nodes = []
-        self._view_model = None if parent is None else parent.view_model
         self._bindings = []
         self.xml_node = xml_node
         self.globals = Globals(parent)
-
-    @property
-    def view_model(self):
-        return self._view_model
-
-    @view_model.setter
-    def view_model(self, value):
-        self._view_model = value
-        for binding in self._bindings:
-            binding.update_prop()
 
     def add_binding(self, binding: Binding):
         self._bindings.append(binding)
@@ -63,6 +52,7 @@ class Node:
         self.destroy_children()
         for binding in self._bindings:
             binding.destroy()
+        self._bindings = []
 
     @ioc.inject('parse')
     def parse_children(self, parse=None):
@@ -85,7 +75,7 @@ class NodeExpression(Expression):
         self._node = node
 
     def get_parameters(self):
-        return {'node_key':self._node, 'vm':self._node.view_model, **self._node.globals}
+        return {'node_key':self._node, **self._node.globals.to_all_dictionary()}
 
 # Looks like tkinter specific
 # from os.path import join as join_path

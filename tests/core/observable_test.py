@@ -63,9 +63,9 @@ class TestDictionary(TestCase):
         self.assertEqual(callback.call_count, 3, msg)
 
         msg = 'callback should be called with new and old value as parameters'
-        self.assertEqual(callback.call_args_list[0], call(1, None), msg)
-        self.assertEqual(callback.call_args_list[1], call('two', None), msg)
-        self.assertEqual(callback.call_args_list[2], call('one', 1), msg)
+        self.assertEqual(callback.call_args_list[0], call('one', 1, None), msg)
+        self.assertEqual(callback.call_args_list[1], call('two', 'two', None), msg)
+        self.assertEqual(callback.call_args_list[2], call('one', 'one', 1), msg)
 
     def test_observe_once(self):
         dictionary = ObservableDict()

@@ -43,7 +43,7 @@ class ObservableDict(dict):
         old_value = self._try_get_value(key)
         dict.__setitem__(self, key, value)
         for callback in self._callbacks:
-            callback(value, old_value)
+            callback(key, value, old_value)
 
     def _try_get_value(self, key):
         value = None
