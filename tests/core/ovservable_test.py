@@ -1,7 +1,7 @@
 from unittest import TestCase, main
 from unittest.mock import Mock, call
 from tests.mock import TestViewModel as ViewModel
-from pyviews.core.viewmodel import Dictionary
+from pyviews.core.observable import ObservableDict
 
 class TestViewModel(TestCase):
     def test_get_observable_keys(self):
@@ -33,7 +33,6 @@ class TestViewModel(TestCase):
     def test_release_callback(self):
         view_model = ViewModel('priv', 'some name', 'some value')
         callback = Mock()
-        callback.call_args_list
         view_model.observe('name', callback)
         view_model.observe('value', callback)
 
@@ -51,11 +50,45 @@ class TestViewModel(TestCase):
         self.assertEqual(callback.call_args, call('new value', 'some value'), msg)
 
 class TestDictionary(TestCase):
-    def test_dictionary_length(self):
-        dictionary = Dictionary()
+    def test_observe(self):
+        dictionary = ObservableDict()
+        callback = Mock()
 
-        self.assertEqual(len(dictionary), 0, 'dictionary is empty by default')
+        dictionary.observe(callback)
+        dictionary['one'] = 1
+        dictionary['two'] = 'two'
+        dictionary['one'] = 'one'
 
+        msg = 'callback should be called once for every change'
+        self.assertEqual(callback.call_count, 3, msg)
+
+        msg = 'callback should be called with new and old value as parameters'
+        self.assertEqual(callback.call_args_list[0], call(1, None), msg)
+        self.assertEqual(callback.call_args_list[1], call('two', None), msg)
+        self.assertEqual(callback.call_args_list[2], call('one', 1), msg)
+
+    def test_observe_once(self):
+        dictionary = ObservableDict()
+        callback = Mock()
+
+        dictionary.observe(callback)
+        dictionary.observe(callback)
+        dictionary['one'] = 1
+
+        msg = 'callback should be registered once'
+        self.assertEqual(callback.call_count, 1, msg)
+
+    def test_release(self):
+        dictionary = ObservableDict()
+        callback = Mock()
+
+        dictionary.observe(callback)
+        dictionary['one'] = 1
+        dictionary.release(callback)
+        dictionary['two'] = 'two'
+
+        msg = 'callback shouldn''t be called after releasing'
+        self.assertEqual(callback.call_count, 1, msg)
 
 if __name__ == '__main__':
     main()

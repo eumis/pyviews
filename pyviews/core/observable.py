@@ -1,4 +1,4 @@
-class ViewModel:
+class Observable:
     def __init__(self):
         public_keys = [(key, getattr(self, key)) for key in dir(self) if _is_public(key)]
         self._callbacks = {key: [] for (key, value) in public_keys if callable(value)}
@@ -34,27 +34,10 @@ class ViewModel:
 def _is_public(key: str):
     return not key.startswith('_')
 
-class Dictionary(dict):
-    def __init__(self, parent=None):
+class ObservableDict(dict):
+    def __init__(self):
         super().__init__()
-        self._parent = parent
-        self._callbacks = []
-
-    def observe(self, callback):
-        self._callbacks.append(callback)
-
-    def __len__(self):
-        keys = set(self.keys())
-        if self._parent is not None:
-            keys.update(self._parent.keys())
-        return len(keys)
-
-    def __getitem__(self, key):
-        if key in self:
-            return dict.__getitem__(self, key)
-        if self._parent is not None:
-            return self._parent[key]
-        raise KeyError(key)
+        self._callbacks = set()
 
     def __setitem__(self, key, value):
         old_value = self._try_get_value(key)
@@ -69,3 +52,12 @@ class Dictionary(dict):
         except KeyError:
             pass
         return value
+
+    def observe(self, callback):
+        self._callbacks.add(callback)
+
+    def release(self, callback):
+        try:
+            self._callbacks.remove(callback)
+        except KeyError:
+            pass

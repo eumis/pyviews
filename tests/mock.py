@@ -1,6 +1,6 @@
-from pyviews.core.viewmodel import ViewModel
+from pyviews.core.observable import Observable
 
-class TestViewModel(ViewModel):
+class TestViewModel(Observable):
     def __init__(self, private, name, value):
         super().__init__()
         self._private = private

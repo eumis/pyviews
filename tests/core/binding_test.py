@@ -2,15 +2,15 @@ from unittest import TestCase, main
 from tests.utility import case
 from pyviews.core.binding import PropertyGetRecorder, Binding
 from pyviews.core.compilation import Expression
-from pyviews.core.viewmodel import ViewModel
+from pyviews.core.observable import Observable
 
-class InnerViewModel(ViewModel):
+class InnerViewModel(Observable):
     def __init__(self, int_value, str_value):
         super().__init__()
         self.int_value = int_value
         self.str_value = str_value
 
-class ParentViewModel(ViewModel):
+class ParentViewModel(Observable):
     def __init__(self, int_value, inner_vm):
         super().__init__()
         self.int_value = int_value

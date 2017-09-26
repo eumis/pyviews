@@ -1,4 +1,4 @@
-from pyviews.viewmodel.base import ViewModel
+from pyviews.observable.base import ViewModel
 from pyviews.common.view import scroll_to, find_node
 
 # pylint: disable=E1101

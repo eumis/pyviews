@@ -1,4 +1,4 @@
-from pyviews.viewmodel.base import ViewModel
+from pyviews.observable.base import ViewModel
 
 # pylint: disable=E1101
 class Counter(ViewModel):

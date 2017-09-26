@@ -1,4 +1,4 @@
-from pyviews.viewmodel.base import ViewModel
+from pyviews.observable.base import ViewModel
 
 class AppViewModel(ViewModel):
     def __init__(self, default_view=None):

@@ -3,6 +3,39 @@ from pyviews.core.reflection import create_inst, import_path
 from pyviews.core.compilation import Expression
 from pyviews.core.binding import Binding
 from pyviews.core.xml import XmlNode, XmlAttr
+from pyviews.core.observable import ObservableDict
+
+class Globals:
+    def __init__(self, parent=None):
+        super().__init__()
+        self._container = ObservableDict()
+        self._callbacks = []
+        self._parent = parent
+
+    def __getitem__(self, key):
+        if key in self._container:
+            return self._container[key]
+        if self._parent is not None:
+            return self._parent[key]
+        raise KeyError(key)
+
+    def __setitem__(self, key, value):
+        self._container[key] = value
+
+    def own_keys(self):
+        return self._container.keys()
+
+    def all_keys(self):
+        keys = set(self.own_keys())
+        if self._parent is not None:
+            keys.update(self._parent.own_keys())
+        return keys
+
+    def to_dictionary(self):
+        return self._container.copy()
+
+    def to_all_dictionary(self):
+        return {key: self[key] for key in self.all_keys()}
 
 class Node:
     def __init__(self, xml_node: XmlNode, parent=None):
@@ -11,7 +44,7 @@ class Node:
         self._view_model = None if parent is None else parent.view_model
         self._bindings = []
         self.xml_node = xml_node
-        self.globals = {} if parent is None else parent.globals.copy()
+        self.globals = Globals(parent)
 
     @property
     def view_model(self):

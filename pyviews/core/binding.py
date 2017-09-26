@@ -1,8 +1,8 @@
 from pyviews.core.compilation import Expression
-from pyviews.core.viewmodel import ViewModel
+from pyviews.core.observable import Observable
 
 class PropertyGetRecorder:
-    def __init__(self, view_model: ViewModel):
+    def __init__(self, view_model: Observable):
         self._view_model = view_model
         self._used_props = set()
         self._recorders = {}
@@ -13,7 +13,7 @@ class PropertyGetRecorder:
         if self._view_model is not None:
             self._used_props.add(prop)
             value = getattr(self._view_model, prop)
-            if isinstance(value, ViewModel):
+            if isinstance(value, Observable):
                 if value not in self._recorders:
                     self._recorders[value] = PropertyGetRecorder(value)
                 value = self._recorders[value]
@@ -49,7 +49,7 @@ class Binding:
     def _get_record_parameters(self):
         parameters = self._expression.get_parameters()
         for key, value in parameters.items():
-            if isinstance(value, ViewModel):
+            if isinstance(value, Observable):
                 parameters[key] = PropertyGetRecorder(value)
         return parameters
 
