@@ -1,16 +1,16 @@
 from unittest import TestCase, main
 from tests.utility import case
-from pyviews.core.binding import PropertyGetRecorder, Binding
+from pyviews.core.binding import PropertyGetRecorder, KeyGetRecorder, Binding
 from pyviews.core.compilation import Expression
-from pyviews.core.observable import Observable
+from pyviews.core.observable import ObservableEnt
 
-class InnerViewModel(Observable):
+class InnerViewModel(ObservableEnt):
     def __init__(self, int_value, str_value):
         super().__init__()
         self.int_value = int_value
         self.str_value = str_value
 
-class ParentViewModel(Observable):
+class ParentViewModel(ObservableEnt):
     def __init__(self, int_value, inner_vm):
         super().__init__()
         self.int_value = int_value
@@ -64,6 +64,35 @@ class TestPropertyGetRecorder(TestCase):
         self.assertEqual(len(used_properties[self.view_model]), 2, msg)
         self.assertTrue('int_value' in used_properties[self.view_model], msg)
         self.assertTrue('inner_vm' in used_properties[self.view_model], msg)
+
+class TestKeyGetRecorder(TestCase):
+    def setUp(self):
+        self.source = {'one': 1, 'two': 'two', 'three': 'three'}
+        self.recorder = KeyGetRecorder(self.source)
+
+    def test_properties(self):
+        msg = 'recorder should return values from source'
+        self.assertEqual(self.recorder, self.source, msg)
+
+    def test_get_used_keys(self):
+        self.recorder['one']
+        self.recorder['two']
+
+        used_keys = self.recorder.get_used_keys()
+
+        msg = 'called keys should be returned'
+        self.assertEqual(sorted(used_keys), sorted(['one', 'two']), msg)
+
+    def test_get_used_duplicate_keys(self):
+        self.recorder['three']
+        self.recorder['three']
+        self.recorder['two']
+        self.recorder['two']
+
+        used_keys = self.recorder.get_used_keys()
+
+        msg = 'called keys should be returned once'
+        self.assertEqual(sorted(used_keys), sorted(['three', 'two']), msg)
 
 class TestBindable:
     def __init__(self):

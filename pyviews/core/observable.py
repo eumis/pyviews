@@ -1,63 +1,68 @@
 class Observable:
     def __init__(self):
-        public_keys = [(key, getattr(self, key)) for key in dir(self) if _is_public(key)]
-        self._callbacks = {key: [] for (key, value) in public_keys if callable(value)}
+        self._callbacks = {}
 
-    def observe(self, prop, callback):
-        if prop in self._callbacks:
-            self._callbacks[prop].append(callback)
+    def observe(self, key, callback):
+        if key not in self._callbacks:
+            self._callbacks[key] = []
+        self._callbacks[key].append(callback)
 
-    def release_callback(self, prop, callback):
-        if prop in self._callbacks:
-            if callback in self._callbacks[prop]:
-                self._callbacks[prop].remove(callback)
+    def _notify(self, key, value, old_value):
+        if value == old_value:
+            return
+        if key in self._callbacks:
+            for callback in self._callbacks[key]:
+                callback(value, old_value)
+
+    def release(self, key, callback):
+        try:
+            self._callbacks[key].remove(callback)
+        except KeyError:
+            pass
+
+class ObservableEnt(Observable):
+    def observe(self, key, callback):
+        if not _is_public(key):
+            return
+        super().observe(key, callback)
 
     def get_observable_keys(self):
-        return self._callbacks.keys()
+        return [key for key in dir(self) if _is_public(key)]
 
-    def __setattr__(self, name, new_val):
-        old_val = self.__dict__[name] if name in self.__dict__ else None
-        self.__dict__[name] = new_val
-        if not _is_public(name):
+    def __setattr__(self, key, value):
+        old_val = self.__dict__[key] if key in self.__dict__ else None
+        self.__dict__[key] = value
+        if not _is_public(key):
             return
-        if name not in self._callbacks:
-            self._callbacks[name] = []
-        else:
-            self._notify(name, new_val, old_val)
-
-    def _notify(self, prop, new_val, old_val):
-        if new_val == old_val or prop not in self._callbacks:
-            return
-        for callback in self._callbacks[prop]:
-            callback(new_val, old_val)
+        self._notify(key, value, old_val)
 
 def _is_public(key: str):
     return not key.startswith('_')
 
-class ObservableDict(dict):
-    def __init__(self):
-        super().__init__()
-        self._callbacks = set()
+# class ObservableDict(Observable, dict):
+#     def __init__(self):
+#         super().__init__()
+#         self._callbacks = set()
 
-    def __setitem__(self, key, value):
-        old_value = self._try_get_value(key)
-        dict.__setitem__(self, key, value)
-        for callback in self._callbacks:
-            callback(key, value, old_value)
+#     def __setitem__(self, key, value):
+#         old_value = self._try_get_value(key)
+#         dict.__setitem__(self, key, value)
+#         for callback in self._callbacks:
+#             callback(key, value, old_value)
 
-    def _try_get_value(self, key):
-        value = None
-        try:
-            value = self[key]
-        except KeyError:
-            pass
-        return value
+#     def _try_get_value(self, key):
+#         value = None
+#         try:
+#             value = self[key]
+#         except KeyError:
+#             pass
+#         return value
 
-    def observe(self, callback):
-        self._callbacks.add(callback)
+#     def observe(self, callback):
+#         self._callbacks.add(callback)
 
-    def release(self, callback):
-        try:
-            self._callbacks.remove(callback)
-        except KeyError:
-            pass
+#     def release(self, callback):
+#         try:
+#             self._callbacks.remove(callback)
+#         except KeyError:
+#             pass
