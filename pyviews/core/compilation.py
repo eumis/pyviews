@@ -1,4 +1,5 @@
 from pyviews.core.observable import Observable
+import ast
 
 class ExpressionVars(Observable):
     def __init__(self, parent=None):
@@ -14,7 +15,10 @@ class ExpressionVars(Observable):
         raise KeyError(key)
 
     def __setitem__(self, key, value):
-        old_value = self[key]
+        try:
+            old_value = self[key]
+        except KeyError:
+            old_value = None
         self._container[key] = value
         self._notify(key, value, old_value)
 
@@ -33,16 +37,49 @@ class ExpressionVars(Observable):
     def to_all_dictionary(self):
         return {key: self[key] for key in self.all_keys()}
 
+class Entry:
+    def __init__(self, key):
+        self.key = key
+        self.entries = None
+
 class Expression:
-    def __init__(self, code, parameters=None):
+    def __init__(self, code):
         self.code = code
-        self._parameters = {} if parameters is None else parameters
+        self._compiled = compile(code, '<string>', 'eval')
 
-    def get_parameters(self):
-        return self._parameters.copy()
+    def get_var_tree(self):
+        parsed = ast.parse(self.code)
 
-    def compile(self, parameters=None):
-        params = self.get_parameters()
-        if parameters is not None:
-            params.update(parameters)
-        return eval(self.code, params, {})
+        nodes = [node for node in ast.walk(parsed) \
+                 if isinstance(node, ast.Name)]
+        names = {node.id: [] for node in nodes}
+        for name in nodes:
+            names[name.id].append(name)
+
+        attrs = [node for node in ast.walk(parsed) \
+                 if isinstance(node, ast.Attribute)]
+
+        root = Entry('root')
+        root.entries = []
+        for key, nodes in names.items():
+            entry = Entry(key)
+            entry.entries = self._get_attr_entires(attrs, nodes)
+            root.entries.append(entry)
+        return root
+
+    def _get_attr_entires(self, attrs, parents):
+        attr_nodes = [attr for attr in attrs if attr.value in parents]
+
+        parent_attrs = {node.attr: [] for node in attr_nodes}
+        for node in attr_nodes:
+            parent_attrs[node.attr].append(node)
+        res = []
+        for key, nodes in parent_attrs.items():
+            entry = Entry(key)
+            entry.entries = self._get_attr_entires(attrs, nodes)
+            res.append(entry)
+        return res
+
+    def execute(self, parameters=None):
+        parameters = {} if parameters is None else parameters
+        return eval(self._compiled, parameters, {})

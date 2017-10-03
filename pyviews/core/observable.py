@@ -21,23 +21,15 @@ class Observable:
             pass
 
 class ObservableEnt(Observable):
-    def observe(self, key, callback):
-        if not _is_public(key):
-            return
-        super().observe(key, callback)
-
-    def get_observable_keys(self):
-        return [key for key in dir(self) if _is_public(key)]
-
     def __setattr__(self, key, value):
-        old_val = self.__dict__[key] if key in self.__dict__ else None
-        self.__dict__[key] = value
-        if not _is_public(key):
-            return
+        old_val = getattr(self, key) if key in self.__dict__ else None
+        super().__setattr__(key, value)
         self._notify(key, value, old_val)
 
-def _is_public(key: str):
-    return not key.startswith('_')
+    def observe(self, key, callback):
+        if key not in self.__dict__:
+            raise KeyError('Entity ' + str(self) + 'doesn''t have attribute' + key)
+        super().observe(key, callback)
 
 # class ObservableDict(Observable, dict):
 #     def __init__(self):

@@ -2,7 +2,7 @@ from unittest import TestCase, main
 from tests.utility import case
 from pyviews.core.compilation import Expression, ExpressionVars
 
-class TestGlobals(TestCase):
+class TestExpressionVars(TestCase):
     def test_globals_keys(self):
         parent = ExpressionVars()
         parent['one'] = 1
@@ -55,23 +55,35 @@ class TestExpression(TestCase):
     @case('some_key', {'some_key': 'asdf'}, 'asdf')
     @case('some_key(some_value)', {'some_key': lambda val: val, 'some_value': 'value'}, 'value')
     def test_compile_result(self, code, params, expected):
-        expression = Expression(code, params)
+        expression = Expression(code)
         msg = 'compile should return expression result value'
-        self.assertEqual(expression.compile(), expected, msg)
+        self.assertEqual(expression.execute(params), expected, msg)
 
-    @case('(one, two)', {'one': 1}, {'two': 'two value'}, (1, 'two value'))
-    @case('(one, two)', {'one': 1}, {'one': 'one value', 'two': 'two value'}, ('one value', 'two value'))
-    @case('(one, two)', None, {'one': 'one value', 'two': 'two value'}, ('one value', 'two value'))
-    def test_compile_parameters(self, code, params, compile_params, expected):
-        expression = Expression(code, params)
-        msg = 'compile should merge parameters passed to method'
-        self.assertEqual(expression.compile(compile_params), expected, msg)
+    def test_var_tree(self):
+        expression = Expression("str(vm.vm.int_value) + vm.vm.str_value + vm.str_value")
 
-    def test_get_parameters(self):
-        expression = Expression('some_key', {'some_key': 'param value'})
-        expression.get_parameters()['some_key'] = 'updated value'
-        msg = 'get_parameters should return copy of parameters'
-        self.assertEqual(expression.compile(), 'param value', msg)
+        root = expression.get_var_tree()
+
+        self.assertEqual(root.key, 'root', 'root entry should have entry with "root" key')
+        self.assertEqual(sorted([e.key for e in root.entries]), sorted(['str', 'vm']), \
+                         'root entry should contain entries for local values')
+
+        str_node = [entry for entry in root.entries if entry.key == 'str'][0]
+        self.assertEqual(sorted([e.key for e in str_node.entries]), [], \
+                         'variable entry shouldn''t contain children')
+
+        vm_node = [entry for entry in root.entries if entry.key == 'vm'][0]
+        self.assertEqual(sorted([e.key for e in vm_node.entries]), sorted(['vm', 'str_value']), \
+                         'variable entry should contain attribute entries')
+
+        str_node = [entry for entry in vm_node.entries if entry.key == 'str_value'][0]
+        self.assertEqual(sorted([e.key for e in str_node.entries]), [], \
+                         'attribute entry shouldn''t contain entries')
+
+        vm_node = [entry for entry in vm_node.entries if entry.key == 'vm'][0]
+        self.assertEqual(sorted([e.key for e in vm_node.entries]), \
+                         sorted(['int_value', 'str_value']), \
+                         'variable entry should contain attribute entries')
 
 if __name__ == '__main__':
     main()
