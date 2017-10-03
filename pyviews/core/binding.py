@@ -1,15 +1,17 @@
-from pyviews.core.observable import Observable, ObservableEnt
+from pyviews.core.observable import Observable
 from pyviews.core.compilation import Expression, ExpressionVars, Entry
 
 class Dependency:
-    def __init__(self, prop, view_model):
-        self._children = []
-        self.prop = prop
-        self.view_model = view_model
+    def __init__(self, observable: Observable, key, callback):
+        self._observable = observable
+        self._key = key
+        self._callback = callback
 
-class DependencyTree:
-    def __init__(self):
-        self._children = []
+    def destroy(self):
+        self._observable.release(self._key, self._callback)
+        self._observable = None
+        self._key = None
+        self._callback = None
 
 class BindingTarget:
     def __init__(self, instance, prop, modifier):
@@ -54,7 +56,10 @@ class Binding:
             return None
 
     def _update_callback(self, new_val, old_val):
-        self._update_target()
+        if isinstance(new_val, Observable) or isinstance(old_val, Observable):
+            self.bind(self._vars)
+        else:
+            self._update_target()
 
     def _update_target(self):
         value = self._expression.execute(self._vars.to_all_dictionary())
@@ -62,6 +67,6 @@ class Binding:
 
     def destroy(self):
         self._vars = None
-        for view_model, prop in self._dependencies:
-            view_model.release(prop, self._update_callback)
+        for dependency in self._dependencies:
+            dependency.destroy()
         self._dependencies = []

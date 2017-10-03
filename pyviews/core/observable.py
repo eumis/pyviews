@@ -11,7 +11,7 @@ class Observable:
         if value == old_value:
             return
         if key in self._callbacks:
-            for callback in self._callbacks[key]:
+            for callback in self._callbacks[key].copy():
                 callback(value, old_value)
 
     def release(self, key, callback):

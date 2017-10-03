@@ -38,54 +38,81 @@ class TestBindingTarget(TestCase):
         msg = 'set_value should return expression result value'
         self.assertEqual(inst.int_value, new_val, msg)
 
-class TestBinding(TestCase):
+class TestBindingWithSimpleExpression(TestCase):
+    def setUp(self):
+        self.view_model = InnerViewModel(2, 'inner str')
+        self.expression = Expression('str(vm.int_value) + vm.str_value')
+        self.inst = TestBindable()
+        self.target = BindingTarget(self.inst, 'str_value', setattr)
+        self.binding = Binding(self.target, self.expression)
+        self.vars = ExpressionVars()
+        self.vars['vm'] = self.view_model
+
     def test_binding_creation(self):
-        view_model = InnerViewModel(2, 'inner str')
-        expression = Expression('str(vm.int_value) + vm.str_value')
-        inst = TestBindable()
-        target = BindingTarget(inst, 'str_value', setattr)
-        binding = Binding(target, expression)
-        vars_ = ExpressionVars()
-        vars_['vm'] = view_model
-        binding.bind(vars_)
+        self.binding.bind(self.vars)
 
         msg = 'property should be updated on binding creation'
-        self.assertEqual(inst.str_value, str(view_model.int_value) + view_model.str_value, msg)
+        actual = str(self.view_model.int_value) + self.view_model.str_value
+        self.assertEqual(self.inst.str_value, actual, msg)
 
     def test_binding(self):
-        view_model = InnerViewModel(2, 'inner str')
-        expression = Expression('str(vm.int_value) + vm.str_value')
-        inst = TestBindable()
-        target = BindingTarget(inst, 'str_value', setattr)
-        binding = Binding(target, expression)
-        vars_ = ExpressionVars()
-        vars_['vm'] = view_model
-        binding.bind(vars_)
+        self.binding.bind(self.vars)
 
         msg = 'property should be updated on vm change'
 
-        view_model.int_value = 3
-        self.assertEqual(inst.str_value, str(view_model.int_value) + view_model.str_value, msg)
+        self.view_model.int_value = 3
+        actual = str(self.view_model.int_value) + self.view_model.str_value
+        self.assertEqual(self.inst.str_value, actual, msg)
 
-        view_model.str_value = 'new str value'
-        self.assertEqual(inst.str_value, str(view_model.int_value) + view_model.str_value, msg)
+        self.view_model.str_value = 'new str value'
+        actual = str(self.view_model.int_value) + self.view_model.str_value
+        self.assertEqual(self.inst.str_value, actual, msg)
 
     def test_destroy(self):
-        view_model = InnerViewModel(2, 'inner str')
-        expression = Expression('str(vm.int_value) + vm.str_value')
-        inst = TestBindable()
-        target = BindingTarget(inst, 'str_value', setattr)
-        binding = Binding(target, expression)
-        expected = inst.str_value
-        binding.destroy()
+        expected = self.inst.str_value
+        self.binding.destroy()
 
         msg = 'destroy should remove property change on expression change'
 
-        view_model.int_value = 3
-        self.assertEqual(inst.str_value, expected, msg)
+        self.view_model.int_value = 3
+        self.assertEqual(self.inst.str_value, expected, msg)
 
-        view_model.str_value = 'new str value'
-        self.assertEqual(inst.str_value, expected, msg)
+        self.view_model.str_value = 'new str value'
+        self.assertEqual(self.inst.str_value, expected, msg)
+
+class TestBindingWithInnerViewModel(TestCase):
+    def setUp(self):
+        inner_vm = InnerViewModel(2, 'inner str')
+        self.view_model = ParentViewModel(3, inner_vm)
+        self.expression = Expression('str(vm.int_value) + vm.inner_vm.str_value')
+        self.inst = TestBindable()
+        self.target = BindingTarget(self.inst, 'str_value', setattr)
+        self.binding = Binding(self.target, self.expression)
+        self.vars = ExpressionVars()
+        self.vars['vm'] = self.view_model
+
+    def test_binding(self):
+        self.binding.bind(self.vars)
+
+        msg = 'property should be updated on vm change'
+        self.view_model.int_value = 3
+        actual = str(self.view_model.int_value) + self.view_model.inner_vm.str_value
+        self.assertEqual(self.inst.str_value, actual, msg)
+
+        msg = 'property should be updated on inner vm change'
+        self.view_model.inner_vm.str_value = 'new str value'
+        actual = str(self.view_model.int_value) + self.view_model.inner_vm.str_value
+        self.assertEqual(self.inst.str_value, actual, msg)
+
+        msg = 'property should be updated on inner vm change'
+        self.view_model.inner_vm = InnerViewModel(50, 'new inner value')
+        actual = str(self.view_model.int_value) + self.view_model.inner_vm.str_value
+        self.assertEqual(self.inst.str_value, actual, msg)
+
+        msg = 'property should be updated on inner vm property change'
+        self.view_model.inner_vm.str_value = 'new str value'
+        actual = str(self.view_model.int_value) + self.view_model.inner_vm.str_value
+        self.assertEqual(self.inst.str_value, actual, msg)
 
 if __name__ == '__main__':
     main()
