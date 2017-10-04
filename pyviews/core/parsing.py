@@ -5,7 +5,7 @@ from pyviews.core.binding import Binding, BindingTarget
 from pyviews.core.xml import XmlNode, XmlAttr
 
 class NodeArgs:
-    def __init__(self, parent=None, xml_node=None):
+    def __init__(self, xml_node: XmlNode, parent=None):
         super().__init__()
         self.parent = parent
         self.xml_node = xml_node
@@ -46,7 +46,7 @@ class Node:
         self._child_nodes = []
 
     def get_node_args(self, xml_node: XmlNode):
-        return NodeArgs(self, xml_node)
+        return NodeArgs(xml_node, self)
 
 # Looks like tkinter specific
 # from os.path import join as join_path

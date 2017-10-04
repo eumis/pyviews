@@ -10,7 +10,7 @@ class TestNodeArgs(TestCase):
         element = ET.fromstring('<root xmlns="ns"/>')
         xml_node = XmlNode(element)
         node = parsing.Node(xml_node)
-        args = parsing.NodeArgs(node, xml_node)
+        args = parsing.NodeArgs(xml_node, node)
 
         msg = 'NodeArgs should return XmlNode as args'
         self.assertEqual([xml_node], args.get_args(), msg)
@@ -27,7 +27,7 @@ class TestNode(TestCase):
         msg = 'Node should inititalise properties from init parameters'
         self.assertEqual(node.xml_node, xml_node, msg)
 
-class TestParse(TestCase):
+class TestParseNode(TestCase):
     def setUp(self):
         element = ET.fromstring('<Node xmlns="pyviews.core.parsing"/>')
         xml_node = XmlNode(element)
@@ -39,10 +39,27 @@ class TestParse(TestCase):
     def test_parse(self):
         self.parent_node.globals['some_key'] = 'some value'
 
-        node = parsing.parse(self.xml_node, parsing.NodeArgs(self.parent_node, self.xml_node))
+        node = parsing.parse(self.xml_node, parsing.NodeArgs(self.xml_node, self.parent_node))
 
-        msg = 'parse should init node with right xml_node'
+        msg = 'parse should init node with right passed xml_node'
         self.assertEqual(node.xml_node, self.xml_node, msg=msg)
+
+        msg = 'parse should init node with passed parent'
+        self.assertEqual(node.globals['some_key'], 'some value', msg=msg)
+
+class SomeObject:
+    def __init__(self, *args, **kwargs):
+        pass
+
+class TestParseObjectNode(TestCase):
+    def setUp(self):
+        element = ET.fromstring('<SomeObject xmlns="tests.core.parsing_test"/>')
+        self.xml_node = XmlNode(element)
+
+    def test_parse_raises(self):
+        msg = 'parse should raise error if method "convert_to_node" is not registered'
+        with self.assertRaises(NotImplementedError, msg=msg):
+            parsing.parse(self.xml_node, parsing.NodeArgs(self.xml_node))
 
 class TestGetModifier(TestCase):
     @case('', setattr)
