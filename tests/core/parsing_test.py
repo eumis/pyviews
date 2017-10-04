@@ -31,7 +31,21 @@ class TestMethods(TestCase):
         msg = 'get_modifier should raise ImportError if namespace can''t be imported'
         with self.assertRaises(ImportError, msg=msg):
             xml_attr = XmlAttr((name, ''))
-            actual = parsing.get_modifier(xml_attr)
+            parsing.get_modifier(xml_attr)
+
+class TestExpressions(TestCase):
+    @case('{asdf}', True)
+    @case('{{asdf}}', True)
+    @case('{asdf', False)
+    @case('asdf}', False)
+    @case(' {asdf}', False)
+    def test_is_code_expression(self, expr, expected):
+        self.assertEqual(parsing.is_code_expression(expr), expected)
+
+    @case('{asdf}', 'asdf')
+    @case('asdf', 'sd')
+    def test_parse_one_way_binding(self, expr, expected):
+        self.assertEqual(parsing.parse_code_expression(expr), expected)
 
 if __name__ == '__main__':
     main()
