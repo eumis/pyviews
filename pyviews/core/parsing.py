@@ -1,7 +1,7 @@
 from pyviews.core import ioc
 from pyviews.core.reflection import create_inst, import_path
 from pyviews.core.compilation import Expression, ExpressionVars
-from pyviews.core.binding import Binding
+from pyviews.core.binding import Binding, BindingTarget
 from pyviews.core.xml import XmlNode, XmlAttr
 
 class Node:
@@ -35,14 +35,6 @@ class Node:
 
     def get_parsing_args(self, xml_node: XmlNode):
         return {'parent': self, 'xml_node': xml_node}
-
-class NodeExpression(Expression):
-    def __init__(self, node, code):
-        super().__init__(code)
-        self._node = node
-
-    def get_parameters(self):
-        return {'node_key':self._node, **self._node.globals.to_all_dictionary()}
 
 # Looks like tkinter specific
 # from os.path import join as join_path
@@ -80,19 +72,18 @@ def parse_attr(node: Node, attr: XmlAttr):
     modifier = get_modifier(attr)
     value = attr.value
     if is_code_expression(value):
-        expression = NodeExpression(node, parse_code_expression(value))
-        binding = Binding(node, attr.name, modifier, expression)
+        expression = Expression(parse_code_expression(value))
+        target = BindingTarget(node, attr.name, modifier)
+        binding = Binding(target, expression)
+        binding.bind(node.globals)
         node.add_binding(binding)
     else:
         modifier(node, attr.name, value)
 
 def get_modifier(attr: XmlAttr):
     if attr.namespace is None:
-        return set_attr
+        return setattr
     return import_path(attr.namespace)
-
-def set_attr(node: Node, name, value):
-    node.set_attr(name, value)
 
 def is_code_expression(expression):
     return expression.startswith('{') and expression.endswith('}')
