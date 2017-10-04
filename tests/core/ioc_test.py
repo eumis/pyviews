@@ -41,6 +41,11 @@ class TestContainer(TestCase):
         with self.assertRaises(Exception, msg='Container should raise exception for not existent dependency'):
             self.container.get('key')
 
+    def test_self_registration(self):
+        registered_container = self.container.get('container')
+
+        self.assertEqual(registered_container, self.container, msg='Container should register himself with key "Container"')
+
 class ContainerMock:
     def __init__(self):
         self.passed_params = None

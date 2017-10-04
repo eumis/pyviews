@@ -1,6 +1,7 @@
 class Container:
     def __init__(self):
         self._initializers = {}
+        self.register('container', lambda: self)
 
     def register(self, name, initializer: callable, param=None):
         if not callable(initializer):

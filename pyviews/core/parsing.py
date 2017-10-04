@@ -4,13 +4,25 @@ from pyviews.core.compilation import Expression, ExpressionVars
 from pyviews.core.binding import Binding, BindingTarget
 from pyviews.core.xml import XmlNode, XmlAttr
 
+class NodeArgs:
+    def __init__(self, parent=None, xml_node=None):
+        super().__init__()
+        self.parent = parent
+        self.xml_node = xml_node
+
+    def get_args(self):
+        return [self.xml_node]
+
+    def get_kwargs(self):
+        return {'parent': self.parent}
+
 class Node:
     def __init__(self, xml_node: XmlNode, parent=None):
         self._destroy = []
         self._child_nodes = []
         self._bindings = []
         self.xml_node = xml_node
-        self.globals = ExpressionVars(parent)
+        self.globals = ExpressionVars(None if parent is None else parent.globals)
 
     def add_binding(self, binding: Binding):
         self._bindings.append(binding)
@@ -24,8 +36,8 @@ class Node:
     @ioc.inject('parse')
     def parse_children(self, parse=None):
         self.destroy_children()
-        for xml_node in self.xml_node.children:
-            args = self.get_parsing_args(xml_node)
+        for xml_node in self.xml_node.get_children():
+            args = self.get_node_args(xml_node)
             self._child_nodes.append(parse(xml_node, args))
 
     def destroy_children(self):
@@ -33,8 +45,8 @@ class Node:
             child.destroy()
         self._child_nodes = []
 
-    def get_parsing_args(self, xml_node: XmlNode):
-        return {'parent': self, 'xml_node': xml_node}
+    def get_node_args(self, xml_node: XmlNode):
+        return NodeArgs(self, xml_node)
 
 # Looks like tkinter specific
 # from os.path import join as join_path
@@ -42,20 +54,20 @@ class Node:
 #     view_path = join_path(views_folder, view + view_ext)
 #     return get_root(view_path)
 
-def parse(xml_node: XmlNode, args: dict):
+def parse(xml_node: XmlNode, args: NodeArgs):
     node = create_node(xml_node, args)
     run_parsing_steps(node)
     return node
 
 @ioc.inject('convert_to_node')
-def create_node(xml_node: XmlNode, args: dict, convert_to_node=None):
-    node = create_inst(xml_node.module_name, xml_node.class_name, **args)
+def create_node(xml_node: XmlNode, args: NodeArgs, convert_to_node=None):
+    node = create_inst(xml_node.module_name, xml_node.class_name, args.get_args(), args.get_kwargs())
     if not isinstance(node, Node):
         node = convert_to_node(node, xml_node, args)
     node.xml_node = xml_node
     return node
 
-def convert_to_node(inst, xml_node: XmlNode, args: dict):
+def convert_to_node(inst, xml_node: XmlNode, args: NodeArgs):
     raise NotImplementedError('convert_to_node is not implemented', inst, xml_node, args)
 
 @ioc.inject('container')
