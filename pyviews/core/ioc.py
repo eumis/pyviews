@@ -11,9 +11,8 @@ class Container:
         self._initializers[name][param] = initializer
 
     def get(self, name, param=None):
-        if name not in self._initializers:
-            raise ValueError('Dependency with name ' + name + ' is not found')
-        param = param if param in self._initializers[name] else None
+        if name not in self._initializers or param not in self._initializers[name]:
+            raise KeyError('Dependency with name ' + name + ' is not found')
         return self._initializers[name][param]()
 
 CONTAINER = Container()

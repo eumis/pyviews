@@ -72,7 +72,10 @@ def convert_to_node(inst, xml_node: XmlNode, args: NodeArgs):
 
 @ioc.inject('container')
 def run_parsing_steps(node: Node, container=None):
-    parsing_steps = container.get('parsing_steps', node.__class__)
+    try:
+        parsing_steps = container.get('parsing_steps', node.__class__)
+    except KeyError:
+        parsing_steps = container.get('parsing_steps')
     for run_step in parsing_steps:
         run_step(node)
 
