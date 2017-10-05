@@ -3,7 +3,7 @@ from xml.etree import ElementTree as ET
 from tests.utility import case
 from tests.mock import some_modifier
 from pyviews.core.xml import XmlNode, XmlAttr
-from pyviews.core import parsing
+from pyviews.core import parsing, ioc
 
 class TestNodeArgs(TestCase):
     def test_node_args(self):
@@ -46,6 +46,15 @@ class TestParseNode(TestCase):
 
         msg = 'parse should init node with passed parent'
         self.assertEqual(node.globals['some_key'], 'some value', msg=msg)
+
+class TestIocDependencies(TestCase):
+    @case('convert_to_node', parsing.convert_to_node)
+    @case('parse', parsing.parse)
+    @case('parsing_steps', [parsing.parse_attributes, parsing.parse_children])
+    def test_dependency(self, key, expected):
+        actual = ioc.CONTAINER.get(key)
+        msg = 'parsing module should register default for ' + key
+        self.assertEqual(actual, expected, msg=msg)
 
 class SomeObject:
     def __init__(self, *args, **kwargs):

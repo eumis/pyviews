@@ -55,10 +55,11 @@ class ContainerMock:
 
 class TestWrappers(TestCase):
     def setUp(self):
+        self._initial_container = ioc.CONTAINER
         ioc.CONTAINER = ContainerMock()
 
     def tearDown(self):
-        ioc.CONTAINER = ioc.Container()
+        ioc.CONTAINER = self._initial_container
 
     def test_register(self):
         one = object()
