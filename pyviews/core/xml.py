@@ -5,6 +5,10 @@ class XmlNode:
         self._element = element
         (self.module_name, self.class_name) = parse_namespace(element.tag)
 
+    @property
+    def class_path(self):
+        return self.module_name + '.' + self.class_name
+
     def get_children(self):
         return [XmlNode(el) for el in list(self._element)]
 

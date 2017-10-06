@@ -1,5 +1,5 @@
-from pyviews.core.observable import Observable
 import ast
+from pyviews.core.observable import Observable
 
 class ExpressionVars(Observable):
     def __init__(self, parent=None):

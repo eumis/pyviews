@@ -71,6 +71,7 @@ class TestXmlNode(TestCase):
         msg = 'XmlNode should use namespace as module'
         self.assertEqual(node.module_name, 'some.namespace', msg)
         self.assertEqual(node.class_name, 'someroot', msg)
+        self.assertEqual(node.class_path, 'some.namespace.someroot', msg)
 
     def test_get_children(self):
         element = ET.fromstring(

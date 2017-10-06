@@ -5,24 +5,24 @@ from pyviews.core.binding import Binding, BindingTarget
 from pyviews.core.xml import XmlNode, XmlAttr
 
 class NodeArgs:
-    def __init__(self, xml_node: XmlNode, parent=None):
+    def __init__(self, xml_node: XmlNode, parent_node=None):
         super().__init__()
-        self.parent = parent
+        self.parent_node = parent_node
         self.xml_node = xml_node
 
-    def get_args(self):
+    def get_args(self, inst_type=None):
         return [self.xml_node]
 
-    def get_kwargs(self):
-        return {'parent': self.parent}
+    def get_kwargs(self, inst_type=None):
+        return {'parent_node': self.parent_node}
 
 class Node:
-    def __init__(self, xml_node: XmlNode, parent=None):
+    def __init__(self, xml_node: XmlNode, parent_node=None):
         self._destroy = []
         self._child_nodes = []
         self._bindings = []
         self.xml_node = xml_node
-        self.globals = ExpressionVars(None if parent is None else parent.globals)
+        self.globals = ExpressionVars(None if parent_node is None else parent_node.globals)
 
     def add_binding(self, binding: Binding):
         self._bindings.append(binding)
@@ -61,14 +61,16 @@ def parse(xml_node: XmlNode, args: NodeArgs):
 
 @ioc.inject('convert_to_node')
 def create_node(xml_node: XmlNode, args: NodeArgs, convert_to_node=None):
-    node = create_inst(xml_node.module_name, xml_node.class_name, args.get_args(), args.get_kwargs())
+    node = create_inst(
+        xml_node.module_name, xml_node.class_name,
+        args.get_args(), args.get_kwargs())
     if not isinstance(node, Node):
-        node = convert_to_node(node, xml_node, args)
+        node = convert_to_node(node, args)
     node.xml_node = xml_node
     return node
 
-def convert_to_node(inst, xml_node: XmlNode, args: NodeArgs):
-    raise NotImplementedError('convert_to_node is not implemented', inst, xml_node, args)
+def convert_to_node(inst, args: NodeArgs):
+    raise NotImplementedError('convert_to_node is not implemented', inst, args)
 
 @ioc.inject('container')
 def run_parsing_steps(node: Node, container=None):

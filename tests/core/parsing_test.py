@@ -16,7 +16,7 @@ class TestNodeArgs(TestCase):
         self.assertEqual([xml_node], args.get_args(), msg)
 
         msg = 'NodeArgs should return parent as kargs'
-        self.assertEqual({'parent': node}, args.get_kwargs(), msg)
+        self.assertEqual({'parent_node': node}, args.get_kwargs(), msg)
 
 class TestNode(TestCase):
     def test_init(self):

@@ -1,6 +1,4 @@
-from pyviews.core.xml import XmlNode
-from pyviews.core.parsing import Node
+from pyviews.core import ioc
+from pyviews.tk.parsing import convert_to_node
 
-class WidgetNode(Node):
-    def __init__(self, xml_node: XmlNode, parent: Node = None):
-        super().__init__(xml_node, parent)
+ioc.register_value('convert_to_node', convert_to_node)
