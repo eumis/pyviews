@@ -51,6 +51,7 @@ class TestIocDependencies(TestCase):
     @case('convert_to_node', parsing.convert_to_node)
     @case('parse', parsing.parse)
     @case('parsing_steps', [parsing.parse_attributes, parsing.parse_children])
+    @case('set_attr', setattr)
     def test_dependency(self, key, expected):
         actual = ioc.CONTAINER.get(key)
         msg = 'parsing module should register default for ' + key
@@ -71,8 +72,8 @@ class TestParseObjectNode(TestCase):
             parsing.parse(self.xml_node, parsing.NodeArgs(self.xml_node))
 
 class TestGetModifier(TestCase):
-    @case('', setattr)
-    @case('attr_name', setattr)
+    @case('', ioc.CONTAINER.get('set_attr'))
+    @case('attr_name', ioc.CONTAINER.get('set_attr'))
     @case('{tests.core.parsing_test.some_modifier}', some_modifier)
     @case('{tests.core.parsing_test.some_modifier}attr_name', some_modifier)
     def test_get_modifier(self, name, expected):

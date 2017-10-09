@@ -1,15 +1,5 @@
 from importlib import import_module
 
-def create_inst(module_name, class_name, args=None, kwargs=None):
-    args = [] if args is None else args
-    kwargs = {} if kwargs is None else kwargs
-    try:
-        module = import_module(module_name)
-    except Exception as ex:
-        raise ImportError(ex)
-    class_ = getattr(module, class_name)
-    return class_(*args, **kwargs)
-
 def import_path(path):
     if not path:
         raise ImportError(path)

@@ -14,13 +14,25 @@ class WidgetArgs(NodeArgs):
 
     def get_kwargs(self, inst_type=None):
         if issubclass(inst_type, Widget):
-            return {'parent': self.widget_master}
+            return {'master': self.widget_master}
         return super().get_args(inst_type=None)
 
 class WidgetNode(Node):
     def __init__(self, widget, xml_node: XmlNode, parent: Node = None):
         super().__init__(xml_node, parent)
         self.widget = widget
+        self.geometry = None
+
+    @property
+    def view_model(self):
+        try:
+            return self.globals['vm']
+        except KeyError:
+            return None
+
+    @view_model.setter
+    def view_model(self, value):
+        self.globals['vm'] = value
 
     def get_node_args(self, xml_node: XmlNode):
         return WidgetArgs(xml_node, self, self.widget)
@@ -32,17 +44,17 @@ class WidgetNode(Node):
     def bind(self, event, command):
         self.widget.bind('<'+event+'>', command)
 
-    def __setattr__(self, key, value):
+    def set_attr(self, key, value):
         if hasattr(self, key):
-            super().__setattr__(key, value)
+            setattr(self, key, value)
         elif hasattr(self.widget, key):
             setattr(self.widget, key, value)
         else:
             self.widget.configure(**{key:value})
 
 class Root(WidgetNode):
-    def __init__(self, xml_node: XmlNode, parent: Node = None):
-        super().__init__(Tk(), xml_node, parent)
+    def __init__(self, xml_node: XmlNode, parent_node: Node = None):
+        super().__init__(Tk(), xml_node, parent_node)
 
     @property
     def state(self):

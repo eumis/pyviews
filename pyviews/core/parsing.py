@@ -1,5 +1,5 @@
 from pyviews.core import ioc
-from pyviews.core.reflection import create_inst, import_path
+from pyviews.core.reflection import import_path
 from pyviews.core.compilation import Expression, ExpressionVars
 from pyviews.core.binding import Binding, BindingTarget
 from pyviews.core.xml import XmlNode, XmlAttr
@@ -60,9 +60,10 @@ def parse(xml_node: XmlNode, args: NodeArgs):
 
 @ioc.inject('convert_to_node')
 def create_node(xml_node: XmlNode, args: NodeArgs, convert_to_node=None):
-    node = create_inst(
-        xml_node.module_name, xml_node.class_name,
-        args.get_args(), args.get_kwargs())
+    node_class = import_path(xml_node.class_path)
+    node_args = args.get_args(node_class)
+    node_kwargs = args.get_kwargs(node_class)
+    node = node_class(*node_args, **node_kwargs)
     if not isinstance(node, Node):
         node = convert_to_node(node, args)
     node.xml_node = xml_node
@@ -96,9 +97,10 @@ def parse_attr(node: Node, attr: XmlAttr):
     else:
         modifier(node, attr.name, value)
 
-def get_modifier(attr: XmlAttr):
+@ioc.inject('set_attr')
+def get_modifier(attr: XmlAttr, set_attr=None):
     if attr.namespace is None:
-        return setattr
+        return set_attr
     return import_path(attr.namespace)
 
 def is_code_expression(expression):
@@ -113,3 +115,4 @@ def parse_children(node):
 ioc.register_value('convert_to_node', convert_to_node)
 ioc.register_value('parse', parse)
 ioc.register_value('parsing_steps', [parse_attributes, parse_children])
+ioc.register_value('set_attr', setattr)

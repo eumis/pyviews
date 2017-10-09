@@ -1,3 +1,7 @@
+def apply_geometry(node):
+    if node.geometry is not None:
+        node.geometry.apply(node.widget)
+
 class Geometry:
     def __init__(self):
         self._args = {}
