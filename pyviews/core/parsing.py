@@ -18,7 +18,6 @@ class NodeArgs:
 
 class Node:
     def __init__(self, xml_node: XmlNode, parent_node=None):
-        self._destroy = []
         self._child_nodes = []
         self._bindings = []
         self.xml_node = xml_node
