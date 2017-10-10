@@ -28,7 +28,7 @@ class ExpressionVars(Observable):
     def all_keys(self):
         keys = set(self.own_keys())
         if self._parent is not None:
-            keys.update(self._parent.own_keys())
+            keys.update(self._parent.all_keys())
         return keys
 
     def to_dictionary(self):

@@ -1,26 +1,23 @@
 <?xml version="1.0"?>
-<core:Container xmlns:tk="tkinter"
-             xmlns:core="pyviews.view.core"
-             xmlns:import="pyviews.modifiers.import_global"
-             xmlns:bind="pyviews.modifiers.bind"
+<w:Container xmlns="tkinter"
+             xmlns:w="pyviews.tk.widgets"
+             xmlns:import="pyviews.core.modifiers.import_global"
+             xmlns:bind="pyviews.tk.modifiers.bind"
              
-             import:Grid='pyviews.view.geometry.GridGeometry'
+             import:Grid='pyviews.tk.geometry.GridGeometry'
              import:show_view='sandbox.commands.show_view'>
-    <tk:Button geometry='{Grid(0, 0, sticky="e")}'
-               bind:Button-1="{lambda:show_view(vm, 'messagebox')}"
-               style='button'>
+    <Button geometry='{Grid(0, 0, sticky="e")}'
+               bind:Button-1="{lambda e: show_view(vm, 'messagebox')}">
         Message box
-    </tk:Button>
+    </Button>
 
-    <tk:Button geometry='{Grid(0, 1, sticky="e")}'
-               bind:Button-1="{lambda:show_view(vm, 'counter')}"
-               style='button'>
+    <Button geometry='{Grid(0, 1, sticky="e")}'
+               bind:Button-1="{lambda e: show_view(vm, 'counter')}">
         Counter
-    </tk:Button>
+    </Button>
 
-    <tk:Button geometry='{Grid(0, 2, sticky="e")}'
-               bind:Button-1="{lambda:show_view(vm, 'scroll')}"
-               style='button'>
+    <Button geometry='{Grid(0, 2, sticky="e")}'
+               bind:Button-1="{lambda e: show_view(vm, 'scroll')}">
         Scroll
-    </tk:Button>
-</core:Container>
+    </Button>
+</w:Container>

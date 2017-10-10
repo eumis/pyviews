@@ -10,6 +10,6 @@
 
         background="white"
         state="zoomed"
-        view_model='{AppViewModel("messagebox")}'>
+        view_model='{AppViewModel("changepage")}'>
         <w:View name='{vm.view}' />
 </w:Root>
