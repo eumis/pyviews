@@ -82,9 +82,12 @@ class Container(Node):
     def set_attr(self, key, value):
         setattr(self, key, value)
 
+    def get_node_args(self, xml_node):
+        return WidgetArgs(xml_node, self, self.master)
+
 class View(Container):
-    def __init__(self, master, xml_node: XmlNode, parent_node: ExpressionVars = None):
-        super().__init__(master, xml_node, parent_node)
+    def __init__(self, master, xml_node: XmlNode, parent_globals: ExpressionVars = None):
+        super().__init__(master, xml_node, parent_globals)
         self.name = None
 
     @inject('parse')
