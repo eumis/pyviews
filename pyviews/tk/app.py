@@ -2,7 +2,7 @@ from os.path import abspath
 from inspect import getmembers, isclass
 from pyviews.core import ioc
 from pyviews.core.parsing import parse_attributes, parse_children
-from pyviews.tk.parsing import convert_to_node
+from pyviews.tk.parsing import convert_to_node, apply_text
 from pyviews.tk.views import parse_view
 from pyviews.tk.geometry import apply_geometry
 from pyviews.tk.modifiers import set_attr
@@ -18,9 +18,10 @@ def register_dependencies():
 def _register_parsing_steps():
     is_widget_node = lambda member: isclass(member) \
                      and (issubclass(member, widgets.WidgetNode) or member == widgets.WidgetNode)
-    steps = [parse_attributes, apply_geometry, parse_children]
+    steps = [parse_attributes, apply_text, apply_geometry, parse_children]
     for name, widget_node_type in getmembers(widgets, is_widget_node):
         ioc.register_value('parsing_steps', steps, widget_node_type)
+    ioc.register_value('parsing_steps', [parse_attributes, apply_geometry, parse_children], widgets.Root)
 
 def launch(root_view=None):
     root_view = 'root' if root_view is None else root_view

@@ -114,6 +114,16 @@ class TestXmlNode(TestCase):
         self.assertEqual(attrs[1].value, 'namespace value', 'XmlNode should return correct attribute value')
         self.assertEqual(attrs[1].namespace, 'some.child.namespace', 'XmlNode should return correct namespace')
 
+    @case('<someroot xmlns="somenamespace"></someroot>', '')
+    @case('<someroot xmlns="somenamespace">  </someroot>', '')
+    @case('''<someroot xmlns="somenamespace">
+    </someroot>''', '')
+    @case('<someroot xmlns="somenamespace">text</someroot>', 'text')
+    def test_text(self, xml_str, expected):
+        element = ET.fromstring(xml_str)
+        node = xml.XmlNode(element)
+        self.assertEqual(node.text, expected, 'XmlNode should return inner text')
+
 class TestXmlAttr(TestCase):
     @case(('one', 'two'), None, 'one', 'two')
     @case(('{some.namespace}one', 'two'), 'some.namespace', 'one', 'two')

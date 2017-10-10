@@ -4,6 +4,7 @@ class XmlNode:
     def __init__(self, element: ET.Element):
         self._element = element
         (self.module_name, self.class_name) = parse_namespace(element.tag)
+        self.text = '' if element.text is None else element.text.strip()
 
     @property
     def class_path(self):
