@@ -88,7 +88,18 @@ class Container(Node):
 class View(Container):
     def __init__(self, master, xml_node: XmlNode, parent_globals: ExpressionVars = None):
         super().__init__(master, xml_node, parent_globals)
-        self.name = None
+        self._name = None
+
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        if self._name == value:
+            return
+        self._name = value
+        self.parse_children()
 
     @inject('parse')
     def parse_children(self, parse=None):
