@@ -1,5 +1,4 @@
 from importlib import import_module
-from inspect import signature
 
 def import_path(path):
     if not path:

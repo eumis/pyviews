@@ -1,27 +1,31 @@
+from inspect import signature, Parameter
+from collections import namedtuple
 from pyviews.core import ioc
 from pyviews.core.reflection import import_path
 from pyviews.core.compilation import Expression, ExpressionVars
 from pyviews.core.binding import Binding, BindingTarget
 from pyviews.core.xml import XmlNode, XmlAttr
 
-class NodeArgs:
+class NodeArgs(dict):
     def __init__(self, xml_node: XmlNode, parent_node=None):
         super().__init__()
-        self.parent_node = parent_node
-        self.xml_node = xml_node
+        self['parent_node'] = parent_node
+        self['xml_node'] = xml_node
+        self['parent_globals'] = None if parent_node is None else parent_node.globals
 
     def get_args(self, inst_type=None):
-        return [self.xml_node]
-
-    def get_kwargs(self, inst_type=None):
-        return {'parent_node': self.parent_node}
+        parameters = signature(inst_type).parameters.values()
+        args = [self[p.name] for p in parameters if p.default == Parameter.empty]
+        kwargs = {p.name: self[p.name] for p in parameters \
+                  if p.default != Parameter.empty and p.name in self}
+        return namedtuple('Args', ['args', 'kwargs'])(args, kwargs)
 
 class Node:
-    def __init__(self, xml_node: XmlNode, parent_node=None):
+    def __init__(self, xml_node: XmlNode, parent_globals: ExpressionVars = None):
         self._child_nodes = []
         self._bindings = []
         self.xml_node = xml_node
-        self.globals = ExpressionVars(None if parent_node is None else parent_node.globals)
+        self.globals = ExpressionVars(parent_globals)
 
     def add_binding(self, binding: Binding):
         self._bindings.append(binding)
@@ -59,13 +63,12 @@ def parse(xml_node: XmlNode, args: NodeArgs):
     return node
 
 @ioc.inject('convert_to_node')
-def create_node(xml_node: XmlNode, args: NodeArgs, convert_to_node=None):
+def create_node(xml_node: XmlNode, node_args: NodeArgs, convert_to_node=None):
     node_class = import_path(xml_node.class_path)
-    node_args = args.get_args(node_class)
-    node_kwargs = args.get_kwargs(node_class)
-    node = node_class(*node_args, **node_kwargs)
+    args = node_args.get_args(node_class)
+    node = node_class(*args.args, **args.kwargs)
     if not isinstance(node, Node):
-        node = convert_to_node(node, args)
+        node = convert_to_node(node, node_args)
     node.xml_node = xml_node
     return node
 

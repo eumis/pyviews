@@ -1,27 +1,24 @@
 from tkinter import Tk, Widget
+from collections import namedtuple
 from pyviews.core.ioc import inject
 from pyviews.core.xml import XmlNode
+from pyviews.core.compilation import ExpressionVars
 from pyviews.core.parsing import Node, NodeArgs
 from pyviews.tk.views import get_view_root
 
 class WidgetArgs(NodeArgs):
     def __init__(self, xml_node, parent_node=None, widget_master=None):
         super().__init__(xml_node, parent_node)
-        self.widget_master = widget_master
+        self['master'] = widget_master
 
     def get_args(self, inst_type=None):
         if issubclass(inst_type, Widget):
-            return []
-        return super().get_args(inst_type=None)
-
-    def get_kwargs(self, inst_type=None):
-        if issubclass(inst_type, Widget):
-            return {'master': self.widget_master}
-        return super().get_args(inst_type=None)
+            return namedtuple('Args', ['args', 'kwargs'])([self['master']], {})
+        return super().get_args(inst_type)
 
 class WidgetNode(Node):
-    def __init__(self, widget, xml_node: XmlNode, parent_node: Node = None):
-        super().__init__(xml_node, parent_node)
+    def __init__(self, widget, xml_node: XmlNode, parent_globals: ExpressionVars = None):
+        super().__init__(xml_node, parent_globals)
         self.widget = widget
         self.geometry = None
 
@@ -55,8 +52,8 @@ class WidgetNode(Node):
             self.widget.configure(**{key:value})
 
 class Root(WidgetNode):
-    def __init__(self, xml_node: XmlNode, parent_node: Node = None):
-        super().__init__(Tk(), xml_node, parent_node)
+    def __init__(self, xml_node: XmlNode, parent_globals: ExpressionVars = None):
+        super().__init__(Tk(), xml_node, parent_globals)
 
     @property
     def state(self):
@@ -67,8 +64,8 @@ class Root(WidgetNode):
         self.widget.state(state)
 
 class Container(Node):
-    def __init__(self, master, xml_node: XmlNode, parent_node: Node = None):
-        super().__init__(xml_node, parent_node)
+    def __init__(self, master, xml_node: XmlNode, parent_globals: ExpressionVars = None):
+        super().__init__(xml_node, parent_globals)
         self.master = master
 
     @property
@@ -86,7 +83,7 @@ class Container(Node):
         setattr(self, key, value)
 
 class View(Container):
-    def __init__(self, master, xml_node: XmlNode, parent_node: Node = None):
+    def __init__(self, master, xml_node: XmlNode, parent_node: ExpressionVars = None):
         super().__init__(master, xml_node, parent_node)
         self.name = None
 

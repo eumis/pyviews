@@ -10,13 +10,13 @@ class TestNodeArgs(TestCase):
         element = ET.fromstring('<root xmlns="ns"/>')
         xml_node = XmlNode(element)
         node = parsing.Node(xml_node)
-        args = parsing.NodeArgs(xml_node, node)
+        args = parsing.NodeArgs(xml_node, node).get_args(parsing.Node)
 
         msg = 'NodeArgs should return XmlNode as args'
-        self.assertEqual([xml_node], args.get_args(), msg)
+        self.assertEqual([xml_node], args.args, msg)
 
         msg = 'NodeArgs should return parent as kargs'
-        self.assertEqual({'parent_node': node}, args.get_kwargs(), msg)
+        self.assertEqual({'parent_globals': node.globals}, args.kwargs, msg)
 
 class TestNode(TestCase):
     def test_init(self):
@@ -58,7 +58,7 @@ class TestIocDependencies(TestCase):
         self.assertEqual(actual, expected, msg=msg)
 
 class SomeObject:
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         pass
 
 class TestParseObjectNode(TestCase):
