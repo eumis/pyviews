@@ -1,18 +1,17 @@
 <?xml version="1.0"?>
-<cs:Scroll xmlns:tk="tkinter"
-                xmlns:core="pyviews.view.core"
-                xmlns:cs="pyviews.view.containers"
-                xmlns:import="pyviews.modifiers.import_global"
+<w:Scroll xmlns="tkinter"
+            xmlns:w="pyviews.tk.widgets"
+                xmlns:import="pyviews.core.modifiers.import_global"
                 xmlns:bind="pyviews.modifiers.bind"
 
-                import:Pack='pyviews.view.geometry.PackGeometry'
+                import:Pack='pyviews.tk.geometry.PackGeometry'
                 import:ScrollVm="sandbox.scroll.ScrollVm"
 
                 geometry='{Pack(fill="both", expand=True)}'
                 view_model='{ScrollVm()}'>
-    <cs:For items='{items}'>
-        <tk:Label geometry='{Pack(fill="x")}'>
-            asdasdf
-        </tk:Label>
-    </cs:For>
-</cs:Scroll>
+    <w:For items='{vm.items}'>
+        <Label geometry='{Pack(fill="x")}'>
+            asdf
+        </Label>
+    </w:For>
+</w:Scroll>

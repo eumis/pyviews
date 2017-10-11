@@ -1,10 +1,9 @@
-from pyviews.observable.base import ViewModel
-from pyviews.common.view import scroll_to, find_node
+from pyviews.core.observable import ObservableEnt
 
 # pylint: disable=E1101
-class ScrollVm(ViewModel):
+class ScrollVm(ObservableEnt):
     def __init__(self):
-        super().__init__(self)
+        super().__init__()
         self.items = range(1000)
 
     def get_node_id(self, index):
@@ -12,4 +11,4 @@ class ScrollVm(ViewModel):
 
     def scroll_to(self, index):
         node_id = self.get_node_id(index)
-        scroll_to(find_node('scroll_id'), node_id)
+        # scroll_to(find_node('scroll_id'), node_id)
