@@ -18,7 +18,7 @@ def register_dependencies():
 def _register_parsing_steps():
     is_widget_node = lambda member: isclass(member) \
                      and (issubclass(member, widgets.WidgetNode) or member == widgets.WidgetNode)
-    steps = [parse_attributes, apply_text, apply_geometry, parse_children]
+    steps = [apply_text, parse_attributes, apply_geometry, parse_children]
     for name, widget_node_type in getmembers(widgets, is_widget_node):
         ioc.register_value('parsing_steps', steps, widget_node_type)
     ioc.register_value('parsing_steps', [parse_attributes, apply_geometry, parse_children], widgets.Root)
