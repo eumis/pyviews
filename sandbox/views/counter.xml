@@ -1,49 +1,37 @@
 <?xml version="1.0"?>
-<core:Container xmlns:tk="tkinter"
-                xmlns:core="pyviews.view.core"
-                xmlns:cs="pyviews.view.containers"
-                xmlns:import="pyviews.modifiers.import_global"
-                xmlns:bind="pyviews.modifiers.bind"
-                xmlns:style="pyviews.view.style"
+<w:Container xmlns="tkinter"
+                xmlns:w="pyviews.tk.widgets"
+                xmlns:import="pyviews.core.modifiers.import_global"
+                xmlns:bind="pyviews.tk.modifiers.bind"
 
                 import:Counter="sandbox.counter.Counter"
-                import:create_int_var="pyviews.common.vars.create_int_var"
-                import:get_color="sandbox.commands.get_color"
                 import:Grid='pyviews.view.geometry.GridGeometry'
 
                 view_model="{Counter()}">
 
-    <!-- <style:Styles path='styles' /> -->
-
-    <style:Style name='yellowbg'
-                 background='yellow'/>
-    
-    <tk:Button geometry='{Grid(0, 0)}'
-               bind:Button-1="{up_count}"
-               style="yellowbg">
+    <Button geometry='{Grid(0, 0)}'
+               bind:Button-1="{up_count}">
         + 1
-    </tk:Button>
+    </Button>
 
-    <tk:Entry geometry="{Grid(0, 1)}"
-              textvariable="{create_int_var(vm, 'count', 2)}">
-    </tk:Entry>
+    <Entry geometry="{Grid(0, 1)}"
+            text='{vm.count}'>
+    </Entry>
 
-    <tk:Label geometry="{Grid(0, 2)}"
-              style="yellowbg"
+    <Label geometry="{Grid(0, 2)}"
               bind:Button-1="{lambda event: print(event)}">
         {count}
-    </tk:Label>
+    </Label>
 
-    <tk:Frame geometry='{Grid(1, 0, columnspan=3)}'>
+    <Frame geometry='{Grid(1, 0, columnspan=3)}'>
         <!-- <RowConfig row='0' weight='1' />
         <ColConfig col='0' weight='1' /> -->
-        <tk:Frame geometry='{Grid(0, 0)}'>
-            <cs:For items='{range(vm.count)}'>
-                <tk:Label geometry='{Grid(index, index)}'
-                        background="{get_color(index)}">
+        <Frame geometry='{Grid(0, 0)}'>
+            <w:For items='{range(vm.count)}'>
+                <Label geometry='{Grid(index, index)}'>
                     {str(item+1) + ' ' + str(index)}
-                </tk:Label>
-            </cs:For>
-        </tk:Frame>
-    </tk:Frame>
-</core:Container>
+                </Label>
+            </w:For>
+        </Frame>
+    </Frame>
+</w:Container>

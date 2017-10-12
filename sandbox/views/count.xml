@@ -1,16 +1,14 @@
 <?xml version="1.0"?>
-<core:Container xmlns:tk="tkinter"
-                xmlns:core="pyviews.view.core"
-                xmlns:bind="pyviews.modifiers.bind"
+<w:Container xmlns="tkinter"
+                xmlns:w="pyviews.tk.widgets"
+                xmlns:bind="pyviews.tk.modifiers.bind"
                 
-                import:Grid='pyviews.view.geometry.GridGeometry'>
+                import:Grid='pyviews.tk.geometry.GridGeometry'>
     <tk:Entry geometry="{Grid(0, 0)}"
               textvariable="{create_int_var(vm, 'count', 2)}">
     </tk:Entry>
 
-    <tk:Label geometry="{Grid(0, 1)}"
-              style="yellowbg"
-              bind:Button-1="{lambda event: print(event)}">
+    <tk:Label geometry="{Grid(0, 1)}">
         {count}
     </tk:Label>
-</core:Container>
+</w:Container>

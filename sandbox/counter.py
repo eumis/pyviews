@@ -1,9 +1,8 @@
-from pyviews.observable.base import ViewModel
+from pyviews.core.observable import ObservableEnt
 
-# pylint: disable=E1101
-class Counter(ViewModel):
+class Counter(ObservableEnt):
     def __init__(self):
-        ViewModel.__init__(self)
+        super().__init__()
         self.count = 0
 
     def up_count(self):
