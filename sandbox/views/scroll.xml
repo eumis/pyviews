@@ -2,7 +2,7 @@
 <w:Scroll xmlns="tkinter"
             xmlns:w="pyviews.tk.widgets"
                 xmlns:import="pyviews.core.modifiers.import_global"
-                xmlns:bind="pyviews.modifiers.bind"
+                xmlns:bind="pyviews.tk.modifiers.bind"
 
                 import:Pack='pyviews.tk.geometry.PackGeometry'
                 import:ScrollVm="sandbox.scroll.ScrollVm"
@@ -10,8 +10,9 @@
                 geometry='{Pack(fill="both", expand=True)}'
                 view_model='{ScrollVm()}'>
     <w:For items='{vm.items}'>
-        <Label geometry='{Pack(fill="x")}'>
-            asdf
+        <Label geometry='{Pack(fill="x")}'
+                bind:Button-1='{lambda e: item.add()}'>
+            {item.text}
         </Label>
     </w:For>
 </w:Scroll>

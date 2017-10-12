@@ -146,6 +146,8 @@ class For(Container):
         args = super().get_node_args(xml_node)
         args_globals = ExpressionVars(args['parent_globals'])
         args_globals['index'] = index
+        if index is not None:
+            args_globals['item'] = self._items[index]
         args['parent_globals'] = args_globals
         return args
 

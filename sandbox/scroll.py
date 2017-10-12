@@ -4,7 +4,7 @@ from pyviews.core.observable import ObservableEnt
 class ScrollVm(ObservableEnt):
     def __init__(self):
         super().__init__()
-        self.items = range(1000)
+        self.items = [ScrollItem(i) for i in range(100)]
 
     def get_node_id(self, index):
         return 'item' + str(index)
@@ -12,3 +12,12 @@ class ScrollVm(ObservableEnt):
     def scroll_to(self, index):
         node_id = self.get_node_id(index)
         # scroll_to(find_node('scroll_id'), node_id)
+
+class ScrollItem(ObservableEnt):
+    def __init__(self, index):
+        super().__init__()
+        self._index = index
+        self.text = str(self._index)
+
+    def add(self):
+        self.text = self.text + str(self._index)
