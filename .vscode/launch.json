@@ -5,7 +5,7 @@
             "name": "Python",
             "type": "python",
             "request": "launch",
-            "stopOnEntry": true,
+            "stopOnEntry": false,
             "windows": {
                 "program": "${workspaceRoot}\\sandbox\\run.py",
                 "cwd": "${workspaceRoot}\\sandbox"

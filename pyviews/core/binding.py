@@ -70,3 +70,29 @@ class Binding:
         for dependency in self._dependencies:
             dependency.destroy()
         self._dependencies = []
+
+class TwoWaysBinding:
+    def __init__(self, target: BindingTarget, expression: Expression):
+        self._to_view = Binding(target, expression)
+        self._to_vm = None
+        self._expression = expression
+        self._vars = None
+
+    def bind(self, expr_vars: ExpressionVars):
+        self.destroy()
+        self._vars = expr_vars
+        self._to_vm = self._create_to_vm(expr_vars)
+        self._to_vm.bind(ExpressionVars())
+
+    def _create_to_vm(self, expr_vars):
+        target = self._get_vm_target(expression)
+        self._to_vm = Binding(target, PropertyExpression(target.get_inst(), target.get_prop()))
+
+    def _get_vm_target(self, expression):
+        entry = expression.get_var_tree()
+        vm = entry.entries[0].key
+
+    def destroy(self):
+        self._to_view.destroy()
+        self._to_vm.destroy()
+        self._vars = None

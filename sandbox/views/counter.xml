@@ -10,16 +10,16 @@
                 view_model="{Counter()}">
 
     <Button geometry='{Grid(0, 0)}'
-               bind:Button-1="{up_count}">
+               bind:Button-1="{lambda e: vm.up_count()}">
         + 1
     </Button>
 
     <Entry geometry="{Grid(0, 1)}"
-            text='{vm.count}'>
+            text='{{vm.count}}'>
     </Entry>
 
     <Label geometry="{Grid(0, 2)}"
-              bind:Button-1="{lambda event: print(event)}">
+              bind:Button-1="{lambda e: print(e)}">
         {count}
     </Label>
 
