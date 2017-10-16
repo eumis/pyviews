@@ -13,7 +13,7 @@ class Dependency:
         self._key = None
         self._callback = None
 
-class BindingTarget:
+class InstanceTarget:
     def __init__(self, instance, prop, modifier):
         self._instance = instance
         self._property = prop
@@ -22,8 +22,8 @@ class BindingTarget:
     def set_value(self, value):
         self._modifier(self._instance, self._property, value)
 
-class Binding:
-    def __init__(self, target: BindingTarget, expression: Expression):
+class ExpressionBinding:
+    def __init__(self, target: InstanceTarget, expression: Expression):
         self._target = target
         self._expression = expression
         self._dependencies = []
@@ -41,6 +41,7 @@ class Binding:
             if isinstance(inst, Observable):
                 for entry in var_tree.entries:
                     inst.observe(entry.key, self._update_callback)
+                    self._dependencies.append(Dependency(inst, entry.key, self._update_callback))
         except KeyError:
             pass
         for entry in var_tree.entries:
@@ -71,28 +72,66 @@ class Binding:
             dependency.destroy()
         self._dependencies = []
 
+class ExpressionTarget:
+    def __init__(self, expression):
+        self._var_tree = expression.get_var_tree()
+        self._validate()
+
+    def _validate(self):
+        if len(self._var_tree.entries) != 1 or not self._var_tree.entries[0].entries:
+            raise ValueError('expression should be property expression')
+
+    def set_value(self, expr_vars: ExpressionVars, value):
+        entry = self._var_tree.entries[0]
+        inst = expr_vars[entry.key]
+        next_key = entry.entries[0].key
+        entry = entry.entries[0]
+
+        while entry.entries:
+            inst = getattr(inst, next_key)
+            next_key = entry.entries[0].key
+            entry = entry.entries[0]
+
+        setattr(inst, next_key, value)
+
+class PropertyBinding:
+    def __init__(self, target: ExpressionTarget, inst: Observable, prop):
+        self._target = target
+        self._inst = inst
+        self._prop = prop
+        self._vars = None
+        self._dependencies = []
+
+    def bind(self, expr_vars: ExpressionVars):
+        self. destroy()
+        self._vars = expr_vars
+        self._inst.observe(self._prop, self._update_callback)
+        self._dependencies.append(Dependency(self._inst, self._prop, self._update_callback))
+
+    def _update_callback(self, new_val, old_val):
+        self._update_target(new_val)
+
+    def _update_target(self, value):
+        self._target.set_value(self._vars, value)
+
+    def destroy(self):
+        self._vars = None
+        for dependency in self._dependencies:
+            dependency.destroy()
+        self._dependencies = []
+
 class TwoWaysBinding:
-    def __init__(self, target: BindingTarget, expression: Expression):
-        self._to_view = Binding(target, expression)
-        self._to_vm = None
+    def __init__(self, inst, prop, modifier, expression: Expression):
+        self._expr_binding = ExpressionBinding(InstanceTarget(inst, prop, modifier), expression)
+        self._prop_binding = PropertyBinding(ExpressionTarget(expression), inst, prop)
         self._expression = expression
         self._vars = None
 
     def bind(self, expr_vars: ExpressionVars):
         self.destroy()
-        self._vars = expr_vars
-        self._to_vm = self._create_to_vm(expr_vars)
-        self._to_vm.bind(ExpressionVars())
-
-    def _create_to_vm(self, expr_vars):
-        target = self._get_vm_target(expression)
-        self._to_vm = Binding(target, PropertyExpression(target.get_inst(), target.get_prop()))
-
-    def _get_vm_target(self, expression):
-        entry = expression.get_var_tree()
-        vm = entry.entries[0].key
+        self._expr_binding.bind(expr_vars)
+        self._prop_binding.bind(expr_vars)
 
     def destroy(self):
-        self._to_view.destroy()
-        self._to_vm.destroy()
-        self._vars = None
+        self._expr_binding.destroy()
+        self._prop_binding.destroy()

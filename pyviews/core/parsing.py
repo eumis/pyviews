@@ -3,7 +3,7 @@ from collections import namedtuple
 from pyviews.core import ioc
 from pyviews.core.reflection import import_path
 from pyviews.core.compilation import Expression, ExpressionVars
-from pyviews.core.binding import Binding, BindingTarget
+from pyviews.core.binding import ExpressionBinding, InstanceTarget
 from pyviews.core.xml import XmlNode, XmlAttr
 
 class NodeArgs(dict):
@@ -27,7 +27,7 @@ class Node:
         self.xml_node = xml_node
         self.globals = ExpressionVars(parent_globals)
 
-    def add_binding(self, binding: Binding):
+    def add_binding(self, binding: ExpressionBinding):
         self._bindings.append(binding)
 
     def destroy(self):
@@ -93,8 +93,8 @@ def parse_attr(node: Node, attr: XmlAttr):
     value = attr.value
     if is_code_expression(value):
         expression = Expression(parse_code_expression(value))
-        target = BindingTarget(node, attr.name, modifier)
-        binding = Binding(target, expression)
+        target = InstanceTarget(node, attr.name, modifier)
+        binding = ExpressionBinding(target, expression)
         binding.bind(node.globals)
         node.add_binding(binding)
     else:
