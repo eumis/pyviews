@@ -5,7 +5,7 @@
                 xmlns:bind="pyviews.tk.modifiers.bind"
 
                 import:Counter="sandbox.counter.Counter"
-                import:Grid='pyviews.view.geometry.GridGeometry'
+                import:Grid='pyviews.tk.geometry.GridGeometry'
 
                 view_model="{Counter()}">
 

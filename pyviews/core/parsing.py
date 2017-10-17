@@ -1,9 +1,10 @@
 from inspect import signature, Parameter
 from collections import namedtuple
 from pyviews.core import ioc
+from pyviews.core.observable import Observable
 from pyviews.core.reflection import import_path
 from pyviews.core.compilation import Expression, ExpressionVars
-from pyviews.core.binding import ExpressionBinding, InstanceTarget
+from pyviews.core.binding import ExpressionBinding, InstanceTarget, TwoWaysBinding
 from pyviews.core.xml import XmlNode, XmlAttr
 
 class NodeArgs(dict):
@@ -20,12 +21,22 @@ class NodeArgs(dict):
                   if p.default != Parameter.empty and p.name in self}
         return namedtuple('Args', ['args', 'kwargs'])(args, kwargs)
 
-class Node:
+class Node(Observable):
     def __init__(self, xml_node: XmlNode, parent_globals: ExpressionVars = None):
+        super().__init__()
         self._child_nodes = []
         self._bindings = []
         self.xml_node = xml_node
         self.globals = ExpressionVars(parent_globals)
+
+    def _add_observable_key(self, key):
+        self._callbacks[key] = []
+
+    def observe(self, key, callback):
+        if key not in self._callbacks:
+            msg = 'Key ' + key + ' is not observable'
+            raise KeyError(msg)
+        super().observe(key, callback)
 
     def add_binding(self, binding: ExpressionBinding):
         self._bindings.append(binding)
@@ -91,7 +102,12 @@ def parse_attributes(node):
 def parse_attr(node: Node, attr: XmlAttr):
     modifier = get_modifier(attr)
     value = attr.value
-    if is_code_expression(value):
+    if is_binding_expression(value):
+        expression = Expression(parse_code_expression(value))
+        binding = TwoWaysBinding(node, attr.name, modifier, expression)
+        binding.bind(node.globals)
+        node.add_binding(binding)
+    elif is_code_expression(value):
         expression = Expression(parse_code_expression(value))
         target = InstanceTarget(node, attr.name, modifier)
         binding = ExpressionBinding(target, expression)
@@ -105,6 +121,9 @@ def get_modifier(attr: XmlAttr, set_attr=None):
     if attr.namespace is None:
         return set_attr
     return import_path(attr.namespace)
+
+def is_binding_expression(expression):
+    return expression.startswith('{{') and expression.endswith('}}')
 
 def is_code_expression(expression):
     return expression.startswith('{') and expression.endswith('}')

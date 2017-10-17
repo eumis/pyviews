@@ -1,4 +1,4 @@
-from tkinter import Tk, Widget, Canvas, Frame, Scrollbar
+from tkinter import Tk, Widget, Canvas, Frame, Scrollbar, StringVar
 from collections import namedtuple
 from pyviews.core.ioc import inject
 from pyviews.core.xml import XmlNode
@@ -21,6 +21,10 @@ class WidgetNode(Node):
         super().__init__(xml_node, parent_globals)
         self.widget = widget
         self._geometry = None
+        self._text_var = StringVar()
+        self._text_var.trace('w', lambda *args: self._notify('text', args[0], args[1]))
+        self.widget.config(textvariable=self._text_var)
+        self._add_observable_key('text')
 
     @property
     def geometry(self):
@@ -38,6 +42,14 @@ class WidgetNode(Node):
             return self.globals['vm']
         except KeyError:
             return None
+
+    @property
+    def text(self):
+        return self._text_var.get()
+
+    @text.setter
+    def text(self, value):
+        self._text_var.set(value)
 
     @view_model.setter
     def view_model(self, value):
