@@ -20,7 +20,7 @@
 
     <Label geometry="{Grid(0, 2)}"
               bind:Button-1="{lambda e: print(e)}">
-        {count}
+        {vm.count}
     </Label>
 
     <Frame geometry='{Grid(1, 0, columnspan=3)}'>

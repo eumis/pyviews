@@ -23,14 +23,14 @@ class ParentViewModel(ObservableEnt):
     def to_string(self):
         return str(self.int_value)
 
-class TestBindable:
+class SomeEntity:
     def __init__(self):
         self.int_value = 1
         self.str_value = 'str'
 
 class TestInstanceTarget(TestCase):
     def test_set_value(self):
-        inst = TestBindable()
+        inst = SomeEntity()
         target = InstanceTarget(inst, 'int_value', setattr)
         new_val = 25
 
@@ -43,7 +43,7 @@ class TestBindingWithSimpleExpression(TestCase):
     def setUp(self):
         self.view_model = InnerViewModel(2, 'inner str')
         self.expression = Expression('str(vm.int_value) + vm.str_value')
-        self.inst = TestBindable()
+        self.inst = SomeEntity()
         self.target = InstanceTarget(self.inst, 'str_value', setattr)
         self.binding = ExpressionBinding(self.target, self.expression)
         self.vars = ExpressionVars()
@@ -88,7 +88,7 @@ class TestBindingWithInnerViewModel(TestCase):
         inner_vm = InnerViewModel(2, 'inner str')
         self.view_model = ParentViewModel(3, inner_vm)
         self.expression = Expression('str(vm.int_value) + vm.inner_vm.str_value')
-        self.inst = TestBindable()
+        self.inst = SomeEntity()
         self.target = InstanceTarget(self.inst, 'str_value', setattr)
         self.binding = ExpressionBinding(self.target, self.expression)
         self.vars = ExpressionVars()
@@ -147,12 +147,35 @@ class TestExpressionTarget(TestCase):
         msg = 'set_value should return expression result value'
         self.assertEqual(self.parent.inner_vm.int_value, new_val, msg)
 
-class TestPropertyBinding(TestCase):
+class TestVar(BindableVariable):
+    def __init__(self, value=None):
+        self._callback = None
+        self._value = value
+
+    def observe(self, callback):
+        self._callback = callback
+
+    def release(self):
+        self._callback = None
+
+    def get_value(self):
+        return self._value
+
+    def set_value(self, value):
+        old_value = self._value
+        self._value = value
+        self.notify(value, old_value)
+
+    def notify(self, new_val, old_val):
+        if self._callback is not None:
+            self._callback(new_val, old_val)
+
+class TestVarBinding(TestCase):
     def setUp(self):
         self.expression = Expression('vm.int_value')
         self.expr_inst = InnerViewModel(1, '1')
-        self.inst = InnerViewModel(1, '1')
-        self.binding = PropertyBinding(ExpressionTarget(self.expression), self.inst, 'int_value')
+        self.var = TestVar(1)
+        self.binding = VarBinding(ExpressionTarget(self.expression), self.var)
         self.expr_vars = ExpressionVars()
         self.expr_vars['vm'] = self.expr_inst
 
@@ -160,7 +183,7 @@ class TestPropertyBinding(TestCase):
         self.binding.bind(self.expr_vars)
 
         new_val = 2
-        self.inst.int_value = new_val
+        self.var.set_value(new_val)
 
         msg = 'property from expression should be updated on instance updating'
         self.assertEqual(self.expr_inst.int_value, new_val, msg)
@@ -169,17 +192,31 @@ class TestPropertyBinding(TestCase):
         self.binding.bind(self.expr_vars)
 
         self.binding.destroy()
-        self.inst.int_value = self.inst.int_value + 2
+        self.var.set_value(self.var.get_value() + 2)
 
         msg = 'property from expression shouldn''t be updated after binding destroying'
-        self.assertNotEqual(self.expr_inst, self.inst.int_value, msg)
+        self.assertNotEqual(self.expr_inst, self.var.get_value(), msg)
 
-class TestTwoWayBinding(TestCase):
+class SomeBindable(Bindable):
+    def __init__(self, value):
+        self._var = TestVar(value)
+
+    @property
+    def int_value(self):
+        return self._var.get_value()
+
+    @int_value.setter
+    def int_value(self, value):
+        self._var.set_value(value)
+
+    def get_variable(self, key, modifier=None):
+        return self._var
+
+class TestTwoWaysBinding(TestCase):
     def setUp(self):
         self.expression = Expression('vm.int_value')
         self.expr_inst = InnerViewModel(1, '1')
-        self.inst = InnerViewModel(1, '1')
-        self.binding = PropertyBinding(ExpressionTarget(self.expression), self.inst, 'int_value')
+        self.inst = SomeBindable(1)
         self.binding = TwoWaysBinding(self.inst, 'int_value', setattr, self.expression)
         self.expr_vars = ExpressionVars()
         self.expr_vars['vm'] = self.expr_inst

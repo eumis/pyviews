@@ -82,6 +82,10 @@ class ExpressionTarget:
             raise ValueError('expression should be property expression')
 
     def set_value(self, expr_vars: ExpressionVars, value):
+        (inst, prop) = self._get_target(expr_vars)
+        setattr(inst, prop, value)
+
+    def _get_target(self, expr_vars: ExpressionVars):
         entry = self._var_tree.entries[0]
         inst = expr_vars[entry.key]
         next_key = entry.entries[0].key
@@ -92,39 +96,51 @@ class ExpressionTarget:
             next_key = entry.entries[0].key
             entry = entry.entries[0]
 
-        setattr(inst, next_key, value)
+        return (inst, next_key)
 
-class PropertyBinding:
-    def __init__(self, target: ExpressionTarget, inst: Observable, prop):
+class Bindable:
+    def get_variable(self, key, modifier=None):
+        pass
+
+class BindableVariable:
+    def observe(self, callback):
+        pass
+
+    def release(self):
+        pass
+
+    def get_value(self):
+        pass
+
+    def set_value(self, value):
+        pass
+
+class VarBinding:
+    def __init__(self, target: ExpressionTarget, var: BindableVariable):
         self._target = target
-        self._inst = inst
-        self._prop = prop
-        self._vars = None
-        self._dependencies = []
+        self._var = var
+        self._expr_vars = None
 
     def bind(self, expr_vars: ExpressionVars):
         self. destroy()
-        self._vars = expr_vars
-        self._inst.observe(self._prop, self._update_callback)
-        self._dependencies.append(Dependency(self._inst, self._prop, self._update_callback))
+        self._expr_vars = expr_vars
+        self._var.observe(self._update_callback)
 
     def _update_callback(self, new_val, old_val):
         self._update_target(new_val)
 
     def _update_target(self, value):
-        self._target.set_value(self._vars, value)
+        self._target.set_value(self._expr_vars, value)
 
     def destroy(self):
-        self._vars = None
-        for dependency in self._dependencies:
-            dependency.destroy()
-        self._dependencies = []
+        self._var.release()
+        self._expr_vars = None
 
 class TwoWaysBinding:
-    def __init__(self, inst, prop, modifier, expression: Expression):
-        self._expr_binding = ExpressionBinding(InstanceTarget(inst, prop, modifier), expression)
-        self._prop_binding = PropertyBinding(ExpressionTarget(expression), inst, prop)
-        self._expression = expression
+    def __init__(self, inst: Bindable, prop, modifier, expression: Expression):
+        var = inst.get_variable(prop, modifier)
+        self._expr_binding = ExpressionBinding(var, expression)
+        self._prop_binding = VarBinding(ExpressionTarget(expression), var)
         self._vars = None
 
     def bind(self, expr_vars: ExpressionVars):

@@ -1,8 +1,9 @@
-from tkinter import Tk, Widget, Canvas, Frame, Scrollbar, StringVar
+from tkinter import Tk, Widget, Canvas, Frame, Scrollbar, StringVar, Entry
 from collections import namedtuple
 from pyviews.core.ioc import inject
 from pyviews.core.xml import XmlNode
 from pyviews.core.compilation import ExpressionVars
+from pyviews.core.binding import Bindable, BindableVariable
 from pyviews.core.parsing import Node, NodeArgs
 from pyviews.tk.views import get_view_root
 
@@ -16,15 +17,39 @@ class WidgetArgs(NodeArgs):
             return namedtuple('Args', ['args', 'kwargs'])([self['master']], {})
         return super().get_args(inst_type)
 
-class WidgetNode(Node):
+class TextBindableVariable(BindableVariable):
+    def __init__(self, tk_var):
+        self._tk_var = tk_var
+        self._tk_var.trace_add('write', self._write_callback)
+        self._callback = None
+
+    def _write_callback(self, *args):
+        if self._callback is not None:
+            value = self.get_value()
+            if value is not None:
+                self._callback(value, None)
+
+    def get_value(self):
+        try:
+            return int(self._tk_var.get())
+        except:
+            return None
+
+    def set_value(self, value):
+        self._tk_var.set(value)
+
+    def observe(self, callback):
+        self._callback = callback
+
+    def release(self):
+        self._callback = None
+
+class WidgetNode(Node, Bindable):
     def __init__(self, widget, xml_node: XmlNode, parent_globals: ExpressionVars = None):
         super().__init__(xml_node, parent_globals)
         self.widget = widget
         self._geometry = None
-        self._text_var = StringVar()
-        self._text_var.trace('w', lambda *args: self._notify('text', args[0], args[1]))
-        self.widget.config(textvariable=self._text_var)
-        self._add_observable_key('text')
+        self._text_var = None
 
     @property
     def geometry(self):
@@ -43,17 +68,18 @@ class WidgetNode(Node):
         except KeyError:
             return None
 
-    @property
-    def text(self):
-        return self._text_var.get()
-
-    @text.setter
-    def text(self, value):
-        self._text_var.set(value)
-
     @view_model.setter
     def view_model(self, value):
         self.globals['vm'] = value
+
+    def get_variable(self, key, modifier=None):
+        if key == 'text' and isinstance(self.widget, Entry):
+            if self._text_var is not None:
+                return self._text_var
+            var = StringVar()
+            self._text_var = TextBindableVariable(var)
+            self.widget.config(textvariable=var)
+            return self._text_var
 
     def get_node_args(self, xml_node: XmlNode):
         return WidgetArgs(xml_node, self, self.widget)
