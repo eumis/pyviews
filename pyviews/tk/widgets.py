@@ -17,23 +17,18 @@ class WidgetArgs(NodeArgs):
             return namedtuple('Args', ['args', 'kwargs'])([self['master']], {})
         return super().get_args(inst_type)
 
-class TextBindableVariable(BindableVariable):
-    def __init__(self, tk_var):
-        self._tk_var = tk_var
+class TkBindableVariable(BindableVariable):
+    def __init__(self, tk_var=None):
+        self._tk_var = StringVar() if tk_var is None else tk_var
         self._tk_var.trace_add('write', self._write_callback)
         self._callback = None
 
     def _write_callback(self, *args):
         if self._callback is not None:
-            value = self.get_value()
-            if value is not None:
-                self._callback(value, None)
+            self._callback(self.get_value(), None)
 
     def get_value(self):
-        try:
-            return int(self._tk_var.get())
-        except:
-            return None
+        self._tk_var.get()
 
     def set_value(self, value):
         self._tk_var.set(value)
@@ -77,7 +72,7 @@ class WidgetNode(Node, Bindable):
             if self._text_var is not None:
                 return self._text_var
             var = StringVar()
-            self._text_var = TextBindableVariable(var)
+            self._text_var = TkBindableVariable(var)
             self.widget.config(textvariable=var)
             return self._text_var
 

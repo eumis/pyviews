@@ -15,7 +15,7 @@
     </Button>
 
     <Entry geometry="{Grid(0, 1)}"
-            text='{{vm.count}}'>
+           text='{int{vm.count}}'>
     </Entry>
 
     <Label geometry="{Grid(0, 2)}"
