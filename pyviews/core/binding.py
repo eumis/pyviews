@@ -116,10 +116,11 @@ class BindableVariable:
         pass
 
 class VarBinding:
-    def __init__(self, target: ExpressionTarget, var: BindableVariable):
+    def __init__(self, target: ExpressionTarget, var: BindableVariable, converter):
         self._target = target
         self._var = var
         self._expr_vars = None
+        self._converter = converter if converter is not None else lambda value: value
 
     def bind(self, expr_vars: ExpressionVars):
         self. destroy()
@@ -130,17 +131,17 @@ class VarBinding:
         self._update_target(new_val)
 
     def _update_target(self, value):
-        self._target.set_value(self._expr_vars, value)
+        self._target.set_value(self._expr_vars, self._converter(value))
 
     def destroy(self):
         self._var.release()
         self._expr_vars = None
 
 class TwoWaysBinding:
-    def __init__(self, inst: Bindable, prop, modifier, expression: Expression):
+    def __init__(self, inst: Bindable, prop, modifier, converter, expression: Expression):
         var = inst.get_variable(prop, modifier)
         self._expr_binding = ExpressionBinding(var, expression)
-        self._prop_binding = VarBinding(ExpressionTarget(expression), var)
+        self._prop_binding = VarBinding(ExpressionTarget(expression), var, converter)
         self._vars = None
 
     def bind(self, expr_vars: ExpressionVars):

@@ -33,6 +33,14 @@ class TestExpressionVars(TestCase):
         msg = 'to_all_dictionary should return dictionary with all keys'
         self.assertEqual(self.globs.to_all_dictionary(), {'one': 1, 'two': 'two', 'three': 'three'}, msg)
 
+    @case('one', True)
+    @case('two', True)
+    @case('three', True)
+    @case('key', False)
+    def test_has_keys(self, key, expected):
+        msg = 'has_key should return true for existant keys and false in other case'
+        self.assertEqual(self.globs.has_key(key), expected, msg)
+
 class TestExpression(TestCase):
     @case('2 + 2', None, 4)
     @case('some_key', {'some_key': 1}, 1)

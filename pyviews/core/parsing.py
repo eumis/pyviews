@@ -1,4 +1,5 @@
 from inspect import signature, Parameter
+from re import compile as compile_regex, match
 from collections import namedtuple
 from pyviews.core import ioc
 from pyviews.core.reflection import import_path
@@ -95,8 +96,10 @@ def parse_attr(node: Node, attr: XmlAttr):
     modifier = get_modifier(attr)
     value = attr.value
     if is_binding_expression(value):
-        expression = Expression(parse_code_expression(parse_code_expression(value)))
-        binding = TwoWaysBinding(node, attr.name, modifier, expression)
+        (expr, converter_key) = parse_binding_expression(value)
+        expression = Expression(expr)
+        converter = node.globals[converter_key] if node.globals.has_key(converter_key) else None
+        binding = TwoWaysBinding(node, attr.name, modifier, converter, expression)
         binding.bind(node.globals)
         node.add_binding(binding)
     elif is_code_expression(value):
@@ -114,14 +117,21 @@ def get_modifier(attr: XmlAttr, set_attr=None):
         return set_attr
     return import_path(attr.namespace)
 
+_binding_regex = compile_regex('{[a-zA-Z_]*\{.*\}\}')
 def is_binding_expression(expression):
-    return expression.startswith('{{') and expression.endswith('}}')
+    return _binding_regex.fullmatch(expression) != None
 
+_code_regex = compile_regex('\{.*\}')
 def is_code_expression(expression):
-    return expression.startswith('{') and expression.endswith('}')
+    return _code_regex.fullmatch(expression) != None
 
 def parse_code_expression(expression):
     return expression[1:-1]
+
+def parse_binding_expression(expression):
+    code_expression = parse_code_expression(expression)
+    [converter, expression] = code_expression.split('{', 1)
+    return (expression[:-1], converter)
 
 def parse_children(node):
     node.parse_children()

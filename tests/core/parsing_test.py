@@ -99,10 +99,26 @@ class TestExpressions(TestCase):
     def test_is_code_expression(self, expr, expected):
         self.assertEqual(parsing.is_code_expression(expr), expected)
 
+    @case('{{asdf}}', True)
+    @case('{int{asdf}}', True)
+    @case('{int:{asdf}}', False)
+    @case('{{asdf', False)
+    @case('asdf}}', False)
+    @case(' {{asdf}}', False)
+    @case('{{asdf}} ', False)
+    def test_is_binding_expression(self, expr, expected):
+        self.assertEqual(parsing.is_binding_expression(expr), expected)
+
     @case('{asdf}', 'asdf')
     @case('asdf', 'sd')
     def test_parse_code_expression(self, expr, expected):
         self.assertEqual(parsing.parse_code_expression(expr), expected)
+
+    @case('{{asdf}}', ('asdf', ''))
+    @case('{ {asdf}}', ('asdf', ' '))
+    @case('{int{asdf}}', ('asdf', 'int'))
+    def test_parse_binding_expression(self, expr, expected):
+        self.assertEqual(parsing.parse_binding_expression(expr), expected)
 
 if __name__ == '__main__':
     main()

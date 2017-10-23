@@ -175,7 +175,8 @@ class TestVarBinding(TestCase):
         self.expression = Expression('vm.int_value')
         self.expr_inst = InnerViewModel(1, '1')
         self.var = TestVar(1)
-        self.binding = VarBinding(ExpressionTarget(self.expression), self.var)
+        self.converter = lambda value: str(value)
+        self.binding = VarBinding(ExpressionTarget(self.expression), self.var, self.converter)
         self.expr_vars = ExpressionVars()
         self.expr_vars['vm'] = self.expr_inst
 
@@ -186,7 +187,7 @@ class TestVarBinding(TestCase):
         self.var.set_value(new_val)
 
         msg = 'property from expression should be updated on instance updating'
-        self.assertEqual(self.expr_inst.int_value, new_val, msg)
+        self.assertEqual(self.expr_inst.int_value, str(new_val), msg)
 
     def test_destroy(self):
         self.binding.bind(self.expr_vars)
@@ -217,7 +218,7 @@ class TestTwoWaysBinding(TestCase):
         self.expression = Expression('vm.int_value')
         self.expr_inst = InnerViewModel(1, '1')
         self.inst = SomeBindable(1)
-        self.binding = TwoWaysBinding(self.inst, 'int_value', setattr, self.expression)
+        self.binding = TwoWaysBinding(self.inst, 'int_value', setattr, None, self.expression)
         self.expr_vars = ExpressionVars()
         self.expr_vars['vm'] = self.expr_inst
 

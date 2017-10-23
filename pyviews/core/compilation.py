@@ -37,6 +37,9 @@ class ExpressionVars(Observable):
     def to_all_dictionary(self):
         return {key: self[key] for key in self.all_keys()}
 
+    def has_key(self, key):
+        return key in self.all_keys()
+
 class Entry:
     def __init__(self, key):
         self.key = key
