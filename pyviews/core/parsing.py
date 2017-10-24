@@ -28,9 +28,6 @@ class Node:
         self.xml_node = xml_node
         self.globals = ExpressionVars(parent_globals)
 
-    def get_var(self, key):
-        raise KeyError('Variable for key ' + key + ' cannot be setup')
-
     def add_binding(self, binding: ExpressionBinding):
         self._bindings.append(binding)
 

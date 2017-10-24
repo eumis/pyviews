@@ -3,8 +3,8 @@ from collections import namedtuple
 from pyviews.core.ioc import inject
 from pyviews.core.xml import XmlNode
 from pyviews.core.compilation import ExpressionVars
-from pyviews.core.binding import Bindable, BindableVariable
 from pyviews.core.parsing import Node, NodeArgs
+from pyviews.core.observable import Observable
 from pyviews.tk.views import get_view_root
 
 class WidgetArgs(NodeArgs):
@@ -17,40 +17,12 @@ class WidgetArgs(NodeArgs):
             return namedtuple('Args', ['args', 'kwargs'])([self['master']], {})
         return super().get_args(inst_type)
 
-class TkBindableVariable(BindableVariable):
-    def __init__(self, tk_var=None):
-        self._tk_var = StringVar() if tk_var is None else tk_var
-        self._tk_var.trace_add('write', self._write_callback)
-        self._callback = None
-        self._value = self.get_value()
-
-    def _write_callback(self, *args):
-        if self._value == self.get_value():
-            return
-        if self._callback is not None:
-            self._callback(self.get_value(), None)
-        self._value = self.get_value()
-
-    def get_value(self):
-        return self._tk_var.get()
-
-    def set_value(self, value):
-        value = str(value)
-        if self._value != value:
-            self._tk_var.set(value)
-
-    def observe(self, callback):
-        self._callback = callback
-
-    def release(self):
-        self._callback = None
-
-class WidgetNode(Node, Bindable):
+class WidgetNode(Node, Observable):
     def __init__(self, widget, xml_node: XmlNode, parent_globals: ExpressionVars = None):
-        super().__init__(xml_node, parent_globals)
+        Observable.__init__(self)
+        Node.__init__(self, xml_node, parent_globals)
         self.widget = widget
         self._geometry = None
-        self._text_var = None
 
     @property
     def geometry(self):
@@ -73,15 +45,6 @@ class WidgetNode(Node, Bindable):
     def view_model(self, value):
         self.globals['vm'] = value
 
-    def get_variable(self, key, modifier=None):
-        if key == 'text' and isinstance(self.widget, Entry):
-            if self._text_var is not None:
-                return self._text_var
-            var = StringVar()
-            self._text_var = TkBindableVariable(var)
-            self.widget.config(textvariable=var)
-            return self._text_var
-
     def get_node_args(self, xml_node: XmlNode):
         return WidgetArgs(xml_node, self, self.widget)
 
@@ -99,6 +62,25 @@ class WidgetNode(Node, Bindable):
             setattr(self.widget, key, value)
         else:
             self.widget.configure(**{key:value})
+
+class EntryWidget(WidgetNode):
+    def __init__(self, widget, xml_node: XmlNode, parent_globals: ExpressionVars = None):
+        super().__init__(widget, xml_node, parent_globals)
+        self._text_var = StringVar()
+        self._text_var.trace_add('write', self._write_callback)
+        self._text_value = self._text_var.get()
+        widget.config(textvariable=self._text_var)
+
+    def _write_callback(self, *args):
+        old_value = self._text_value
+        self._text_value = self._text_var.get()
+        self._notify('text', self._text_value, old_value)
+
+    def set_attr(self, key, value):
+        if key == 'text':
+            self._text_var.set(str(value))
+        else:
+            super().set_attr(key, value)
 
 class Root(WidgetNode):
     def __init__(self, xml_node: XmlNode, parent_globals: ExpressionVars = None):

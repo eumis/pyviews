@@ -98,34 +98,18 @@ class ExpressionTarget:
 
         return (inst, next_key)
 
-class Bindable:
-    def get_variable(self, key, modifier=None):
-        pass
-
-class BindableVariable:
-    def observe(self, callback):
-        pass
-
-    def release(self):
-        pass
-
-    def get_value(self):
-        pass
-
-    def set_value(self, value):
-        pass
-
-class VarBinding:
-    def __init__(self, target: ExpressionTarget, var: BindableVariable, converter):
+class ObservableBinding:
+    def __init__(self, target: ExpressionTarget, observable: Observable, prop, converter):
         self._target = target
-        self._var = var
+        self._observable = observable
+        self._prop = prop
         self._expr_vars = None
         self._converter = converter if converter is not None else lambda value: value
 
     def bind(self, expr_vars: ExpressionVars):
         self. destroy()
         self._expr_vars = expr_vars
-        self._var.observe(self._update_callback)
+        self._observable.observe(self._prop, self._update_callback)
 
     def _update_callback(self, new_val, old_val):
         self._update_target(new_val)
@@ -134,25 +118,13 @@ class VarBinding:
         self._target.set_value(self._expr_vars, self._converter(value))
 
     def destroy(self):
-        self._var.release()
+        self._observable.release(self._prop, self._update_callback)
         self._expr_vars = None
 
-class VarSkipper:
-    def __init__(self, var, callback):
-        self._var = var
-        self._callback = callback
-
-    def __enter__(self):
-        self._var.release(self._callback)
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self._var.observe(self._callback)
-
 class TwoWaysBinding:
-    def __init__(self, inst: Bindable, prop, modifier, converter, expression: Expression):
-        var = inst.get_variable(prop, modifier)
-        self._expr_binding = ExpressionBinding(var, expression)
-        self._prop_binding = VarBinding(ExpressionTarget(expression), var, converter)
+    def __init__(self, inst: Observable, prop, modifier, converter, expression: Expression):
+        self._expr_binding = ExpressionBinding(InstanceTarget(inst, prop, modifier), expression)
+        self._prop_binding = ObservableBinding(ExpressionTarget(expression), inst, prop, converter)
         self._vars = None
 
     def bind(self, expr_vars: ExpressionVars):

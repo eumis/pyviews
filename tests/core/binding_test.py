@@ -147,36 +147,13 @@ class TestExpressionTarget(TestCase):
         msg = 'set_value should return expression result value'
         self.assertEqual(self.parent.inner_vm.int_value, new_val, msg)
 
-class TestVar(BindableVariable):
-    def __init__(self, value=None):
-        self._callback = None
-        self._value = value
-
-    def observe(self, callback):
-        self._callback = callback
-
-    def release(self):
-        self._callback = None
-
-    def get_value(self):
-        return self._value
-
-    def set_value(self, value):
-        old_value = self._value
-        self._value = value
-        self.notify(value, old_value)
-
-    def notify(self, new_val, old_val):
-        if self._callback is not None:
-            self._callback(new_val, old_val)
-
-class TestVarBinding(TestCase):
+class TestObservableBinding(TestCase):
     def setUp(self):
         self.expression = Expression('vm.int_value')
         self.expr_inst = InnerViewModel(1, '1')
-        self.var = TestVar(1)
+        self.inst = InnerViewModel(1, '1')
         self.converter = lambda value: str(value)
-        self.binding = VarBinding(ExpressionTarget(self.expression), self.var, self.converter)
+        self.binding = ObservableBinding(ExpressionTarget(self.expression), self.inst, 'int_value', self.converter)
         self.expr_vars = ExpressionVars()
         self.expr_vars['vm'] = self.expr_inst
 
@@ -184,7 +161,7 @@ class TestVarBinding(TestCase):
         self.binding.bind(self.expr_vars)
 
         new_val = 2
-        self.var.set_value(new_val)
+        self.inst.int_value = new_val
 
         msg = 'property from expression should be updated on instance updating'
         self.assertEqual(self.expr_inst.int_value, str(new_val), msg)
@@ -193,31 +170,16 @@ class TestVarBinding(TestCase):
         self.binding.bind(self.expr_vars)
 
         self.binding.destroy()
-        self.var.set_value(self.var.get_value() + 2)
+        self.inst.int_value = self.inst.int_value + 2
 
         msg = 'property from expression shouldn''t be updated after binding destroying'
-        self.assertNotEqual(self.expr_inst, self.var.get_value(), msg)
-
-class SomeBindable(Bindable):
-    def __init__(self, value):
-        self._var = TestVar(value)
-
-    @property
-    def int_value(self):
-        return self._var.get_value()
-
-    @int_value.setter
-    def int_value(self, value):
-        self._var.set_value(value)
-
-    def get_variable(self, key, modifier=None):
-        return self._var
+        self.assertNotEqual(self.expr_inst, self.inst.int_value, msg)
 
 class TestTwoWaysBinding(TestCase):
     def setUp(self):
         self.expression = Expression('vm.int_value')
         self.expr_inst = InnerViewModel(1, '1')
-        self.inst = SomeBindable(1)
+        self.inst = InnerViewModel(1, '1')
         self.binding = TwoWaysBinding(self.inst, 'int_value', setattr, None, self.expression)
         self.expr_vars = ExpressionVars()
         self.expr_vars['vm'] = self.expr_inst
