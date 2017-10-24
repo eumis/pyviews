@@ -71,5 +71,16 @@ class TestObservableCallback(TestCase):
         msg = 'callbacks registered in another callback should be called'
         self.assertEqual(self.callback.call_count, 1, msg=msg)
 
+    def test_skipping(self):
+        self.observable.observe('name', self.callback)
+
+        self.observable.name = 'one name'
+        with self.observable.skipping('name', self.callback):
+            self.observable.name = 'two name'
+        self.observable.name = 'three name'
+
+        msg = 'skipping should turn off calling callback during "with" statement'
+        self.assertEqual(self.callback.call_count, 2, msg)
+
 if __name__ == '__main__':
     main()

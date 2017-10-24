@@ -22,16 +22,22 @@ class TkBindableVariable(BindableVariable):
         self._tk_var = StringVar() if tk_var is None else tk_var
         self._tk_var.trace_add('write', self._write_callback)
         self._callback = None
+        self._value = self.get_value()
 
     def _write_callback(self, *args):
+        if self._value == self.get_value():
+            return
         if self._callback is not None:
             self._callback(self.get_value(), None)
+        self._value = self.get_value()
 
     def get_value(self):
-        self._tk_var.get()
+        return self._tk_var.get()
 
     def set_value(self, value):
-        self._tk_var.set(value)
+        value = str(value)
+        if self._value != value:
+            self._tk_var.set(value)
 
     def observe(self, callback):
         self._callback = callback

@@ -6,6 +6,8 @@ class TestModifiers(TestCase):
     @case('1', 1)
     @case(' 1 ', 1)
     @case('25', 25)
+    @case('', None)
+    @case(' ', None)
     @case(None, None)
     def test_to_int(self, value, expected):
         msg = 'to_int should convert value to int'
@@ -16,8 +18,6 @@ class TestModifiers(TestCase):
     @case('1.1')
     @case('1.9')
     @case('one')
-    @case('')
-    @case(' ')
     def test_to_int_raises(self, value):
         msg = 'to_int should raise exception for invalid value'
         with self.assertRaises(ValueError, msg=msg):

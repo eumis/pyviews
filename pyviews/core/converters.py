@@ -1,2 +1,4 @@
 def to_int(value):
-    return None if value is None else int(value)
+    if value and value.strip():
+        return int(value)
+    return None

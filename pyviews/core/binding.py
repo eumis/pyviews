@@ -137,6 +137,17 @@ class VarBinding:
         self._var.release()
         self._expr_vars = None
 
+class VarSkipper:
+    def __init__(self, var, callback):
+        self._var = var
+        self._callback = callback
+
+    def __enter__(self):
+        self._var.release(self._callback)
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self._var.observe(self._callback)
+
 class TwoWaysBinding:
     def __init__(self, inst: Bindable, prop, modifier, converter, expression: Expression):
         var = inst.get_variable(prop, modifier)

@@ -1,3 +1,15 @@
+class CallbackSkipper:
+    def __init__(self, observable, key, callback):
+        self._observable = observable
+        self._key = key
+        self._callback = callback
+
+    def __enter__(self):
+        self._observable.release(self._key, self._callback)
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self._observable.observe(self._key, self._callback)
+
 class Observable:
     def __init__(self):
         self._callbacks = {}
@@ -19,6 +31,9 @@ class Observable:
             self._callbacks[key].remove(callback)
         except KeyError:
             pass
+
+    def skipping(self, key, callback):
+        return CallbackSkipper(self, key, callback)
 
 class ObservableEnt(Observable):
     def __setattr__(self, key, value):
