@@ -15,12 +15,12 @@ class Dependency:
 
 class InstanceTarget:
     def __init__(self, instance, prop, modifier):
-        self._instance = instance
-        self._property = prop
+        self.inst = instance
+        self.prop = prop
         self._modifier = modifier
 
     def set_value(self, value):
-        self._modifier(self._instance, self._property, value)
+        self._modifier(self.inst, self.prop, value)
 
 class ExpressionBinding:
     def __init__(self, target: InstanceTarget, expression: Expression):
@@ -123,15 +123,17 @@ class ObservableBinding:
 
 class TwoWaysBinding:
     def __init__(self, inst: Observable, prop, modifier, converter, expression: Expression):
-        self._expr_binding = ExpressionBinding(InstanceTarget(inst, prop, modifier), expression)
-        self._prop_binding = ObservableBinding(ExpressionTarget(expression), inst, prop, converter)
+        self._expr_binding = \
+            ExpressionBinding(InstanceTarget(inst, prop, modifier), expression)
+        self._observ_binding = \
+            ObservableBinding(ExpressionTarget(expression), inst, prop, converter)
         self._vars = None
 
     def bind(self, expr_vars: ExpressionVars):
         self.destroy()
         self._expr_binding.bind(expr_vars)
-        self._prop_binding.bind(expr_vars)
+        self._observ_binding.bind(expr_vars)
 
     def destroy(self):
         self._expr_binding.destroy()
-        self._prop_binding.destroy()
+        self._observ_binding.destroy()

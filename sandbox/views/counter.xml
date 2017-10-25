@@ -28,7 +28,7 @@
         <!-- <RowConfig row='0' weight='1' />
         <ColConfig col='0' weight='1' /> -->
         <Frame geometry='{Grid(0, 0)}'>
-            <w:For items='{range(0 if vm.count is None else vm.count)}'>
+            <w:For items='{vm.range}'>
                 <Label geometry='{Grid(index, index)}'>
                     {str(item+1) + ' ' + str(index)}
                 </Label>

@@ -42,7 +42,7 @@ class ObservableEnt(Observable):
         self._notify(key, value, old_val)
 
     def observe(self, key, callback):
-        if key not in self.__dict__:
+        if key not in self.__dict__ and key not in self._callbacks:
             raise KeyError('Entity ' + str(self) + 'doesn''t have attribute' + key)
         super().observe(key, callback)
 
