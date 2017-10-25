@@ -8,6 +8,7 @@ class Counter(ObservableEnt):
         self._callbacks['range'] = []
         self._callbacks['count'] = []
         self.count = 0
+        self.index = 0
 
     @property
     def count(self):
@@ -27,3 +28,10 @@ class Counter(ObservableEnt):
 
     def up_count(self):
         self.count += 1
+
+    def up_item(self):
+        try:
+            self._range[self.index] = self.range[self.index] + 1
+            self._notify('range', self._range, None)
+        except IndexError:
+            pass

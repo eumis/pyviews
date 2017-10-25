@@ -152,16 +152,44 @@ class For(Container):
     def items(self, val):
         self._items = val
         if self._rendered:
-            self.parse_children()
+            self._destroy_overflow()
+            self._update_existing()
+            self._create_not_existing()
+
+    def _destroy_overflow(self):
+        try:
+            items_count = len(self._items)
+            children = self._child_nodes[items_count:]
+            for child in children:
+                child.destroy()
+            self._child_nodes = self._child_nodes[:items_count]
+        except IndexError:
+            pass
+
+    def _update_existing(self):
+        try:
+            for index, item in enumerate(self._items):
+                self._child_nodes[index].globals['item'] = item
+                self._child_nodes[index].globals['index'] = index
+        except IndexError:
+            pass
+
+    def _create_not_existing(self):
+        start = len(self._child_nodes)
+        end = len(self._items)
+        self._create_children([(i, self._items[i]) for i in range(start, end)])
 
     @inject('parse')
-    def parse_children(self, parse=None):
-        self._rendered = True
-        self.destroy_children()
-        for index, item in enumerate(self._items):
+    def _create_children(self, items, parse=None):
+        for index, item in items:
             for xml_node in self.xml_node.get_children():
                 args = self.get_node_args(xml_node, index)
                 self._child_nodes.append(parse(xml_node, args))
+
+    def parse_children(self):
+        self._rendered = True
+        self.destroy_children()
+        self._create_children(enumerate(self._items))
 
     def get_node_args(self, xml_node: XmlNode, index=None):
         args = super().get_node_args(xml_node)

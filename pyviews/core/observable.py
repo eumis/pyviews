@@ -31,30 +31,9 @@ class ObservableEnt(Observable):
             raise KeyError('Entity ' + str(self) + 'doesn''t have attribute' + key)
         super().observe(key, callback)
 
-# class ObservableDict(Observable, dict):
-#     def __init__(self):
-#         super().__init__()
-#         self._callbacks = set()
+# class ObservableList(list, Observable):
+#     def __init__(self, *args, **kwargs):
+#         list.__init__(self, *args, **kwargs)
+#         Observable.__init__(self)
 
-#     def __setitem__(self, key, value):
-#         old_value = self._try_get_value(key)
-#         dict.__setitem__(self, key, value)
-#         for callback in self._callbacks:
-#             callback(key, value, old_value)
-
-#     def _try_get_value(self, key):
-#         value = None
-#         try:
-#             value = self[key]
-#         except KeyError:
-#             pass
-#         return value
-
-#     def observe(self, callback):
-#         self._callbacks.add(callback)
-
-#     def release(self, callback):
-#         try:
-#             self._callbacks.remove(callback)
-#         except KeyError:
-#             pass
+#     def __
