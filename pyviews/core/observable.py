@@ -30,10 +30,3 @@ class ObservableEnt(Observable):
         if key not in self.__dict__ and key not in self._callbacks:
             raise KeyError('Entity ' + str(self) + 'doesn''t have attribute' + key)
         super().observe(key, callback)
-
-# class ObservableList(list, Observable):
-#     def __init__(self, *args, **kwargs):
-#         list.__init__(self, *args, **kwargs)
-#         Observable.__init__(self)
-
-#     def __
