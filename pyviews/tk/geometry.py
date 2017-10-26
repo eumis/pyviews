@@ -8,10 +8,6 @@ class Geometry:
     def items(self):
         return self._args.items()
 
-    def merge(self, geometry):
-        for key, value in geometry.items():
-            self.set(key, value)
-
     def apply(self, widget):
         pass
 
