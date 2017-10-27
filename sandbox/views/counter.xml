@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <w:Container xmlns="tkinter"
                 xmlns:w="pyviews.tk.widgets"
+                xmlns:s="pyviews.tk.styles"
                 xmlns:import="pyviews.core.modifiers.import_global"
                 xmlns:bind="pyviews.tk.modifiers.bind"
 
@@ -9,6 +10,10 @@
                 import:to_int='pyviews.core.converters.to_int'
 
                 view_model="{Counter()}">
+
+    <s:Style name='back'
+             background='black'
+             foreground='white'/>
 
     <Button geometry='{Grid(0, 0)}'
                bind:Button-1="{lambda e: vm.up_count()}">
@@ -20,6 +25,7 @@
     </Entry>
 
     <Label geometry="{Grid(0, 2)}"
+            style='back'
               bind:Button-1="{lambda e: print(e)}">
         {vm.count}
     </Label>

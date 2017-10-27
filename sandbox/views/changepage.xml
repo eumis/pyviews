@@ -11,7 +11,7 @@
         Message box
     </Button>
 
-    <Button geometry='{Grid(0, 1, sticky="e", rows=[])}'
+    <Button geometry='{Grid(0, 1, sticky="e")}'
                bind:Button-1="{lambda e: show_view(vm, 'counter')}">
         Counter
     </Button>

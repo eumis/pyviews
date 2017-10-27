@@ -40,6 +40,12 @@ class ExpressionVars(Observable):
     def has_key(self, key):
         return key in self.all_keys()
 
+    def remove_key(self, key):
+        try:
+            del self._container[key]
+        except KeyError:
+            pass
+
 class Entry:
     def __init__(self, key):
         self.key = key

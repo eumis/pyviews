@@ -31,7 +31,20 @@ class TestExpressionVars(TestCase):
         self.assertEqual(self.globs.to_dictionary(), {'two': 'two', 'three': 'three'}, msg)
 
         msg = 'to_all_dictionary should return dictionary with all keys'
-        self.assertEqual(self.globs.to_all_dictionary(), {'one': 1, 'two': 'two', 'three': 'three'}, msg)
+        self.assertEqual(
+            self.globs.to_all_dictionary(),
+            {'one': 1, 'two': 'two', 'three': 'three'},
+            msg)
+
+    def test_remove_keys(self):
+        self.globs.remove_key('two')
+        self.globs.remove_key('three')
+
+        msg = 'remove_key should remove own key'
+        self.assertEqual(self.globs['two'], 2, msg)
+
+        with self.assertRaises(KeyError, msg=msg):
+            self.globs['three']
 
     @case('one', True)
     @case('two', True)
@@ -40,6 +53,14 @@ class TestExpressionVars(TestCase):
     def test_has_keys(self, key, expected):
         msg = 'has_key should return true for existant keys and false in other case'
         self.assertEqual(self.globs.has_key(key), expected, msg)
+
+    @case('key')
+    @case('hoho')
+    @case('')
+    @case(' ')
+    def test_raises(self, key):
+        with self.assertRaises(KeyError, msg='KeyError should be raised for unknown key'):
+            self.globs[key]
 
 class TestExpression(TestCase):
     @case('2 + 2', None, 4)

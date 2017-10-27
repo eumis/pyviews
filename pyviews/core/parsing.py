@@ -33,6 +33,9 @@ class Node:
 
     def destroy(self):
         self.destroy_children()
+        self._destroy_bindings()
+
+    def _destroy_bindings(self):
         for binding in self._bindings:
             binding.destroy()
         self._bindings = []
