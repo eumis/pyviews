@@ -8,3 +8,6 @@ def import_global(node: Node, name, path):
     except ImportError:
         node.globals[name] = None
     node.globals[name] = imported
+
+def set_global(node: Node, name, value):
+    node.globals[name] = value

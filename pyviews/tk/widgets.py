@@ -65,9 +65,9 @@ class WidgetNode(Node, Observable):
         else:
             self.widget.configure(**{key:value})
 
-    def _apply_style(self, styles: str):
-        keys = styles.split(',')
-        for key in keys:
+    def _apply_style(self, styles):
+        keys = styles.split(',') if isinstance(styles, str) else styles
+        for key in [key for key in keys if key]:
             for item in self.globals[key]:
                 item.apply(self)
 
