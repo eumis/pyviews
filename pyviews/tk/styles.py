@@ -1,7 +1,8 @@
-from pyviews.core.xml import XmlAttr
+from pyviews.core.xml import XmlNode, XmlAttr
 from pyviews.core.compilation import Expression
 from pyviews.core.parsing import Node, ExpressionVars, get_modifier
 from pyviews.core.parsing import is_code_expression, parse_code_expression
+from pyviews.tk.widgets import View, Container
 
 class StyleItem:
     def __init__(self, modifier, name, value):
@@ -40,3 +41,20 @@ def get_item(node: Style, attr: XmlAttr):
         expression = Expression(parse_code_expression(value))
         value = expression.execute(node.globals.to_all_dictionary())
     return StyleItem(modifier, attr.name, value)
+
+class Styles(View):
+    def __init__(self, master, xml_node: XmlNode, parent_globals: ExpressionVars = None):
+        super().__init__(master, xml_node, parent_globals)
+        self._parent_globals = parent_globals
+        self._name = None
+
+    def parse_children(self):
+        if self._name:
+            super().parse_children()
+        else:
+            Container.parse_children(self)
+
+    def get_node_args(self, xml_node: XmlNode):
+        args = super().get_node_args(xml_node)
+        args['parent_globals'] = self._parent_globals
+        return args

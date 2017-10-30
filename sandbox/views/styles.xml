@@ -1,15 +1,18 @@
 <?xml version="1.0"?>
-<cs:Container xmlns="pyviews.view.style"
-              xmlns:cs="pyviews.view.containers">
+<Styles xmlns="pyviews.tk.styles">
     <Style name='button'
                 foreground='white'
                 background='black'/>
 
     <Style name='yellowbg'
            background='yellow'
-           foreground='white' />
+           foreground='black' />
 
     <Style name='redbg'
             background='red'
             foreground='green' />
-</cs:Container>
+
+    <Style name='back'
+             background='black'
+             foreground='white'/>
+</Styles>

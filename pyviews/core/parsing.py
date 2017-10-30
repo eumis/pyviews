@@ -1,5 +1,5 @@
 from inspect import signature, Parameter
-from re import compile as compile_regex, match
+from re import compile as compile_regex
 from collections import namedtuple
 from pyviews.core import ioc
 from pyviews.core.reflection import import_path

@@ -11,11 +11,10 @@
 
                 view_model="{Counter()}">
 
-    <s:Style name='back'
-             background='black'
-             foreground='white'/>
+    <s:Styles name='styles'/>
 
     <Button geometry='{Grid(0, 0)}'
+            style='button'
                bind:Button-1="{lambda e: vm.up_count()}">
         + 1
     </Button>
@@ -35,7 +34,8 @@
         <ColConfig col='0' weight='1' /> -->
         <Frame geometry='{Grid(0, 0)}'>
             <w:For items='{vm.range}'>
-                <Label geometry='{Grid(index, index)}'>
+                <Label geometry='{Grid(index, index)}'
+                        style='{"yellowbg" if index % 2 == 0 else "redbg"}'>
                     {str(item+1) + ' ' + str(index)}
                 </Label>
             </w:For>
