@@ -30,7 +30,10 @@ class Style(Node):
 
 def parse_attributes(node: Style):
     attrs = node.xml_node.get_attrs()
-    node.name = next(attr.value for attr in attrs if attr.name == 'name')
+    try:
+        node.name = next(attr.value for attr in attrs if attr.name == 'name')
+    except StopIteration:
+        raise ValueError('name attribute is required for style')
     style_items = [get_item(node, attr) for attr in attrs if attr.name != 'name']
     node.apply(style_items)
 

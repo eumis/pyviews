@@ -1,4 +1,4 @@
-from tkinter import Tk, Widget, Canvas, Frame, Scrollbar, StringVar, Entry
+from tkinter import Tk, Widget, Canvas, Frame, Scrollbar, StringVar
 from collections import namedtuple
 from pyviews.core.ioc import inject
 from pyviews.core.xml import XmlNode
@@ -294,7 +294,9 @@ class Scroll(Node):
         self.globals['vm'] = value
 
     def set_attr(self, name, value):
-        if hasattr(self, name):
+        if name == 'style':
+            self._apply_style(value)
+        elif hasattr(self, name):
             setattr(self, name, value)
         elif hasattr(self._container, name):
             setattr(self._container, name, value)
@@ -302,6 +304,12 @@ class Scroll(Node):
             self._container.configure(**{name: value})
             if name == 'bg' or name == 'background':
                 self._canvas.config(**{name: value})
+
+    def _apply_style(self, styles):
+        keys = styles.split(',') if isinstance(styles, str) else styles
+        for key in [key for key in keys if key]:
+            for item in self.globals[key]:
+                item.apply(self)
 
     def bind(self, event, handler):
         self._container.bind('<'+event+'>', handler)
