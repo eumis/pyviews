@@ -153,7 +153,8 @@ class TestObservableBinding(TestCase):
         self.expr_inst = InnerViewModel(1, '1')
         self.inst = InnerViewModel(1, '1')
         self.converter = lambda value: str(value)
-        self.binding = ObservableBinding(ExpressionTarget(self.expression), self.inst, 'int_value', self.converter)
+        target = ExpressionTarget(self.expression)
+        self.binding = ObservableBinding(target, self.inst, 'int_value', self.converter)
         self.expr_vars = ExpressionVars()
         self.expr_vars['vm'] = self.expr_inst
 

@@ -1,8 +1,9 @@
 from unittest import TestCase, main
 from tests.utility import case
 from pyviews.core.converters import to_int
+from pyviews.core.parsing import Node
 
-class TestModifiers(TestCase):
+class TestConverters(TestCase):
     @case('1', 1)
     @case(' 1 ', 1)
     @case('25', 25)
