@@ -28,7 +28,7 @@ class Style(Node):
         self._parent_globals.remove_key(self.name)
         self._destroy_bindings()
 
-def parse_attributes(node: Style):
+def apply_styles(node: Style):
     attrs = node.xml_node.get_attrs()
     try:
         node.name = next(attr.value for attr in attrs if attr.name == 'name')
