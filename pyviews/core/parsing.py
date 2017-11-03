@@ -55,12 +55,6 @@ class Node:
     def get_node_args(self, xml_node: XmlNode):
         return NodeArgs(xml_node, self)
 
-# Looks like tkinter specific
-# from os.path import join as join_path
-# def read_xml(view, views_folder='views', view_ext='.xml'):
-#     view_path = join_path(views_folder, view + view_ext)
-#     return get_root(view_path)
-
 def parse(xml_node: XmlNode, args: NodeArgs):
     node = create_node(xml_node, args)
     run_parsing_steps(node)
