@@ -55,8 +55,9 @@ class Expression:
     def __init__(self, code):
         self.code = code
         self._compiled = compile(code, '<string>', 'eval')
+        self._var_tree = self._compile_var_tree()
 
-    def get_var_tree(self):
+    def _compile_var_tree(self):
         parsed = ast.parse(self.code)
 
         nodes = [node for node in ast.walk(parsed) \
@@ -88,6 +89,9 @@ class Expression:
             entry.entries = self._get_attr_entires(attrs, nodes)
             res.append(entry)
         return res
+
+    def get_var_tree(self):
+        return self._var_tree
 
     def execute(self, parameters=None):
         parameters = {} if parameters is None else parameters
