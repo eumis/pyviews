@@ -8,9 +8,3 @@ def set_attr(node: WidgetNode, key, value):
 
 def config(node: WidgetNode, key, value):
     node.widget.config(**{key: value})
-
-def grid_row_config(node: WidgetNode, key, value):
-    node.widget.rowconfigure(int(key), **value)
-
-def grid_column_config(node: WidgetNode, key, value):
-    node.widget.columnconfigure(int(key), **value)

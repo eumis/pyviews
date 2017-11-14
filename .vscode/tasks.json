@@ -5,7 +5,7 @@
 	},
 	"tasks": [
 		{
-			"taskName": "developer pip install",
+			"label": "developer pip install",
 			"group": {
 				"kind": "build",
 				"isDefault": true
@@ -20,7 +20,7 @@
 			}
 		},
 		{
-			"taskName": "Run file tests",
+			"label": "Run file tests",
 			"group": {
 				"kind": "test",
 				"isDefault": true
@@ -34,7 +34,7 @@
 			"args": ["${file}", "-v"]
 		},
 		{
-			"taskName": "Run all tests",
+			"label": "Run all tests",
 			"group": {
 				"kind": "test",
 				"isDefault": true
