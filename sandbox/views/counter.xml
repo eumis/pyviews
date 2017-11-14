@@ -1,42 +1,46 @@
 <?xml version="1.0"?>
 <w:Container xmlns="tkinter"
-                xmlns:w="pyviews.tk.widgets"
-                xmlns:s="pyviews.tk.styles"
-                xmlns:import="pyviews.core.modifiers.import_global"
-                xmlns:bind="pyviews.tk.modifiers.bind"
-                xmlns:g="pyviews.tk.geometry"
+             xmlns:w="pyviews.tk.widgets"
+             xmlns:s="pyviews.tk.styles"
+             xmlns:import="pyviews.core.modifiers.import_global"
+             xmlns:bind="pyviews.tk.modifiers.bind"
+             xmlns:g="pyviews.tk.geometry"
 
-                import:Counter="sandbox.counter.Counter"
-                import:Grid='pyviews.tk.geometry.GridGeometry'
-                import:to_int='pyviews.core.converters.to_int'
+             import:Counter="sandbox.counter.Counter"
+             import:Grid='pyviews.tk.geometry.GridGeometry'
+             import:Pack='pyviews.tk.geometry.PackGeometry'
+             import:to_int='pyviews.core.converters.to_int'
 
-                view_model="{Counter()}">
+             view_model="{Counter()}">
 
     <s:Styles name='styles'/>
 
-    <Button geometry='{Grid(0, 0)}'
-            style='button'
-               bind:Button-1="{lambda e: vm.up_count()}">
-        + 1
-    </Button>
+    <Frame geometry='{Pack(fill="x")}'>
+        <Button geometry='{Pack(side="left")}'
+                style='button'
+                bind:Button-1="{lambda e: vm.up_count()}">
+            + 1
+        </Button>
 
-    <Entry geometry="{Grid(0, 1)}"
-           text='{to_int{vm.count}}'>
-    </Entry>
+        <Entry geometry='{Pack(side="left")}'
+               text='{to_int{vm.count}}'>
+        </Entry>
 
-    <Label geometry="{Grid(0, 2)}"
-            style='back'
-              bind:Button-1="{lambda e: print(e)}">
-        {vm.count}
-    </Label>
+        <Label geometry='{Pack(side="left")}'
+               style='back'
+               bind:Button-1="{lambda e: print(e)}">
+            {vm.count}
+        </Label>
+    </Frame>
 
-    <Frame geometry='{Grid(1, 0, columnspan=3)}'>
+    <Frame geometry='{Pack(anchor="nw", side="left")}'>
         <g:Row index='{0}' weight='{1}' />
         <g:Column index='{0}' weight='{1}' />
-        <Frame geometry='{Grid(0, 0)}'>
+        <Frame geometry='{Grid(row=0, column=0)}'
+               background='white'>
             <w:For items='{vm.range}'>
-                <Label geometry='{Grid(index, index)}'
-                        style='{"yellowbg" if index % 2 == 0 else "redbg"}'>
+                <Label geometry='{Grid(row=index, column=index)}'
+                       style='{"yellowbg" if index % 2 == 0 else "redbg"}'>
                     {str(item+1) + ' ' + str(index)}
                 </Label>
             </w:For>

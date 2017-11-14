@@ -208,7 +208,6 @@ class For(Container):
         args['parent_globals'] = args_globals
         return args
 
-
 class Scroll(Node):
     def __init__(self, master, xml_node: XmlNode, parent_globals: ExpressionVars = None):
         super().__init__(xml_node, parent_globals)

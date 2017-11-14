@@ -6,7 +6,7 @@ from pyviews.tk.parsing import convert_to_node
 from pyviews.tk.modifiers import set_attr
 from pyviews.tk import app
 
-class TestIocDependenciesaa(TestCase):
+class TestIocDependencies(TestCase):
     def setUp(self):
         self._container = ioc.CONTAINER
 
