@@ -5,11 +5,29 @@
         xmlns:bind='pyviews.tk.modifiers.bind'
 
         import:AppViewModel='view_model.AppViewModel'
+        import:Grid='pyviews.tk.geometry.GridGeometry'
         import:Pack='pyviews.tk.geometry.PackGeometry'
         import:show_message='commands.show_message'
+        import:show_view='sandbox.commands.show_view'
 
         background="white"
         state="zoomed"
         view_model='{AppViewModel("changepage")}'>
+        <Frame geometry='{Pack(fill="x")}'>
+                <Button geometry='{Grid(row=0, column=0, sticky="e")}'
+                        bind:Button-1="{lambda e: show_view(vm, 'messagebox')}">
+                        Message box
+                </Button>
+
+                <Button geometry='{Grid(row=0, column=1, sticky="e")}'
+                        bind:Button-1="{lambda e: show_view(vm, 'counter')}">
+                        Counter
+                </Button>
+
+                <Button geometry='{Grid(row=0, column=2, sticky="e")}'
+                        bind:Button-1="{lambda e: show_view(vm, 'scroll')}">
+                        Scroll
+                </Button>
+        </Frame>
         <w:View name='{vm.view}' />
 </w:Root>

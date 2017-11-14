@@ -317,3 +317,7 @@ class Scroll(Node):
 
     def get_node_args(self, xml_node):
         return WidgetArgs(xml_node, self, self._container)
+
+    def destroy(self):
+        super().destroy()
+        self._frame.destroy()
