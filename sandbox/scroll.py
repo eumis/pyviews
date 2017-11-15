@@ -1,6 +1,5 @@
 from pyviews.core.observable import ObservableEnt
 
-# pylint: disable=E1101
 class ScrollVm(ObservableEnt):
     def __init__(self):
         super().__init__()

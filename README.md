@@ -8,7 +8,7 @@ Package adds ability to create ui by declarative way using tkinter
 * Fully customizable via dependency injection
 
 ## Installation
-`pip install git+https://yauheni_m@bitbucket.org/yauheni_m/pyviews.git@dev`
+`pip install git+https://github.com/eumis/pyviews.git@dev`
 
 # Code
 ## Repository structure
