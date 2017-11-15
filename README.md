@@ -7,6 +7,9 @@ Package adds ability to create ui by declarative way using tkinter
 * One way and two ways bindings
 * Fully customizable via dependency injection
 
+## Installation
+`pip install git+https://yauheni_m@bitbucket.org/yauheni_m/pyviews.git@dev`
+
 # Code
 ## Repository structure
 * pyviews - source code
