@@ -143,8 +143,11 @@ class View(Container):
     @inject('parse')
     def parse_children(self, parse=None):
         self.destroy_children()
-        root_xml = get_view_root(self.name)
-        self._child_nodes = [parse(root_xml, self.get_node_args(root_xml))]
+        try:
+            root_xml = get_view_root(self.name)
+            self._child_nodes = [parse(root_xml, self.get_node_args(root_xml))]
+        except FileNotFoundError:
+            self._child_nodes = []
 
 class For(Container):
     def __init__(self, master, xml_node: XmlNode, parent_globals: ExpressionVars = None):

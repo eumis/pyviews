@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-<w:Container xmlns="tkinter"
-             xmlns:w="pyviews.tk.widgets"
-             xmlns:import="pyviews.core.modifiers.import_global"
-             xmlns:bind="pyviews.tk.modifiers.bind"
-
-             import:Grid='pyviews.tk.geometry.GridGeometry'
-             import:show_view='sandbox.commands.show_view'>
-</w:Container>

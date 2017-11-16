@@ -1,18 +1,18 @@
 <?xml version="1.0"?>
-<Styles xmlns="pyviews.tk.styles">
-    <Style name='button'
-                foreground='white'
-                background='black'/>
+<Styles xmlns='pyviews.tk'>
+        <Style name='button'
+               foreground='white'
+               background='black'/>
 
-    <Style name='yellowbg'
-           background='yellow'
-           foreground='black' />
+        <Style name='yellowbg'
+               background='yellow'
+               foreground='black' />
 
-    <Style name='redbg'
-            background='red'
-            foreground='green' />
+        <Style name='redbg'
+               background='red'
+               foreground='green' />
 
-    <Style name='back'
-             background='black'
-             foreground='white'/>
+        <Style name='back'
+               background='black'
+               foreground='white'/>
 </Styles>

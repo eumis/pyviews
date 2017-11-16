@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <w:Scroll xmlns="tkinter"
-          xmlns:w="pyviews.tk.widgets"
+          xmlns:w="pyviews.tk"
           xmlns:import="pyviews.core.modifiers.import_global"
           xmlns:bind="pyviews.tk.modifiers.bind"
 

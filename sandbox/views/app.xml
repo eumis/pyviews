@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <w:Root xmlns='tkinter'
-        xmlns:w="pyviews.tk.widgets"
+        xmlns:w="pyviews.tk"
         xmlns:import='pyviews.core.modifiers.import_global'
         xmlns:bind='pyviews.tk.modifiers.bind'
 
@@ -12,7 +12,7 @@
 
         background="white"
         state="zoomed"
-        view_model='{AppViewModel("changepage")}'>
+        view_model='{AppViewModel("")}'>
         <Frame geometry='{Pack(fill="x")}'>
                 <Button geometry='{Grid(row=0, column=0, sticky="e")}'
                         bind:Button-1="{lambda e: show_view(vm, 'messagebox')}">
