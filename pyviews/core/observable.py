@@ -10,9 +10,11 @@ class Observable:
     def _notify(self, key, value, old_value):
         if value == old_value:
             return
-        if key in self._callbacks:
+        try:
             for callback in self._callbacks[key].copy():
                 callback(value, old_value)
+        except KeyError:
+            pass
 
     def release(self, key, callback):
         try:

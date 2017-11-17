@@ -1,5 +1,4 @@
 from tkinter import Tk, Widget, Canvas, Frame, Scrollbar, StringVar
-from collections import namedtuple
 from pyviews.core.ioc import inject
 from pyviews.core.xml import XmlNode
 from pyviews.core.compilation import ExpressionVars
@@ -14,7 +13,7 @@ class WidgetArgs(NodeArgs):
 
     def get_args(self, inst_type=None):
         if issubclass(inst_type, Widget):
-            return namedtuple('Args', ['args', 'kwargs'])([self['master']], {})
+            return NodeArgs.args_tuple([self['master']], {})
         return super().get_args(inst_type)
 
 class WidgetNode(Node, Observable):
@@ -192,9 +191,10 @@ class For(Container):
 
     @inject('parse')
     def _create_children(self, items, parse=None):
+        nodes = self.xml_node.get_children()
         for index, item in items:
-            for xml_node in self.xml_node.get_children():
-                args = self.get_node_args(xml_node, index)
+            for xml_node in nodes:
+                args = self.get_node_args(xml_node, index, item)
                 self._child_nodes.append(parse(xml_node, args))
 
     def parse_children(self):
@@ -202,12 +202,11 @@ class For(Container):
         self.destroy_children()
         self._create_children(enumerate(self._items))
 
-    def get_node_args(self, xml_node: XmlNode, index=None):
+    def get_node_args(self, xml_node: XmlNode, index=None, item=None):
         args = super().get_node_args(xml_node)
         args_globals = ExpressionVars(args['parent_globals'])
         args_globals['index'] = index
-        if index is not None:
-            args_globals['item'] = self._items[index]
+        args_globals['item'] = item
         args['parent_globals'] = args_globals
         return args
 

@@ -1,4 +1,5 @@
 from unittest import TestCase, main
+from unittest.mock import Mock
 from tests.utility import case
 from pyviews.core.compilation import Expression, ExpressionVars
 
@@ -7,6 +8,7 @@ class TestExpressionVars(TestCase):
         parent = ExpressionVars()
         parent['one'] = 1
         parent['two'] = 2
+        self.parent = parent
 
         self.globs = ExpressionVars(ExpressionVars(parent))
         self.globs['two'] = 'two'
@@ -61,6 +63,13 @@ class TestExpressionVars(TestCase):
     def test_raises(self, key):
         with self.assertRaises(KeyError, msg='KeyError should be raised for unknown key'):
             self.globs[key]
+
+    def test_notifying(self):
+        callback = Mock()
+        self.globs.observe('one', callback)
+        self.parent['one'] = 2
+        msg = 'change event should be raised if key changed in parent'
+        self.assertTrue(callback.called, msg)
 
 class TestExpression(TestCase):
     @case('2 + 2', None, 4)

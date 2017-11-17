@@ -1,13 +1,16 @@
+from importlib import import_module
 from inspect import signature, Parameter
 from re import compile as compile_regex
 from collections import namedtuple
 from pyviews.core import ioc
-from pyviews.core.reflection import import_path
+from pyviews.core.reflection import import_path, split_by_last_dot
 from pyviews.core.compilation import Expression, ExpressionVars
 from pyviews.core.binding import ExpressionBinding, InstanceTarget, TwoWaysBinding
 from pyviews.core.xml import XmlNode, XmlAttr
 
 class NodeArgs(dict):
+    args_tuple = namedtuple('Args', ['args', 'kwargs'])
+
     def __init__(self, xml_node: XmlNode, parent_node=None):
         super().__init__()
         self['parent_node'] = parent_node
@@ -19,7 +22,7 @@ class NodeArgs(dict):
         args = [self[p.name] for p in parameters if p.default == Parameter.empty]
         kwargs = {p.name: self[p.name] for p in parameters \
                   if p.default != Parameter.empty and p.name in self}
-        return namedtuple('Args', ['args', 'kwargs'])(args, kwargs)
+        return NodeArgs.args_tuple(args, kwargs)
 
 class Node:
     def __init__(self, xml_node: XmlNode, parent_globals: ExpressionVars = None):
@@ -62,7 +65,8 @@ def parse(xml_node: XmlNode, args: NodeArgs):
 
 @ioc.inject('convert_to_node')
 def create_node(xml_node: XmlNode, node_args: NodeArgs, convert_to_node=None):
-    node_class = import_path(xml_node.class_path)
+    (module_path, class_name) = split_by_last_dot(xml_node.class_path)
+    node_class = import_module(module_path).__dict__[class_name]
     args = node_args.get_args(node_class)
     node = node_class(*args.args, **args.kwargs)
     if not isinstance(node, Node):

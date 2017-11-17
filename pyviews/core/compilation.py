@@ -4,15 +4,11 @@ from pyviews.core.observable import Observable
 class ExpressionVars(Observable):
     def __init__(self, parent=None):
         super().__init__()
-        self._container = {}
-        self._parent = parent
+        self._container = parent.to_dictionary() if parent else {}
+        self._parent_callbacks = {}
 
     def __getitem__(self, key):
-        if key in self._container:
-            return self._container[key]
-        if self._parent is not None:
-            return self._parent[key]
-        raise KeyError(key)
+        return self._container[key]
 
     def __setitem__(self, key, value):
         try:
@@ -26,16 +22,13 @@ class ExpressionVars(Observable):
         return self._container.keys()
 
     def all_keys(self):
-        keys = set(self.own_keys())
-        if self._parent is not None:
-            keys.update(self._parent.all_keys())
-        return keys
+        return self.own_keys()
 
     def to_dictionary(self):
         return self._container.copy()
 
     def to_all_dictionary(self):
-        return {key: self[key] for key in self.all_keys()}
+        return self.to_dictionary()
 
     def has_key(self, key):
         return key in self.all_keys()
@@ -57,16 +50,18 @@ class Expression:
         self._compiled = compile(code, '<string>', 'eval')
         self._var_tree = self._compile_var_tree()
 
+    @profile
     def _compile_var_tree(self):
         parsed = ast.parse(self.code)
+        all_nodes = [node for node in ast.walk(parsed)]
 
-        nodes = [node for node in ast.walk(parsed) \
+        nodes = [node for node in all_nodes \
                  if isinstance(node, ast.Name)]
         names = {node.id: [] for node in nodes}
         for name in nodes:
             names[name.id].append(name)
 
-        attrs = [node for node in ast.walk(parsed) \
+        attrs = [node for node in all_nodes \
                  if isinstance(node, ast.Attribute)]
 
         root = Entry('root')
