@@ -1,6 +1,6 @@
-from pyviews.core.observable import ObservableEnt
+from pyviews.core.observable import ObservableEntity
 
-class Counter(ObservableEnt):
+class Counter(ObservableEntity):
     def __init__(self):
         super().__init__()
         self._count = None

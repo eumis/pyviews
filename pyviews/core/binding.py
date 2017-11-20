@@ -63,7 +63,7 @@ class ExpressionBinding:
             self._update_target()
 
     def _update_target(self):
-        value = self._expression.execute(self._vars.to_all_dictionary())
+        value = self._expression.execute(self._vars.to_dictionary())
         self._target.set_value(value)
 
     def destroy(self):

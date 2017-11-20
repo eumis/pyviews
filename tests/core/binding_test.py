@@ -2,9 +2,9 @@ from unittest import TestCase, main
 from tests.utility import case
 from pyviews.core.binding import *
 from pyviews.core.compilation import Expression, ExpressionVars
-from pyviews.core.observable import ObservableEnt
+from pyviews.core.observable import ObservableEntity
 
-class InnerViewModel(ObservableEnt):
+class InnerViewModel(ObservableEntity):
     def __init__(self, int_value, str_value):
         super().__init__()
         self.int_value = int_value
@@ -13,7 +13,7 @@ class InnerViewModel(ObservableEnt):
     def to_string(self):
         return str(self.int_value) + self.str_value
 
-class ParentViewModel(ObservableEnt):
+class ParentViewModel(ObservableEntity):
     def __init__(self, int_value, inner_vm):
         super().__init__()
         self.int_value = int_value
@@ -41,6 +41,7 @@ class TestInstanceTarget(TestCase):
 
 class TestBindingWithSimpleExpression(TestCase):
     def setUp(self):
+        
         self.view_model = InnerViewModel(2, 'inner str')
         self.expression = Expression('str(vm.int_value) + vm.str_value')
         self.inst = SomeEntity()

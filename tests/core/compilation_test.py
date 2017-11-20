@@ -1,6 +1,7 @@
 from unittest import TestCase, main
 from unittest.mock import Mock
 from tests.utility import case
+from pyviews.core.ioc import register_value
 from pyviews.core.compilation import Expression, ExpressionVars
 
 class TestExpressionVars(TestCase):
@@ -21,20 +22,10 @@ class TestExpressionVars(TestCase):
         self.assertEqual(self.globs['two'], 'two', msg)
         self.assertEqual(self.globs['three'], 'three', msg)
 
-    def test_parent_keys(self):
-        msg = 'own_keys should return only own keys'
-        self.assertEqual(sorted(self.globs.own_keys()), sorted(['two', 'three']), msg)
-
-        msg = 'all_keys should return own keys plus parent keys'
-        self.assertEqual(sorted(self.globs.all_keys()), sorted(['one', 'two', 'three']), msg)
-
     def test_dictionary(self):
-        msg = 'to_dictionary should return dictionary with own keys'
-        self.assertEqual(self.globs.to_dictionary(), {'two': 'two', 'three': 'three'}, msg)
-
-        msg = 'to_all_dictionary should return dictionary with all keys'
+        msg = 'to_dictionary should return dictionary with all values'
         self.assertEqual(
-            self.globs.to_all_dictionary(),
+            self.globs.to_dictionary(),
             {'one': 1, 'two': 'two', 'three': 'three'},
             msg)
 
@@ -72,6 +63,9 @@ class TestExpressionVars(TestCase):
         self.assertTrue(callback.called, msg)
 
 class TestExpression(TestCase):
+    def setUp(self):
+        register_value('expressions', {})
+
     @case('2 + 2', None, 4)
     @case('some_key', {'some_key': 1}, 1)
     @case('some_key - 1', {'some_key': 1}, 0)

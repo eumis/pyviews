@@ -42,7 +42,7 @@ def get_item(node: Style, attr: XmlAttr):
     value = attr.value
     if is_code_expression(value):
         expression = Expression(parse_code_expression(value))
-        value = expression.execute(node.globals.to_all_dictionary())
+        value = expression.execute(node.globals.to_dictionary())
     return StyleItem(modifier, attr.name, value)
 
 class Styles(View):
