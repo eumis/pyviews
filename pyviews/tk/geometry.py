@@ -21,6 +21,10 @@ class PackGeometry(Geometry):
     def apply(self, widget):
         widget.pack(**self._args)
 
+class PlaceGeometry(Geometry):
+    def apply(self, widget):
+        widget.place(**self._args)
+
 class LayoutSetup(Node):
     def __init__(self, master, xml_node: XmlNode, parent_globals: ExpressionVars = None):
         super().__init__(xml_node, parent_globals)
