@@ -54,6 +54,9 @@ class WidgetNode(Node, Observable):
     def bind(self, event, command):
         self.widget.bind('<'+event+'>', command)
 
+    def bind_all(self, event, command):
+        self.widget.bind_all('<'+event+'>', command, '+')
+
     def set_attr(self, key, value):
         if key == 'style':
             self._apply_style(value)
@@ -209,6 +212,28 @@ class For(Container):
         args_globals['item'] = item
         args['parent_globals'] = args_globals
         return args
+
+class If(Container):
+    def __init__(self, master, xml_node: XmlNode, parent_globals: ExpressionVars = None):
+        super().__init__(master, xml_node, parent_globals)
+        self._condition = True
+        self._rendered = False
+
+    @property
+    def condition(self):
+        return self._condition
+
+    @condition.setter
+    def condition(self, value):
+        self._condition = value
+        if self._rendered:
+            self.destroy_children()
+            self.parse_children()
+
+    def parse_children(self):
+        if self._condition:
+            super().parse_children()
+        self._rendered = True
 
 class Scroll(Node):
     def __init__(self, master, xml_node: XmlNode, parent_globals: ExpressionVars = None):
