@@ -90,22 +90,14 @@ def parse_attributes(node):
     for attr in node.xml_node.get_attrs():
         parse_attr(node, attr)
 
-def parse_attr(node: Node, attr: XmlAttr):
+@ioc.inject('container')
+def parse_attr(node: Node, attr: XmlAttr, container=None):
     modifier = get_modifier(attr)
     value = attr.value
-    if is_binding_expression(value):
-        (expr, converter_key) = parse_binding_expression(value)
-        expression = Expression(expr)
-        converter = node.globals[converter_key] if node.globals.has_key(converter_key) else None
-        binding = TwoWaysBinding(node, attr.name, modifier, converter, expression)
-        binding.bind(node.globals)
-        node.add_binding(binding)
-    elif is_code_expression(value):
-        expression = Expression(parse_code_expression(value))
-        target = InstanceTarget(node, attr.name, modifier)
-        binding = ExpressionBinding(target, expression)
-        binding.bind(node.globals)
-        node.add_binding(binding)
+    if is_code_expression(value):
+        (binding_type, expr_body) = parse_expression(value)
+        apply_binding = container.get(binding_type)
+        apply_binding(expr_body, node, attr, modifier)
     else:
         modifier(node, attr.name, value)
 
@@ -115,21 +107,37 @@ def get_modifier(attr: XmlAttr, set_attr=None):
         return set_attr
     return import_path(attr.namespace)
 
-_binding_regex = compile_regex('{[a-zA-Z_]*\{.*\}\}')
-def is_binding_expression(expression):
-    return _binding_regex.fullmatch(expression) != None
-
-_code_regex = compile_regex('\{.*\}')
+EXPRESSION_REGEX = compile_regex(r'([a-zA-Z_]{1,}\:){0,1}\{.*\}')
 def is_code_expression(expression):
-    return _code_regex.fullmatch(expression) != None
+    return EXPRESSION_REGEX.fullmatch(expression) != None
 
-def parse_code_expression(expression):
-    return expression[1:-1]
+def parse_expression(expression):
+    if expression[0] != '{':
+        [binding_type, expression] = expression.split(':', 1)
+    elif expression.endswith('}}'):
+        binding_type = 'twoways'
+    else:
+        binding_type = 'oneway'
+    return (binding_type, expression[1:-1])
 
-def parse_binding_expression(expression):
-    code_expression = parse_code_expression(expression)
-    [converter, expression] = code_expression.split('{', 1)
-    return (expression[:-1], converter)
+def apply_once(expr_body, node, attr, modifier):
+    value = Expression(expr_body).execute(node.globals.to_dictionary())
+    modifier(node, attr.name, value)
+
+def apply_oneway(expr_body, node, attr, modifier):
+    expression = Expression(expr_body)
+    target = InstanceTarget(node, attr.name, modifier)
+    binding = ExpressionBinding(target, expression)
+    binding.bind(node.globals)
+    node.add_binding(binding)
+
+def apply_twoways(expr_body, node, attr, modifier):
+    (converter_key, expr) = parse_expression(expr_body)
+    expression = Expression(expr)
+    converter = node.globals[converter_key] if node.globals.has_key(converter_key) else None
+    binding = TwoWaysBinding(node, attr.name, modifier, converter, expression)
+    binding.bind(node.globals)
+    node.add_binding(binding)
 
 def parse_children(node):
     node.parse_children()
@@ -138,3 +146,6 @@ ioc.register_value('convert_to_node', convert_to_node)
 ioc.register_value('parse', parse)
 ioc.register_value('parsing_steps', [parse_attributes, parse_children])
 ioc.register_value('set_attr', setattr)
+ioc.register_value('once', apply_once)
+ioc.register_value('oneway', apply_oneway)
+ioc.register_value('twoways', apply_twoways)

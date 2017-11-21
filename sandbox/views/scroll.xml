@@ -11,7 +11,7 @@
           view_model='{ScrollVm()}'>
     <w:For items='{vm.items}'>
         <Label geometry='{Pack(fill="x")}'
-               bind:Button-1='{lambda e: item.add()}'>
+               bind:Button-1='once:{lambda e: item.add()}'>
             {item.text}
         </Label>
     </w:For>

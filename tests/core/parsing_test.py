@@ -52,6 +52,9 @@ class TestIocDependencies(TestCase):
     @case('parse', parsing.parse)
     @case('parsing_steps', [parsing.parse_attributes, parsing.parse_children])
     @case('set_attr', setattr)
+    @case('once', parsing.apply_once)
+    @case('oneway', parsing.apply_oneway)
+    @case('twoways', parsing.apply_twoways)
     def test_dependency(self, key, expected):
         actual = ioc.CONTAINER.get(key)
         msg = 'parsing module should register default for ' + key
@@ -92,33 +95,37 @@ class TestGetModifier(TestCase):
 
 class TestExpressions(TestCase):
     @case('{asdf}', True)
+    @case('once:{asdf}', True)
+    @case('oneway:{asdf}', True)
+    @case('twoways:{asdf}', True)
     @case('{{asdf}}', True)
+    @case('twoways:{{asdf}}', True)
+    @case('once:{{asdf}}', True)
+    @case('oneway:{{asdf}}', True)
+    @case('twoways:{conv:{asdf}}', True)
+    @case('twoways:{asdf}', True)
+    @case('twoways:{asdf}', True)
+    @case('oneway{asdf}', False)
+    @case(':{asdf}', False)
     @case('{asdf', False)
+    @case('once:{asdf', False)
     @case('asdf}', False)
     @case(' {asdf}', False)
+    @case('once: {asdf}', False)
     def test_is_code_expression(self, expr, expected):
         self.assertEqual(parsing.is_code_expression(expr), expected)
 
-    @case('{{asdf}}', True)
-    @case('{int{asdf}}', True)
-    @case('{int:{asdf}}', False)
-    @case('{{asdf', False)
-    @case('asdf}}', False)
-    @case(' {{asdf}}', False)
-    @case('{{asdf}} ', False)
-    def test_is_binding_expression(self, expr, expected):
-        self.assertEqual(parsing.is_binding_expression(expr), expected)
-
-    @case('{asdf}', 'asdf')
-    @case('asdf', 'sd')
-    def test_parse_code_expression(self, expr, expected):
-        self.assertEqual(parsing.parse_code_expression(expr), expected)
-
-    @case('{{asdf}}', ('asdf', ''))
-    @case('{ {asdf}}', ('asdf', ' '))
-    @case('{int{asdf}}', ('asdf', 'int'))
-    def test_parse_binding_expression(self, expr, expected):
-        self.assertEqual(parsing.parse_binding_expression(expr), expected)
+    @case('{asdf}', ('oneway', 'asdf'))
+    @case('once:{asdf}', ('once', 'asdf'))
+    @case('oneway:{asdf}', ('oneway', 'asdf'))
+    @case('twoways:{asdf}', ('twoways', 'asdf'))
+    @case('{{asdf}}', ('twoways', '{asdf}'))
+    @case('{to_int:{asdf}}', ('twoways', 'to_int:{asdf}'))
+    @case('twoways:{{asdf}}', ('twoways', '{asdf}'))
+    @case('oneway:{{asdf}}', ('oneway', '{asdf}'))
+    @case('twoways:{to_int:{asdf}}', ('twoways', 'to_int:{asdf}'))
+    def test_parse_expression(self, expr, expected):
+        self.assertEqual(parsing.parse_expression(expr), expected)
 
 if __name__ == '__main__':
     main()

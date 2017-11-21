@@ -1,7 +1,7 @@
 from pyviews.core.xml import XmlNode, XmlAttr
 from pyviews.core.compilation import Expression
 from pyviews.core.parsing import Node, ExpressionVars, get_modifier
-from pyviews.core.parsing import is_code_expression, parse_code_expression
+from pyviews.core.parsing import is_code_expression, parse_expression
 from pyviews.tk.widgets import View, Container
 
 class StyleItem:
@@ -41,7 +41,7 @@ def get_item(node: Style, attr: XmlAttr):
     modifier = get_modifier(attr)
     value = attr.value
     if is_code_expression(value):
-        expression = Expression(parse_code_expression(value))
+        expression = Expression(parse_expression(value))
         value = expression.execute(node.globals.to_dictionary())
     return StyleItem(modifier, attr.name, value)
 

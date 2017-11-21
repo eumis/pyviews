@@ -16,17 +16,17 @@
     <Frame geometry='{Pack(fill="x")}'>
         <Button geometry='{Pack(side="left")}'
                 style='button'
-                bind:Button-1="{lambda e: vm.up_count()}">
+                bind:Button-1="once:{lambda e: vm.up_count()}">
             + 1
         </Button>
 
         <Entry geometry='{Pack(side="left")}'
-               text='{to_int{vm.count}}'>
+               text='{to_int:{vm.count}}'>
         </Entry>
 
         <Label geometry='{Pack(side="left")}'
                style='back'
-               bind:Button-1="{lambda e: print(e)}">
+               bind:Button-1="once:{lambda e: print(e)}">
             {vm.count}
         </Label>
     </Frame>
