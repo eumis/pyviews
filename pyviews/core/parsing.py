@@ -30,6 +30,7 @@ class Node:
         self._bindings = []
         self.xml_node = xml_node
         self.globals = ExpressionVars(parent_globals)
+        self.globals['node'] = self
 
     def add_binding(self, binding: ExpressionBinding):
         self._bindings.append(binding)
