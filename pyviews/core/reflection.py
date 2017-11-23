@@ -1,21 +1,19 @@
 from importlib import import_module
 
 def import_path(path):
-    if not path:
-        raise ImportError(path)
     try:
         return import_module(path)
     except ImportError:
-        pass
+        return _import_module_entry(path)
+    except:
+        raise ImportError(path)
+
+def _import_module_entry(path):
+    (module, name) = split_by_last_dot(path)
     try:
-        (module_path, name) = split_by_last_dot(path)
-        if name is None:
-            raise ImportError
-        module = import_path(module_path)
-        if name not in module.__dict__:
-            raise ImportError
+        module = import_module(module)
         return module.__dict__[name]
-    except ImportError:
+    except:
         raise ImportError(path)
 
 def split_by_last_dot(expr):
