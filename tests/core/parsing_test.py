@@ -3,37 +3,16 @@ from xml.etree import ElementTree as ET
 from tests.utility import case
 from tests.mock import some_modifier
 from pyviews.core.xml import XmlNode, XmlAttr
+from pyviews.core.node import Node
 from pyviews.core import parsing, ioc
-
-class TestNodeArgs(TestCase):
-    def test_node_args(self):
-        element = ET.fromstring('<root xmlns="ns"/>')
-        xml_node = XmlNode(element)
-        node = parsing.Node(xml_node)
-        args = parsing.NodeArgs(xml_node, node).get_args(parsing.Node)
-
-        msg = 'NodeArgs should return XmlNode as args'
-        self.assertEqual([xml_node], args.args, msg)
-
-        msg = 'NodeArgs should return parent as kargs'
-        self.assertEqual({'parent_globals': node.globals}, args.kwargs, msg)
-
-class TestNode(TestCase):
-    def test_init(self):
-        element = ET.fromstring('<root xmlns="ns"/>')
-        xml_node = XmlNode(element)
-        node = parsing.Node(xml_node)
-
-        msg = 'Node should inititalise properties from init parameters'
-        self.assertEqual(node.xml_node, xml_node, msg)
 
 class TestParseNode(TestCase):
     def setUp(self):
-        element = ET.fromstring('<Node xmlns="pyviews.core.parsing"/>')
+        element = ET.fromstring('<Node xmlns="pyviews.core.node"/>')
         xml_node = XmlNode(element)
         self.parent_node = parsing.Node(xml_node)
 
-        element = ET.fromstring('<Node xmlns="pyviews.core.parsing"/>')
+        element = ET.fromstring('<Node xmlns="pyviews.core.node"/>')
         self.xml_node = XmlNode(element)
 
     def test_parse(self):
@@ -42,7 +21,7 @@ class TestParseNode(TestCase):
         node = parsing.parse(self.xml_node, parsing.NodeArgs(self.xml_node, self.parent_node))
 
         msg = 'parse should init node with right passed xml_node'
-        self.assertEqual(node.xml_node, self.xml_node, msg=msg)
+        self.assertIsInstance(node, Node, msg=msg)
 
         msg = 'parse should init node with passed parent'
         self.assertEqual(node.globals['some_key'], 'some value', msg=msg)

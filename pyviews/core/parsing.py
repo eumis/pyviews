@@ -20,7 +20,6 @@ def create_node(xml_node: XmlNode, node_args: NodeArgs, convert_to_node=None):
     node = node_class(*args.args, **args.kwargs)
     if not isinstance(node, Node):
         node = convert_to_node(node, node_args)
-    node.xml_node = xml_node
     return node
 
 def convert_to_node(inst, args: NodeArgs):
