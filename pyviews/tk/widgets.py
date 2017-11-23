@@ -95,6 +95,7 @@ class EntryWidget(WidgetNode):
 class Root(WidgetNode):
     def __init__(self, xml_node: XmlNode, parent_globals: ExpressionVars = None):
         super().__init__(Tk(), xml_node, parent_globals)
+        self._icon = None
 
     @property
     def state(self):
@@ -103,6 +104,15 @@ class Root(WidgetNode):
     @state.setter
     def state(self, state):
         self.widget.state(state)
+
+    @property
+    def icon(self):
+        return self._icon
+
+    @icon.setter
+    def icon(self, value):
+        self._icon = value
+        self.widget.iconbitmap(default=value)
 
 class Container(Node):
     def __init__(self, master, xml_node: XmlNode, parent_globals: ExpressionVars = None):
