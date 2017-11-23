@@ -1,7 +1,7 @@
 from unittest import TestCase, main
 from tests.utility import case
 from pyviews.core.converters import to_int
-from pyviews.core.parsing import Node
+from pyviews.core.node import Node
 
 class TestConverters(TestCase):
     @case('1', 1)

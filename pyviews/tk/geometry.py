@@ -1,6 +1,6 @@
 from pyviews.core.xml import XmlNode
 from pyviews.core.compilation import ExpressionVars
-from pyviews.core.parsing import Node
+from pyviews.core.node import Node
 from pyviews.core.parsing import parse_attributes
 
 class Geometry:

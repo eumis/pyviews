@@ -1,6 +1,6 @@
 from pyviews.core.ioc import inject
 from pyviews.core.reflection import import_path
-from pyviews.core.parsing import Node
+from pyviews.core.node import Node
 
 def import_global(node: Node, key, path):
     imported = None

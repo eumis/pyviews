@@ -2,7 +2,7 @@ from tkinter import Tk, Widget, Canvas, Frame, Scrollbar, StringVar
 from pyviews.core.ioc import inject
 from pyviews.core.xml import XmlNode
 from pyviews.core.compilation import ExpressionVars
-from pyviews.core.parsing import Node, NodeArgs
+from pyviews.core.node import Node, NodeArgs
 from pyviews.core.observable import Observable
 from pyviews.tk.views import get_view_root
 

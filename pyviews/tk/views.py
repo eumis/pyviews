@@ -1,7 +1,7 @@
 from os.path import join
 from pyviews.core.ioc import inject
 from pyviews.core.xml import get_root
-from pyviews.core.parsing import NodeArgs
+from pyviews.core.node import NodeArgs
 
 @inject('parse')
 def parse_view(view_name, parse=None):

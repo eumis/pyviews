@@ -1,6 +1,5 @@
 import ast
 from collections import namedtuple
-from pyviews.core.ioc import inject
 from pyviews.core.observable import Observable
 
 class ExpressionVars(Observable):

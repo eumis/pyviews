@@ -5,7 +5,7 @@ from tests.utility import case
 from tests.mock import SomeObject
 from pyviews.core import ioc
 from pyviews.core.modifiers import import_global, set_global, inject_global
-from pyviews.core.parsing import Node
+from pyviews.core.node import Node
 
 class TestModifiers(TestCase):
     def setUp(self):

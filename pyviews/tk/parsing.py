@@ -1,6 +1,7 @@
 from tkinter import Entry
 from pyviews.core.xml import XmlAttr
-from pyviews.core.parsing import NodeArgs, parse_attr
+from pyviews.core.node import NodeArgs
+from pyviews.core.parsing import parse_attr
 from pyviews.tk.widgets import WidgetNode, EntryWidget
 
 def convert_to_node(inst, args: NodeArgs):
