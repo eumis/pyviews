@@ -1,32 +1,34 @@
-# About
-## Description
-Package adds ability to create ui by declarative way using tkinter
+# pyviews
 
-## Features
-* Widgets creation is described in xml files
-* One way and two ways bindings
-* Fully customizable via dependency injection
+Package is wrapper under python tkinter. It allows to create ui widgets using xml with binding. Python 3 is supported only.
 
 ## Installation
+
+Project is in development so it's not in pypi yet.
+
+To install from repository use pip:
+
 `pip install git+https://github.com/eumis/pyviews.git@dev`
 
-# Code
-## Repository structure
-* pyviews - source code
-* sandbox - sample app with using pyviews
-* tests - unit tests
+## Getting started
 
-## Running tests
-Tests are implemented with package unittest.
-To run all tests execute following command
+To get started using pyviews see sandbox app.
 
-`python -m unittest discover -s {project_root}\\tests -v -p *_test.py`
+Clone repository to folder([project_root])
 
-## Running sandbox app
 Run following command to install pyviews package
 
-`pip install {project_root}`
+`pip install [project_root] -e`
 
-Run run.py with python. Working directory should be sandbox folder
+To run sandbox app execute following commands
 
-`python run.py`
+```cmd
+cd [project_root]\sandbox
+python run.py
+```
+
+## License
+
+[MIT](http://opensource.org/licenses/MIT)
+
+Copyright (c) 2017-present, eumis (Eugen Misievich)
