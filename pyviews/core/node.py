@@ -14,7 +14,7 @@ class NodeArgs(dict):
         self['xml_node'] = xml_node
         self['parent_globals'] = None if parent_node is None else parent_node.globals
 
-    def get_args(self, inst_type=None):
+    def get_args(self, inst_type):
         parameters = signature(inst_type).parameters.values()
         args = [self[p.name] for p in parameters if p.default == Parameter.empty]
         kwargs = {p.name: self[p.name] for p in parameters \

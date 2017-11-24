@@ -74,7 +74,7 @@ class TestExpression(TestCase):
     @case('some_key(some_value)', {'some_key': lambda val: val, 'some_value': 'value'}, 'value')
     def test_compile_result(self, code, params, expected):
         expression = Expression(code)
-        msg = 'compile should return expression result value'
+        msg = 'execute should return expression result value'
         self.assertEqual(expression.execute(params), expected, msg)
 
     def test_var_tree(self):
