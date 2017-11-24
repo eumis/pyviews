@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
-<w:Scroll xmlns="tkinter"
+<sb:Scroll xmlns="tkinter"
           xmlns:w="pyviews.tk"
+          xmlns:sb='widgets'
           xmlns:import="pyviews.core.modifiers.import_global"
           xmlns:bind="pyviews.tk.modifiers.bind"
 
@@ -15,4 +16,4 @@
             {item.text}
         </Label>
     </w:For>
-</w:Scroll>
+</sb:Scroll>
