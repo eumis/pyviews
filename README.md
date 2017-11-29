@@ -10,7 +10,7 @@ To install from repository use pip:
 
 `pip install git+https://github.com/eumis/pyviews.git@dev`
 
-## Getting started
+## Sandbox application
 
 To get started using pyviews see sandbox app.
 
@@ -26,6 +26,10 @@ To run sandbox app execute following commands
 cd [project_root]\sandbox
 python run.py
 ```
+
+## Wiki
+
+[Wiki pages](https://github.com/eumis/pyviews/wiki) creation is in progress.
 
 ## License
 
