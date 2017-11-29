@@ -3,25 +3,25 @@ class Container:
         self._initializers = {}
         self.register('container', lambda: self)
 
-    def register(self, name, initializer: callable, param=None):
+    def register(self, key, initializer: callable, param=None):
         if not callable(initializer):
             raise ValueError('Initializer should be callable', initializer)
-        if name not in self._initializers:
-            self._initializers[name] = {}
-        self._initializers[name][param] = initializer
+        if key not in self._initializers:
+            self._initializers[key] = {}
+        self._initializers[key][param] = initializer
 
-    def get(self, name, param=None):
-        if name not in self._initializers or param not in self._initializers[name]:
-            raise KeyError('Dependency with name ' + name + ' is not found')
-        return self._initializers[name][param]()
+    def get(self, key, param=None):
+        if key not in self._initializers or param not in self._initializers[key]:
+            raise KeyError('Dependency with name ' + key + ' is not found')
+        return self._initializers[key][param]()
 
 CONTAINER = Container()
 
-def register(name, initializer: callable, param=None):
-    CONTAINER.register(name, initializer, param)
+def register(key, initializer: callable, param=None):
+    CONTAINER.register(key, initializer, param)
 
-def register_value(name, value, param=None):
-    CONTAINER.register(name, lambda: value, param)
+def register_value(key, value, param=None):
+    CONTAINER.register(key, lambda: value, param)
 
 def inject(*injections):
     def inject_decorator(func):

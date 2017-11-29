@@ -63,9 +63,6 @@ class TestExpressionVars(TestCase):
         self.assertTrue(callback.called, msg)
 
 class TestExpression(TestCase):
-    def setUp(self):
-        register_value('expressions', {})
-
     @case('2 + 2', None, 4)
     @case('some_key', {'some_key': 1}, 1)
     @case('some_key - 1', {'some_key': 1}, 0)

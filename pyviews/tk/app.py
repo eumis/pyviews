@@ -13,7 +13,6 @@ def register_dependencies():
     ioc.register_value('views_folder', abspath('views'))
     ioc.register_value('view_ext', '.xml')
     ioc.register_value('set_attr', set_attr)
-    ioc.register_value('expressions', {})
     _register_parsing_steps()
 
 def _register_parsing_steps():
