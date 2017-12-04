@@ -2,7 +2,7 @@ from pyviews.core.xml import XmlNode, XmlAttr
 from pyviews.core.compilation import Expression, ExpressionVars
 from pyviews.core.node import Node
 from pyviews.core.parsing import is_code_expression, parse_expression, get_modifier
-from pyviews.tk.widgets import View, Container
+from pyviews.tk.containers import View, Container
 
 class StyleItem:
     def __init__(self, modifier, name, value):
