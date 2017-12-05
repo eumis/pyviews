@@ -1,2 +1,3 @@
+setuptools
 pylint
 -e .
