@@ -15,7 +15,7 @@ class ParsingTests(TestCase):
     @case('namespace}.name')
     @case('namespace{name}')
     def test_parse_namespace_rases(self, expression):
-        with self.assertRaises(xml.ParsingError):
+        with self.assertRaises(xml.XmlError):
             xml.parse_namespace(expression)
 
     @case('namespace.name', False)
@@ -60,7 +60,7 @@ class TestGetRoot(TestCase):
     def test_get_root_raises(self, xml_string):
         xml.ET.xml = xml_string
         msg = 'get_root should raise error for invalid xml'
-        with self.assertRaises(xml.ParsingError, msg=msg):
+        with self.assertRaises(xml.XmlError, msg=msg):
             xml.get_root('')
 
 class TestXmlNode(TestCase):

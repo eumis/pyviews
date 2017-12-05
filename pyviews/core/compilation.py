@@ -1,5 +1,7 @@
 import ast
+from sys import exc_info
 from collections import namedtuple
+from pyviews.core import CoreError
 from pyviews.core.observable import Observable
 
 class ExpressionVars(Observable):
@@ -53,6 +55,9 @@ class Entry:
         self.key = key
         self.entries = None
 
+class ExpressionError(CoreError):
+    pass
+
 EXPRESSION_CACHE = {}
 class Expression:
     ExpressionItem = namedtuple('ExpressionItem', ['compiled', 'tree'])
@@ -63,9 +68,13 @@ class Expression:
             self._compiled = item.compiled
             self._var_tree = item.tree
         except KeyError:
-            self._compiled = compile(code, '<string>', 'eval')
-            self._var_tree = self._compile_var_tree()
-            EXPRESSION_CACHE[code] = Expression.ExpressionItem(self._compiled, self._var_tree)
+            try:
+                self._compiled = compile(code, '<string>', 'eval')
+                self._var_tree = self._compile_var_tree()
+                EXPRESSION_CACHE[code] = Expression.ExpressionItem(self._compiled, self._var_tree)
+            except SyntaxError as syntax_error:
+                raise ExpressionError('Expression "{' + code + '"} compilation is failed', syntax_error.msg) \
+                      from syntax_error
 
     def _compile_var_tree(self):
         parsed = ast.parse(self.code)
@@ -105,5 +114,10 @@ class Expression:
         return self._var_tree
 
     def execute(self, parameters=None):
-        parameters = {} if parameters is None else parameters
-        return eval(self._compiled, parameters, {})
+        try:
+            parameters = {} if parameters is None else parameters
+            return eval(self._compiled, parameters, {})
+        except:
+            info = exc_info()
+            raise ExpressionError('Error occured in execution of "' + self.code + '"', str(info[1])) \
+                  from info[1]

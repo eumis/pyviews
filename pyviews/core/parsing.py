@@ -1,11 +1,14 @@
 from importlib import import_module
 from re import compile as compile_regex
-from pyviews.core import ioc
+from pyviews.core import ioc, CoreError
 from pyviews.core.reflection import import_path, split_by_last_dot
 from pyviews.core.compilation import Expression
 from pyviews.core.binding import ExpressionBinding, InstanceTarget, TwoWaysBinding
 from pyviews.core.xml import XmlNode, XmlAttr
 from pyviews.core.node import Node, NodeArgs
+
+class ParsingError(CoreError):
+    pass
 
 def parse(xml_node: XmlNode, args: NodeArgs):
     node = create_node(xml_node, args)
@@ -15,7 +18,10 @@ def parse(xml_node: XmlNode, args: NodeArgs):
 @ioc.inject('convert_to_node')
 def create_node(xml_node: XmlNode, node_args: NodeArgs, convert_to_node=None):
     (module_path, class_name) = split_by_last_dot(xml_node.class_path)
-    node_class = import_module(module_path).__dict__[class_name]
+    try:
+        node_class = import_module(module_path).__dict__[class_name]
+    except KeyError as key_error:
+        raise ParsingError('Unknown class "' + xml_node.class_path + '" is found.') from key_error
     args = node_args.get_args(node_class)
     node = node_class(*args.args, **args.kwargs)
     if not isinstance(node, Node):

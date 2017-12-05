@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as ET
+from pyviews.core import CoreError
 
 class XmlNode:
     def __init__(self, element: ET.Element):
@@ -28,18 +29,18 @@ def has_namespace(name):
 
 def parse_namespace(name):
     if not has_namespace(name):
-        raise ParsingError("Name " + name + "doesn't contain namespace")
+        raise XmlError('Namespace for tag "' + name + '" is not defined.')
     splitted = name.split('}', maxsplit=1)
     namespace = splitted[0][1:]
     name = splitted[1]
     return (namespace, name)
 
-class ParsingError(Exception):
+class XmlError(CoreError):
     pass
 
 def get_root(xml_path):
     try:
         root_element = ET.parse(xml_path).getroot()
         return XmlNode(root_element)
-    except ET.ParseError as error:
-        raise ParsingError(error)
+    except ET.ParseError as parse_error:
+        raise XmlError('Xml format error', parse_error.msg) from parse_error
