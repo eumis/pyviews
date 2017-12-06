@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pyviews',
-    version='0.8.4',
+    version='0.9.0',
     description='Package for creating tkinter applications in declarative way.',
     url='https://github.com/eumis/pyviews',
     author='eumis(Eugen Misievich)',
