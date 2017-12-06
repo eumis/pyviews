@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pyviews',
-    version='0.8.2',
+    version='0.8.4',
     description='Package for creating tkinter applications in declarative way.',
     url='https://github.com/eumis/pyviews',
     author='eumis(Eugen Misievich)',
@@ -21,4 +21,4 @@ setup(
     ],
     python_requires='>=3.6',
     keywords='binding tkinter tk pyviews python mvvm',
-    packages=find_packages(exclude=['sandbox', 'tests']))
+    packages=find_packages(exclude=['sandbox', 'tests', 'tests.*']))
