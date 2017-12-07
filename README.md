@@ -4,9 +4,11 @@ Package is wrapper under python tkinter. It allows to create ui widgets using xm
 
 ## Installation
 
-Project is in development so it's not in pypi yet.
+Install using pip:
 
-To install from repository use pip:
+`pip install pyviews`
+
+To install dev version:
 
 `pip install git+https://github.com/eumis/pyviews.git@dev`
 
