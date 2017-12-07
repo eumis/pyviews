@@ -62,6 +62,50 @@
 					"-p",
 					"*_test.py"]
 			}
+		},
+		{
+			"label": "prepare wheel",
+			"command": "python",
+			"args": [
+				"packaging.py",
+				"bdist_wheel"
+			]
+		},
+		{
+			"label": "upload wheel",
+			"command": "twine",
+			"windows": {
+				"args": [
+					"upload",
+					"dist\\*"
+				]
+			},
+			"linux": {
+				"args": [
+					"upload",
+					"dist/*"
+				]
+			}
+		},
+		{
+			"label": "upload test wheel",
+			"command": "twine",
+			"windows": {
+				"args": [
+					"upload",
+					"--repository-url",
+					"https://test.pypi.org/legacy/",
+					"dist\\*"
+				]
+			},
+			"linux": {
+				"args": [
+					"upload",
+					"--repository-url",
+					"https://test.pypi.org/legacy/",
+					"dist/*"
+				]
+			}
 		}
 	]
 }
