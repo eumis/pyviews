@@ -11,3 +11,9 @@ def set_attr(node: WidgetNode, key, value):
 
 def config(node: WidgetNode, key, value):
     node.widget.config(**{key: value})
+
+def visible(node: WidgetNode, key, value):
+    if value:
+        node.geometry.apply(node.widget)
+    else:
+        node.geometry.forget(node.widget)
