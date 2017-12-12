@@ -13,17 +13,29 @@ class Geometry:
     def apply(self, widget):
         pass
 
+    def forget(self, widget):
+        pass
+
 class GridGeometry(Geometry):
     def apply(self, widget):
         widget.grid(**self._args)
+
+    def forget(self, widget):
+        widget.grid_forget()
 
 class PackGeometry(Geometry):
     def apply(self, widget):
         widget.pack(**self._args)
 
+    def forget(self, widget):
+        widget.pack_forget()
+
 class PlaceGeometry(Geometry):
     def apply(self, widget):
         widget.place(**self._args)
+
+    def forget(self, widget):
+        widget.place_forget()
 
 class LayoutSetup(Node):
     def __init__(self, master, xml_node: XmlNode, parent_globals: ExpressionVars = None):

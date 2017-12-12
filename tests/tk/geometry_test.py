@@ -8,6 +8,7 @@ class TestGridGeometry(TestCase):
     def setUp(self):
         self._widget = Mock()
         self._widget.grid = Mock()
+        self._widget.grid_forget = Mock()
 
     def test_apply(self):
         geometry = GridGeometry()
@@ -16,6 +17,14 @@ class TestGridGeometry(TestCase):
         msg = 'apply method should call grid method of widget'
         self.assertTrue(self._widget.grid.called, msg)
         self.assertEqual(self._widget.grid.call_count, 1, msg)
+
+    def test_forget(self):
+        geometry = GridGeometry()
+        geometry.forget(self._widget)
+
+        msg = 'grid method should call grid_forget method of widget'
+        self.assertTrue(self._widget.grid_forget.called, msg)
+        self.assertEqual(self._widget.grid_forget.call_count, 1, msg)
 
     @case({})
     @case({'row':1, 'column':1})
@@ -42,6 +51,7 @@ class TestPackGeometry(TestCase):
     def setUp(self):
         self._widget = Mock()
         self._widget.pack = Mock()
+        self._widget.pack_forget = Mock()
 
     def test_apply(self):
         geometry = PackGeometry()
@@ -50,6 +60,13 @@ class TestPackGeometry(TestCase):
         msg = 'apply method should call pack method of widget'
         self.assertTrue(self._widget.pack.called, msg)
         self.assertEqual(self._widget.pack.call_count, 1, msg)
+
+    def test_forget(self):
+        geometry = PackGeometry()
+        geometry.forget(self._widget)
+
+        msg = 'forget method should call pack_forget method of widget'
+        self.assertTrue(self._widget.pack_forget.called, msg)
 
     @case({})
     @case({'expand':True, 'fill':'x'})
@@ -75,7 +92,8 @@ class TestPackGeometry(TestCase):
 class TestPlaceGeometry(TestCase):
     def setUp(self):
         self._widget = Mock()
-        self._widget.pack = Mock()
+        self._widget.place = Mock()
+        self._widget.place_forget = Mock()
 
     def test_apply(self):
         geometry = PlaceGeometry()
@@ -84,6 +102,13 @@ class TestPlaceGeometry(TestCase):
         msg = 'apply method should call pack method of widget'
         self.assertTrue(self._widget.place.called, msg)
         self.assertEqual(self._widget.place.call_count, 1, msg)
+
+    def test_forget(self):
+        geometry = PlaceGeometry()
+        geometry.forget(self._widget)
+
+        msg = 'forget method should call place_forget method of widget'
+        self.assertTrue(self._widget.place_forget.called, msg)
 
     @case({})
     @case({'expand':True, 'fill':'x'})
