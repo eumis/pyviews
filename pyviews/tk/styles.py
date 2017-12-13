@@ -1,5 +1,5 @@
 from pyviews.core.xml import XmlNode, XmlAttr
-from pyviews.core.compilation import Expression, ExpressionVars
+from pyviews.core.compilation import Expression, IhertiedDict
 from pyviews.core.node import Node
 from pyviews.core.parsing import is_code_expression, parse_expression, get_modifier
 from pyviews.tk.containers import View, Container
@@ -14,7 +14,7 @@ class StyleItem:
         self._modifier(node, self._name, self._value)
 
 class Style(Node):
-    def __init__(self, xml_node, parent_globals: ExpressionVars = None):
+    def __init__(self, xml_node, parent_globals: IhertiedDict = None):
         super().__init__(xml_node, parent_globals)
         self._parent_globals = parent_globals
         self.name = None
@@ -55,7 +55,7 @@ def apply_styles(node, styles):
             item.apply(node)
 
 class Styles(View):
-    def __init__(self, master, xml_node: XmlNode, parent_globals: ExpressionVars = None):
+    def __init__(self, master, xml_node: XmlNode, parent_globals: IhertiedDict = None):
         super().__init__(master, xml_node, parent_globals)
         self._parent_globals = parent_globals
         self._name = None

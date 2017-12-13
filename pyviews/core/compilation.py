@@ -4,7 +4,7 @@ from collections import namedtuple
 from pyviews.core import CoreError
 from pyviews.core.observable import Observable
 
-class ExpressionVars(Observable):
+class IhertiedDict(Observable):
     def __init__(self, parent=None):
         super().__init__()
         self._container = parent.to_dictionary() if parent else {}

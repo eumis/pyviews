@@ -1,17 +1,16 @@
 from unittest import TestCase, main
 from unittest.mock import Mock
 from tests.utility import case
-from pyviews.core.ioc import register_value
-from pyviews.core.compilation import Expression, ExpressionVars
+from pyviews.core.compilation import Expression, IhertiedDict
 
-class TestExpressionVars(TestCase):
+class TestInheritedDict(TestCase):
     def setUp(self):
-        parent = ExpressionVars()
+        parent = IhertiedDict()
         parent['one'] = 1
         parent['two'] = 2
         self.parent = parent
 
-        self.globs = ExpressionVars(ExpressionVars(parent))
+        self.globs = IhertiedDict(IhertiedDict(parent))
         self.globs['two'] = 'two'
         self.globs['three'] = 'three'
 

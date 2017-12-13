@@ -1,6 +1,6 @@
 from tkinter import Tk, Widget, StringVar
 from pyviews.core.xml import XmlNode
-from pyviews.core.compilation import ExpressionVars
+from pyviews.core.compilation import IhertiedDict
 from pyviews.core.node import Node, NodeArgs
 from pyviews.core.observable import Observable
 
@@ -15,7 +15,7 @@ class WidgetArgs(NodeArgs):
         return super().get_args(inst_type)
 
 class WidgetNode(Node, Observable):
-    def __init__(self, widget, xml_node: XmlNode, parent_globals: ExpressionVars = None):
+    def __init__(self, widget, xml_node: XmlNode, parent_globals: IhertiedDict = None):
         Observable.__init__(self)
         Node.__init__(self, xml_node, parent_globals)
         self.widget = widget
@@ -64,7 +64,7 @@ class WidgetNode(Node, Observable):
             self.widget.configure(**{key:value})
 
 class EntryWidget(WidgetNode):
-    def __init__(self, widget, xml_node: XmlNode, parent_globals: ExpressionVars = None):
+    def __init__(self, widget, xml_node: XmlNode, parent_globals: IhertiedDict = None):
         super().__init__(widget, xml_node, parent_globals)
         self._text_var = StringVar()
         self._text_var.trace_add('write', self._write_callback)
@@ -83,7 +83,7 @@ class EntryWidget(WidgetNode):
             super().set_attr(key, value)
 
 class Root(WidgetNode):
-    def __init__(self, xml_node: XmlNode, parent_globals: ExpressionVars = None):
+    def __init__(self, xml_node: XmlNode, parent_globals: IhertiedDict = None):
         super().__init__(Tk(), xml_node, parent_globals)
         self._icon = None
 

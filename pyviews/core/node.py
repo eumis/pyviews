@@ -2,7 +2,7 @@ from collections import namedtuple
 from inspect import signature, Parameter
 from pyviews.core.ioc import inject
 from pyviews.core.xml import XmlNode
-from pyviews.core.compilation import ExpressionVars
+from pyviews.core.compilation import IhertiedDict
 from pyviews.core.binding import ExpressionBinding
 
 class NodeArgs(dict):
@@ -22,11 +22,11 @@ class NodeArgs(dict):
         return NodeArgs.args_tuple(args, kwargs)
 
 class Node:
-    def __init__(self, xml_node: XmlNode, parent_globals: ExpressionVars = None):
+    def __init__(self, xml_node: XmlNode, parent_globals: IhertiedDict = None):
         self._child_nodes = []
         self._bindings = []
         self.xml_node = xml_node
-        self.globals = ExpressionVars(parent_globals)
+        self.globals = IhertiedDict(parent_globals)
         self.globals['node'] = self
 
     def add_binding(self, binding: ExpressionBinding):

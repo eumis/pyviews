@@ -1,7 +1,7 @@
 from unittest import TestCase, main
 from tests.utility import case
 from pyviews.core.binding import *
-from pyviews.core.compilation import Expression, ExpressionVars
+from pyviews.core.compilation import Expression, IhertiedDict
 from pyviews.core.observable import ObservableEntity
 
 class InnerViewModel(ObservableEntity):
@@ -47,7 +47,7 @@ class TestBindingWithSimpleExpression(TestCase):
         self.inst = SomeEntity()
         self.target = InstanceTarget(self.inst, 'str_value', setattr)
         self.binding = ExpressionBinding(self.target, self.expression)
-        self.vars = ExpressionVars()
+        self.vars = IhertiedDict()
         self.vars['vm'] = self.view_model
 
     def test_binding_creation(self):
@@ -92,7 +92,7 @@ class TestBindingWithInnerViewModel(TestCase):
         self.inst = SomeEntity()
         self.target = InstanceTarget(self.inst, 'str_value', setattr)
         self.binding = ExpressionBinding(self.target, self.expression)
-        self.vars = ExpressionVars()
+        self.vars = IhertiedDict()
         self.vars['vm'] = self.view_model
 
     def test_binding(self):
@@ -122,7 +122,7 @@ class TestExpressionTarget(TestCase):
     def setUp(self):
         self.inner = InnerViewModel(1, '1')
         self.parent = ParentViewModel(1, self.inner)
-        self.expr_vars = ExpressionVars()
+        self.expr_vars = IhertiedDict()
         self.expr_vars['vm'] = self.parent
 
     @case('vm')
@@ -156,7 +156,7 @@ class TestObservableBinding(TestCase):
         self.converter = lambda value: str(value)
         target = ExpressionTarget(self.expression)
         self.binding = ObservableBinding(target, self.inst, 'int_value', self.converter)
-        self.expr_vars = ExpressionVars()
+        self.expr_vars = IhertiedDict()
         self.expr_vars['vm'] = self.expr_inst
 
     def test_binding(self):
@@ -183,7 +183,7 @@ class TestTwoWaysBinding(TestCase):
         self.expr_inst = InnerViewModel(1, '1')
         self.inst = InnerViewModel(1, '1')
         self.binding = TwoWaysBinding(self.inst, 'int_value', setattr, None, self.expression)
-        self.expr_vars = ExpressionVars()
+        self.expr_vars = IhertiedDict()
         self.expr_vars['vm'] = self.expr_inst
 
     def test_property_binding(self):

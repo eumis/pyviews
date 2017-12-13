@@ -1,5 +1,5 @@
 from pyviews.core.observable import Observable
-from pyviews.core.compilation import Expression, ExpressionVars, Entry
+from pyviews.core.compilation import Expression, IhertiedDict, Entry
 
 class Dependency:
     def __init__(self, observable: Observable, key, callback):
@@ -29,7 +29,7 @@ class ExpressionBinding:
         self._dependencies = []
         self._vars = None
 
-    def bind(self, expr_vars: ExpressionVars):
+    def bind(self, expr_vars: IhertiedDict):
         self.destroy()
         self._vars = expr_vars
         var_tree = self._expression.get_var_tree()
@@ -51,7 +51,7 @@ class ExpressionBinding:
 
     def _get_child(self, inst, key):
         try:
-            return inst[key] if isinstance(inst, ExpressionVars) \
+            return inst[key] if isinstance(inst, IhertiedDict) \
                          else getattr(inst, key)
         except KeyError:
             return None
@@ -81,11 +81,11 @@ class ExpressionTarget:
         if len(self._var_tree.entries) != 1 or not self._var_tree.entries[0].entries:
             raise ValueError('expression should be property expression')
 
-    def set_value(self, expr_vars: ExpressionVars, value):
+    def set_value(self, expr_vars: IhertiedDict, value):
         (inst, prop) = self._get_target(expr_vars)
         setattr(inst, prop, value)
 
-    def _get_target(self, expr_vars: ExpressionVars):
+    def _get_target(self, expr_vars: IhertiedDict):
         entry = self._var_tree.entries[0]
         inst = expr_vars[entry.key]
         next_key = entry.entries[0].key
@@ -106,7 +106,7 @@ class ObservableBinding:
         self._expr_vars = None
         self._converter = converter if converter is not None else lambda value: value
 
-    def bind(self, expr_vars: ExpressionVars):
+    def bind(self, expr_vars: IhertiedDict):
         self. destroy()
         self._expr_vars = expr_vars
         self._observable.observe(self._prop, self._update_callback)
@@ -129,7 +129,7 @@ class TwoWaysBinding:
             ObservableBinding(ExpressionTarget(expression), inst, prop, converter)
         self._vars = None
 
-    def bind(self, expr_vars: ExpressionVars):
+    def bind(self, expr_vars: IhertiedDict):
         self.destroy()
         self._expr_binding.bind(expr_vars)
         self._observ_binding.bind(expr_vars)
