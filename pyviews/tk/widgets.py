@@ -56,20 +56,12 @@ class WidgetNode(Node, Observable):
         self.widget.bind_all('<'+event+'>', command, '+')
 
     def set_attr(self, key, value):
-        if key == 'style':
-            self._apply_style(value)
-        elif hasattr(self, key):
+        if hasattr(self, key):
             setattr(self, key, value)
         elif hasattr(self.widget, key):
             setattr(self.widget, key, value)
         else:
             self.widget.configure(**{key:value})
-
-    def _apply_style(self, styles):
-        keys = styles.split(',') if isinstance(styles, str) else styles
-        for key in [key for key in keys if key]:
-            for item in self.globals[key]:
-                item.apply(self)
 
 class EntryWidget(WidgetNode):
     def __init__(self, widget, xml_node: XmlNode, parent_globals: ExpressionVars = None):

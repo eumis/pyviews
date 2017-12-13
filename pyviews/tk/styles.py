@@ -19,7 +19,7 @@ class Style(Node):
         self._parent_globals = parent_globals
         self.name = None
 
-    def apply(self, items):
+    def set_items(self, items):
         if not self.name:
             raise KeyError("style doesn't have name")
         self._parent_globals[self.name] = items
@@ -28,16 +28,16 @@ class Style(Node):
         self._parent_globals.remove_key(self.name)
         self._destroy_bindings()
 
-def apply_styles(node: Style):
+def parse_attrs(node: Style):
     attrs = node.xml_node.get_attrs()
     try:
         node.name = next(attr.value for attr in attrs if attr.name == 'name')
     except StopIteration:
         raise ValueError('name attribute is required for style')
-    style_items = [get_item(node, attr) for attr in attrs if attr.name != 'name']
-    node.apply(style_items)
+    style_items = [_get_item(node, attr) for attr in attrs if attr.name != 'name']
+    node.set_items(style_items)
 
-def get_item(node: Style, attr: XmlAttr):
+def _get_item(node: Style, attr: XmlAttr):
     modifier = get_modifier(attr)
     value = attr.value
     if is_code_expression(value):

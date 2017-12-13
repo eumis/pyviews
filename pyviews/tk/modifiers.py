@@ -7,7 +7,13 @@ def bind_all(node: WidgetNode, event_name, command):
     node.bind_all(event_name, command)
 
 def set_attr(node: WidgetNode, key, value):
-    node.set_attr(key, value)
+    if key == 'style':
+        keys = value.split(',') if isinstance(value, str) else value
+        for key in [key for key in keys if key]:
+            for item in node.globals[key]:
+                item.apply(node)
+    else:
+        node.set_attr(key, value)
 
 def config(node: WidgetNode, key, value):
     node.widget.config(**{key: value})

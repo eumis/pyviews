@@ -17,7 +17,9 @@
         "Include": true,
         "Lib": true,
         "Scripts": true,
-        "pip-selfcheck.json": true
+        "pip-selfcheck.json": true,
+        "build": true,
+        "dist": true
     }
     // "python.pythonPath": "${workspaceRoot}//venv//Scripts//python.exe"
 }

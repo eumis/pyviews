@@ -4,7 +4,7 @@ from pyviews.core.parsing import parse_attributes, parse_children
 from pyviews.tk.parsing import convert_to_node, apply_text
 from pyviews.tk.views import parse_view
 from pyviews.tk.modifiers import set_attr
-from pyviews.tk.styles import Style, apply_styles
+from pyviews.tk.styles import Style, parse_attrs as parse_style_attrs
 from pyviews.tk.geometry import Row, Column, apply_layout
 from pyviews.tk.widgets import Root
 
@@ -18,7 +18,7 @@ def register_dependencies():
 def _register_parsing_steps():
     ioc.register_value('parsing_steps', [parse_attributes, apply_text, parse_children])
     ioc.register_value('parsing_steps', [parse_attributes, parse_children], Root)
-    ioc.register_value('parsing_steps', [apply_styles], Style)
+    ioc.register_value('parsing_steps', [parse_style_attrs], Style)
     ioc.register_value('parsing_steps', [apply_layout], Row)
     ioc.register_value('parsing_steps', [apply_layout], Column)
 
