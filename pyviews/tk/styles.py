@@ -28,12 +28,15 @@ class Style(Node):
         self._parent_globals.remove_key(self.name)
         self._destroy_bindings()
 
+def init_styles(node: Node):
+    pass
+
 def parse_attrs(node: Style):
     attrs = node.xml_node.get_attrs()
     try:
         node.name = next(attr.value for attr in attrs if attr.name == 'name')
     except StopIteration:
-        raise ValueError('name attribute is required for style')
+        raise KeyError('name attribute is required for style')
     style_items = [_get_item(node, attr) for attr in attrs if attr.name != 'name']
     node.set_items(style_items)
 
@@ -44,6 +47,12 @@ def _get_item(node: Style, attr: XmlAttr):
         expression = Expression(parse_expression(value)[1])
         value = expression.execute(node.globals.to_dictionary())
     return StyleItem(modifier, attr.name, value)
+
+def apply_styles(node, styles):
+    keys = styles.split(',') if isinstance(styles, str) else styles
+    for key in [key for key in keys if key]:
+        for item in node.globals[key]:
+            item.apply(node)
 
 class Styles(View):
     def __init__(self, master, xml_node: XmlNode, parent_globals: ExpressionVars = None):
