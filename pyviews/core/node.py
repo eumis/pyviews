@@ -2,7 +2,7 @@ from collections import namedtuple
 from inspect import signature, Parameter
 from pyviews.core.ioc import inject
 from pyviews.core.xml import XmlNode
-from pyviews.core.compilation import IhertiedDict
+from pyviews.core.compilation import InheritedDict
 from pyviews.core.binding import ExpressionBinding
 
 class NodeArgs(dict):
@@ -27,10 +27,10 @@ class Node:
         self._bindings = []
         self.xml_node = xml_node
         self.context = {} if parent_context is None else \
-                       {key: IhertiedDict(value) if isinstance(value, IhertiedDict) else value \
+                       {key: InheritedDict(value) if isinstance(value, InheritedDict) else value \
                         for (key, value) in parent_context.items()}
         if 'globals' not in self.context:
-            self.context['globals'] = IhertiedDict()
+            self.context['globals'] = InheritedDict()
         self.globals['node'] = self
 
     @property

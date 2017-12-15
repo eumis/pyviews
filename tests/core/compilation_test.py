@@ -1,16 +1,16 @@
 from unittest import TestCase, main
 from unittest.mock import Mock
 from tests.utility import case
-from pyviews.core.compilation import Expression, IhertiedDict
+from pyviews.core.compilation import Expression, InheritedDict
 
 class TestInheritedDict(TestCase):
     def setUp(self):
-        parent = IhertiedDict()
+        parent = InheritedDict()
         parent['one'] = 1
         parent['two'] = 2
         self.parent = parent
 
-        self.globs = IhertiedDict(IhertiedDict(parent))
+        self.globs = InheritedDict(InheritedDict(parent))
         self.globs['two'] = 'two'
         self.globs['three'] = 'three'
 

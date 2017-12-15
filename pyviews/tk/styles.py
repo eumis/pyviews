@@ -1,6 +1,6 @@
 from pyviews.core.xml import XmlNode, XmlAttr
 from pyviews.core.compilation import Expression
-from pyviews.core.node import Node, IhertiedDict
+from pyviews.core.node import Node, InheritedDict
 from pyviews.core.parsing import is_code_expression, parse_expression, get_modifier
 from pyviews.tk.containers import View, Container
 
@@ -46,7 +46,7 @@ class Styles(View):
         return args
 
 def init_styles(node: Node):
-    node.context['styles'] = IhertiedDict()
+    node.context['styles'] = InheritedDict()
 
 def parse_attrs(node: Style):
     attrs = node.xml_node.get_attrs()

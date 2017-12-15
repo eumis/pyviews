@@ -1,6 +1,6 @@
 from pyviews.core.ioc import inject
 from pyviews.core.xml import XmlNode
-from pyviews.core.compilation import IhertiedDict
+from pyviews.core.compilation import InheritedDict
 from pyviews.core.node import Node
 from pyviews.tk.widgets import WidgetArgs
 from pyviews.tk.views import get_view_root
@@ -109,7 +109,7 @@ class For(Container):
     def get_node_args(self, xml_node: XmlNode, index=None, item=None):
         args = super().get_node_args(xml_node)
         context = args['parent_context'].copy()
-        item_globals = IhertiedDict(context['globals'])
+        item_globals = InheritedDict(context['globals'])
         item_globals['index'] = index
         item_globals['item'] = item
         context['globals'] = item_globals
