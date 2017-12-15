@@ -14,8 +14,8 @@ class StyleItem:
         self._modifier(node, self._name, self._value)
 
 class Style(Node):
-    def __init__(self, xml_node, parent_globals=None, parent_context=None):
-        super().__init__(xml_node, parent_globals, parent_context)
+    def __init__(self, xml_node, parent_context=None):
+        super().__init__(xml_node, parent_context)
         self._styles = parent_context['styles']
         self.name = None
 
@@ -29,9 +29,8 @@ class Style(Node):
         self._destroy_bindings()
 
 class Styles(View):
-    def __init__(self, master, xml_node: XmlNode, parent_globals=None, parent_context=None):
-        super().__init__(master, xml_node, parent_globals, parent_context)
-        self._parent_globals = parent_globals
+    def __init__(self, master, xml_node: XmlNode, parent_context=None):
+        super().__init__(master, xml_node, parent_context)
         self._parent_context = parent_context
         self._name = None
 
@@ -43,7 +42,6 @@ class Styles(View):
 
     def get_node_args(self, xml_node: XmlNode):
         args = super().get_node_args(xml_node)
-        args['parent_globals'] = self._parent_globals
         args['parent_context'] = self._parent_context
         return args
 

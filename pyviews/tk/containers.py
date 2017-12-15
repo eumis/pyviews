@@ -6,8 +6,8 @@ from pyviews.tk.widgets import WidgetArgs
 from pyviews.tk.views import get_view_root
 
 class Container(Node):
-    def __init__(self, master, xml_node: XmlNode, parent_globals=None, parent_context=None):
-        super().__init__(xml_node, parent_globals, parent_context)
+    def __init__(self, master, xml_node: XmlNode, parent_context=None):
+        super().__init__(xml_node, parent_context)
         self.master = master
 
     @property
@@ -28,8 +28,8 @@ class Container(Node):
         return WidgetArgs(xml_node, self, self.master)
 
 class View(Container):
-    def __init__(self, master, xml_node: XmlNode, parent_globals=None, parent_context=None):
-        super().__init__(master, xml_node, parent_globals, parent_context)
+    def __init__(self, master, xml_node: XmlNode, parent_context=None):
+        super().__init__(master, xml_node, parent_context)
         self._name = None
 
     @property
@@ -53,8 +53,8 @@ class View(Container):
             self._child_nodes = []
 
 class For(Container):
-    def __init__(self, master, xml_node: XmlNode, parent_globals=None, parent_context=None):
-        super().__init__(master, xml_node, parent_globals, parent_context)
+    def __init__(self, master, xml_node: XmlNode, parent_context=None):
+        super().__init__(master, xml_node, parent_context)
         self._items = []
         self._rendered = False
 
@@ -108,15 +108,17 @@ class For(Container):
 
     def get_node_args(self, xml_node: XmlNode, index=None, item=None):
         args = super().get_node_args(xml_node)
-        args_globals = IhertiedDict(args['parent_globals'])
-        args_globals['index'] = index
-        args_globals['item'] = item
-        args['parent_globals'] = args_globals
+        context = args['parent_context'].copy()
+        item_globals = IhertiedDict(context['globals'])
+        item_globals['index'] = index
+        item_globals['item'] = item
+        context['globals'] = item_globals
+        args['parent_context'] = context
         return args
 
 class If(Container):
-    def __init__(self, master, xml_node: XmlNode, parent_globals=None, parent_context=None):
-        super().__init__(master, xml_node, parent_globals, parent_context)
+    def __init__(self, master, xml_node: XmlNode, parent_context=None):
+        super().__init__(master, xml_node, parent_context)
         self._condition = True
         self._rendered = False
 

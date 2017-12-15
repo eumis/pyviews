@@ -4,8 +4,8 @@ from pyviews.core.node import Node
 from pyviews.tk.widgets import WidgetArgs
 
 class Scroll(Node):
-    def __init__(self, master, xml_node: XmlNode, parent_globals=None, parent_context=None):
-        super().__init__(xml_node, parent_globals, parent_context)
+    def __init__(self, master, xml_node: XmlNode, parent_context=None):
+        super().__init__(xml_node, parent_context)
         self._frame = self._create_scroll_frame(master)
         self._canvas = self._create_canvas(self._frame)
         self._scroll = self._create_scroll(self._frame, self._canvas)

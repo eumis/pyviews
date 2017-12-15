@@ -14,9 +14,9 @@ class WidgetArgs(NodeArgs):
         return super().get_args(inst_type)
 
 class WidgetNode(Node, Observable):
-    def __init__(self, widget, xml_node: XmlNode, parent_globals=None, parent_context=None):
+    def __init__(self, widget, xml_node: XmlNode, parent_context=None):
         Observable.__init__(self)
-        Node.__init__(self, xml_node, parent_globals, parent_context)
+        Node.__init__(self, xml_node, parent_context)
         self.widget = widget
         self._geometry = None
 
@@ -63,8 +63,8 @@ class WidgetNode(Node, Observable):
             self.widget.configure(**{key:value})
 
 class EntryWidget(WidgetNode):
-    def __init__(self, widget, xml_node: XmlNode, parent_globals=None, parent_context=None):
-        super().__init__(widget, xml_node, parent_globals, parent_context)
+    def __init__(self, widget, xml_node: XmlNode, parent_context=None):
+        super().__init__(widget, xml_node, parent_context)
         self._text_var = StringVar()
         self._text_var.trace_add('write', self._write_callback)
         self._text_value = self._text_var.get()

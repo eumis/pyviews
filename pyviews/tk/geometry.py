@@ -37,8 +37,8 @@ class PlaceGeometry(Geometry):
         widget.place_forget()
 
 class LayoutSetup(Node):
-    def __init__(self, master, xml_node: XmlNode, parent_globals=None, parent_context=None):
-        super().__init__(xml_node, parent_globals, parent_context)
+    def __init__(self, master, xml_node: XmlNode, parent_context=None):
+        super().__init__(xml_node, parent_context)
         self._master = master
         self._args = {}
         self._index = None
