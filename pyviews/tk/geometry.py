@@ -1,5 +1,4 @@
 from pyviews.core.xml import XmlNode
-from pyviews.core.compilation import IhertiedDict
 from pyviews.core.node import Node
 from pyviews.core.parsing import parse_attributes
 
@@ -38,8 +37,8 @@ class PlaceGeometry(Geometry):
         widget.place_forget()
 
 class LayoutSetup(Node):
-    def __init__(self, master, xml_node: XmlNode, parent_globals: IhertiedDict = None):
-        super().__init__(xml_node, parent_globals)
+    def __init__(self, master, xml_node: XmlNode, parent_globals=None, parent_context=None):
+        super().__init__(xml_node, parent_globals, parent_context)
         self._master = master
         self._args = {}
         self._index = None

@@ -7,7 +7,7 @@ from pyviews.tk.widgets import WidgetNode, EntryWidget
 def convert_to_node(inst, args: NodeArgs):
     if isinstance(inst, Entry):
         return EntryWidget(inst, args['xml_node'], args['parent_globals'])
-    return WidgetNode(inst, args['xml_node'], args['parent_globals'])
+    return WidgetNode(inst, args['xml_node'], args['parent_globals'], args['parent_context'])
 
 def apply_text(node: WidgetNode):
     if not node.xml_node.text:

@@ -1,6 +1,6 @@
 from pyviews.core.xml import XmlNode, XmlAttr
-from pyviews.core.compilation import Expression, IhertiedDict
-from pyviews.core.node import Node
+from pyviews.core.compilation import Expression
+from pyviews.core.node import Node, IhertiedDict
 from pyviews.core.parsing import is_code_expression, parse_expression, get_modifier
 from pyviews.tk.containers import View, Container
 
@@ -14,22 +14,41 @@ class StyleItem:
         self._modifier(node, self._name, self._value)
 
 class Style(Node):
-    def __init__(self, xml_node, parent_globals: IhertiedDict = None):
-        super().__init__(xml_node, parent_globals)
-        self._parent_globals = parent_globals
+    def __init__(self, xml_node, parent_globals=None, parent_context=None):
+        super().__init__(xml_node, parent_globals, parent_context)
+        self._styles = parent_context['styles']
         self.name = None
 
     def set_items(self, items):
         if not self.name:
             raise KeyError("style doesn't have name")
-        self._parent_globals[self.name] = items
+        self._styles[self.name] = items
 
     def destroy(self):
-        self._parent_globals.remove_key(self.name)
+        self._styles.remove_key(self.name)
         self._destroy_bindings()
 
+class Styles(View):
+    def __init__(self, master, xml_node: XmlNode, parent_globals=None, parent_context=None):
+        super().__init__(master, xml_node, parent_globals, parent_context)
+        self._parent_globals = parent_globals
+        self._parent_context = parent_context
+        self._name = None
+
+    def parse_children(self):
+        if self._name:
+            super().parse_children()
+        else:
+            Container.parse_children(self)
+
+    def get_node_args(self, xml_node: XmlNode):
+        args = super().get_node_args(xml_node)
+        args['parent_globals'] = self._parent_globals
+        args['parent_context'] = self._parent_context
+        return args
+
 def init_styles(node: Node):
-    pass
+    node.context['styles'] = IhertiedDict()
 
 def parse_attrs(node: Style):
     attrs = node.xml_node.get_attrs()
@@ -50,23 +69,7 @@ def _get_item(node: Style, attr: XmlAttr):
 
 def apply_styles(node, styles):
     keys = styles.split(',') if isinstance(styles, str) else styles
+    styles = node.context['styles']
     for key in [key for key in keys if key]:
-        for item in node.globals[key]:
+        for item in styles[key]:
             item.apply(node)
-
-class Styles(View):
-    def __init__(self, master, xml_node: XmlNode, parent_globals: IhertiedDict = None):
-        super().__init__(master, xml_node, parent_globals)
-        self._parent_globals = parent_globals
-        self._name = None
-
-    def parse_children(self):
-        if self._name:
-            super().parse_children()
-        else:
-            Container.parse_children(self)
-
-    def get_node_args(self, xml_node: XmlNode):
-        args = super().get_node_args(xml_node)
-        args['parent_globals'] = self._parent_globals
-        return args

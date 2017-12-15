@@ -13,6 +13,7 @@ class NodeArgs(dict):
         self['parent_node'] = parent_node
         self['xml_node'] = xml_node
         self['parent_globals'] = None if parent_node is None else parent_node.globals
+        self['parent_context'] = None if parent_node is None else parent_node.context
 
     def get_args(self, inst_type):
         parameters = signature(inst_type).parameters.values()
@@ -22,10 +23,15 @@ class NodeArgs(dict):
         return NodeArgs.args_tuple(args, kwargs)
 
 class Node:
-    def __init__(self, xml_node: XmlNode, parent_globals: IhertiedDict = None):
+    def __init__(self, xml_node: XmlNode, parent_globals: IhertiedDict = None, parent_context=None):
         self._child_nodes = []
         self._bindings = []
         self.xml_node = xml_node
+        if parent_context is None:
+            self.context = {}
+        else:
+            self.context = {key: IhertiedDict(value) if isinstance(value, IhertiedDict) else value \
+                            for (key, value) in parent_context.items()}
         self.globals = IhertiedDict(parent_globals)
         self.globals['node'] = self
 
