@@ -29,9 +29,9 @@ cd [project_root]\sandbox
 python run.py
 ```
 
-## Wiki
+## Getting started
 
-[Wiki pages](https://github.com/eumis/pyviews/wiki) creation is in progress.
+[Getting started viki](https://github.com/eumis/pyviews/wiki) - how to use pyviews.
 
 ## License
 
