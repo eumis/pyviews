@@ -31,7 +31,7 @@ python run.py
 
 ## Getting started
 
-[Getting started viki](https://github.com/eumis/pyviews/wiki) - how to use pyviews.
+[Getting started wiki](https://github.com/eumis/pyviews/wiki) - how to use pyviews.
 
 ## License
 
