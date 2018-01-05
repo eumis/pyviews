@@ -57,6 +57,7 @@ class For(Container):
         super().__init__(master, xml_node, parent_context)
         self._items = []
         self._rendered = False
+        self._child_count = 0
 
     @property
     def items(self):
@@ -73,23 +74,28 @@ class For(Container):
     def _destroy_overflow(self):
         try:
             items_count = len(self._items)
-            children = self._child_nodes[items_count:]
-            for child in children:
+            children_count = self._child_count * items_count
+            overflow = self._child_nodes[children_count:]
+            for child in overflow:
                 child.destroy()
-            self._child_nodes = self._child_nodes[:items_count]
+            self._child_nodes = self._child_nodes[:children_count]
         except IndexError:
             pass
 
     def _update_existing(self):
         try:
             for index, item in enumerate(self._items):
-                self._child_nodes[index].globals['item'] = item
-                self._child_nodes[index].globals['index'] = index
+                start = index * self._child_count
+                end = (index + 1) * self._child_count
+                for child_index in range(start, end):
+                    globs = self._child_nodes[child_index].globals
+                    globs['item'] = item
+                    globs['index'] = index
         except IndexError:
             pass
 
     def _create_not_existing(self):
-        start = len(self._child_nodes)
+        start = int(len(self._child_nodes) / self._child_count)
         end = len(self._items)
         self._create_children([(i, self._items[i]) for i in range(start, end)])
 
@@ -103,6 +109,7 @@ class For(Container):
 
     def parse_children(self):
         self._rendered = True
+        self._child_count = len(self.xml_node.get_children())
         self.destroy_children()
         self._create_children(enumerate(self._items))
 
