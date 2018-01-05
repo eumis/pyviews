@@ -41,7 +41,6 @@ class TestInstanceTarget(TestCase):
 
 class TestBindingWithSimpleExpression(TestCase):
     def setUp(self):
-        
         self.view_model = InnerViewModel(2, 'inner str')
         self.expression = Expression('str(vm.int_value) + vm.str_value')
         self.inst = SomeEntity()
