@@ -90,7 +90,6 @@ class For(Container):
                 for child_index in range(start, end):
                     globs = self._child_nodes[child_index].globals
                     globs['item'] = item
-                    globs['index'] = index
         except IndexError:
             pass
 
@@ -126,7 +125,7 @@ class For(Container):
 class If(Container):
     def __init__(self, master, xml_node: XmlNode, parent_context=None):
         super().__init__(master, xml_node, parent_context)
-        self._condition = True
+        self._condition = False
         self._rendered = False
 
     @property
