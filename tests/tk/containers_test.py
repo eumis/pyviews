@@ -171,18 +171,73 @@ class ForTest(TestCase):
 
 class IfTest(TestCase):
     def setUp(self):
+        self._setup_ioc()
+        self._setup_node()
+
+    def _setup_ioc(self):
+        self._container = ioc.CONTAINER
+        ioc.CONTAINER = ioc.Container()
+        self._child = Mock()
+        self._child.destroy = Mock()
+        self._child.globals = Mock()
+        self._child.globals.__setitem__ = Mock(side_effect=lambda *args: None)
+        self._parse = Mock(return_value=self._child)
+        ioc.register_value('parse', self._parse)
+
+    def _setup_node(self):
         element = ET.fromstring(
             '''<If xmlns="pyviews.tk">
                 <child />
                </If>''')
         xml_node = XmlNode(element)
         self.node = If(None, xml_node)
-        self.node.parse_children = Mock()
-        self.node.destroy_children = Mock()
 
     def test_default_condition_false(self):
         msg = 'default "condition" value should be False'
         self.assertFalse(self.node.condition, msg)
+
+    def test_init_setup_shouldnt_trigger_render(self):
+        self.node.condition = True
+        self.node.condition = False
+
+        msg = "initial items set shouldn't call parse_children"
+        self.assertFalse(self._parse.called, msg)
+        self.assertFalse(self._child.destroy.called, msg)
+
+    @case(True)
+    @case(False)
+    def test_same_condition_shouldnt_trigger_render(self, value):
+        self.node.condition = value
+        self.node.parse_children()
+        self._parse.reset_mock()
+        self._child.reset_mock()
+
+        self.node.condition = value
+
+        msg = "same condition value shouldn't trigger parsing"
+        self.assertFalse(self._parse.called, msg)
+        self.assertFalse(self._child.destroy.called, msg)
+
+    def test_true_should_trigger_render(self):
+        self.node.parse_children()
+        self._parse.reset_mock()
+        self._child.reset_mock()
+
+        self.node.condition = True
+
+        msg = "True value shouldn't trigger parsing"
+        self.assertTrue(self._parse.called, msg)
+
+    def test_false_should_trigger_destroy(self):
+        self.node.condition = True
+        self.node.parse_children()
+        self._parse.reset_mock()
+        self._child.reset_mock()
+
+        self.node.condition = False
+
+        msg = "False value should destroy children"
+        self.assertTrue(self._child.destroy.called, msg)
 
 if __name__ == '__main__':
     main()

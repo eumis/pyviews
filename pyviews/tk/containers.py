@@ -134,6 +134,8 @@ class If(Container):
 
     @condition.setter
     def condition(self, value):
+        if self._condition == value:
+            return
         self._condition = value
         if self._rendered:
             self.destroy_children()
