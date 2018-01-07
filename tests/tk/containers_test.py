@@ -1,9 +1,8 @@
 from xml.etree import ElementTree as ET
 from unittest import TestCase, main
-from unittest.mock import Mock, call, MagicMock
+from unittest.mock import Mock, call
 from tests.utility import case
 from pyviews.core import ioc
-from pyviews.core.node import Node
 from pyviews.core.xml import XmlNode
 from pyviews.tk.containers import Container, View, For, If
 
