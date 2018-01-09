@@ -1,7 +1,5 @@
 from unittest import TestCase, main
-from unittest.mock import Mock, call, patch
-from tests.utility import case
-from pyviews.tk.widgets import WidgetNode
+from unittest.mock import Mock, call
 from pyviews.tk import modifiers
 from pyviews.tk.modifiers import bind, bind_all, set_attr, config, visible
 
@@ -9,7 +7,7 @@ class TkModifiersTests(TestCase):
     def setUp(self):
         self.node = Mock()
         self._apply_styles = modifiers.apply_styles
-        modifiers.apply_styles = Mock() 
+        modifiers.apply_styles = Mock()
 
     def test_bind(self):
         event = 'event'
@@ -17,7 +15,8 @@ class TkModifiersTests(TestCase):
 
         bind(self.node, event, command)
 
-        self.assertEqual(self.node.bind.call_args, call(event, command))
+        msg = "bind should call bind of WidgetNode with passed parameters"
+        self.assertEqual(self.node.bind.call_args, call(event, command), msg)
 
     def test_bind_all(self):
         event = 'event'
@@ -25,7 +24,8 @@ class TkModifiersTests(TestCase):
 
         bind_all(self.node, event, command)
 
-        self.assertEqual(self.node.bind_all.call_args, call(event, command))
+        msg = "bind_all should call bind_all of WidgetNode with passed parameters"
+        self.assertEqual(self.node.bind_all.call_args, call(event, command), msg)
 
     def test_set_attr_style(self):
         key = 'style'
@@ -33,7 +33,8 @@ class TkModifiersTests(TestCase):
 
         set_attr(self.node, key, value)
 
-        self.assertEqual(modifiers.apply_styles.call_args, call(self.node, value))
+        msg = 'set_attr should apply styles for WidgetNode for "style" key'
+        self.assertEqual(modifiers.apply_styles.call_args, call(self.node, value), msg)
 
     def test_set_attr(self):
         key = 'key'
@@ -41,7 +42,8 @@ class TkModifiersTests(TestCase):
 
         set_attr(self.node, key, value)
 
-        self.assertEqual(self.node.set_attr.call_args, call(key, value))
+        msg = "set_attr should call set_attr of WidgetNode with passed parameters"
+        self.assertEqual(self.node.set_attr.call_args, call(key, value), msg)
 
     def test_config(self):
         key = 'key'
@@ -49,17 +51,20 @@ class TkModifiersTests(TestCase):
 
         config(self.node, key, value)
 
-        self.assertEqual(self.node.widget.config.call_args, call(**{key: value}))
+        msg = "config should call config of widget from WidgetNode with passed parameters"
+        self.assertEqual(self.node.widget.config.call_args, call(**{key: value}), msg)
 
     def test_visible_true(self):
         visible(self.node, None, True)
 
-        self.assertEqual(self.node.geometry.apply.call_args, call(self.node.widget))
+        msg = "visible should call geometry apply if true"
+        self.assertEqual(self.node.geometry.apply.call_args, call(self.node.widget), msg)
 
     def test_visible_false(self):
         visible(self.node, None, False)
 
-        self.assertEqual(self.node.geometry.forget.call_args, call(self.node.widget))
+        msg = "visible should call geometry forget if false"
+        self.assertEqual(self.node.geometry.forget.call_args, call(self.node.widget), msg)
 
     def tearDown(self):
         modifiers.apply_styles = self._apply_styles
