@@ -55,6 +55,9 @@ class ForTest(TestCase):
         self._parse = Mock(return_value=self._child)
         ioc.register_value('parse', self._parse)
 
+    def tearDown(self):
+        ioc.CONTAINER = self._container
+
     def _init_test(self, child_count=3):
         self._reset_mocks()
         return self._create_node(child_count)
@@ -165,9 +168,6 @@ class ForTest(TestCase):
         msg = 'new children should be created new items'
         self.assertEqual(self._parse.call_count, count, msg)
 
-    def tearDown(self):
-        ioc.CONTAINER = self._container
-
 class IfTest(TestCase):
     def setUp(self):
         self._setup_ioc()
@@ -190,6 +190,9 @@ class IfTest(TestCase):
                </If>''')
         xml_node = XmlNode(element)
         self.node = If(None, xml_node)
+
+    def tearDown(self):
+        ioc.CONTAINER = self._container
 
     def test_default_condition_false(self):
         msg = 'default "condition" value should be False'

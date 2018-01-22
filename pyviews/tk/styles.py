@@ -66,7 +66,7 @@ def _get_item(node: Style, attr: XmlAttr):
     return StyleItem(modifier, attr.name, value)
 
 def apply_styles(node, styles):
-    keys = styles.split(',') if isinstance(styles, str) else styles
+    keys = [style.strip() for style in styles.split(',')] if isinstance(styles, str) else styles
     styles = node.context['styles']
     for key in [key for key in keys if key]:
         for item in styles[key]:
