@@ -110,7 +110,7 @@ class For(Container):
         self._rendered = True
         self._child_count = len(self.xml_node.get_children())
         self.destroy_children()
-        self._create_children(enumerate(self._items))
+        self._create_children([(i, item) for i, item in enumerate(self._items)])
 
     def get_node_args(self, xml_node: XmlNode, index=None, item=None):
         args = super().get_node_args(xml_node)
