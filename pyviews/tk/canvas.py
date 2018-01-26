@@ -1,4 +1,5 @@
 from tkinter import Canvas, TclError
+from pyviews.core.ioc import inject
 from pyviews.core.node import Node
 
 class CanvasNode(Node):
@@ -12,6 +13,7 @@ class CanvasNode(Node):
         self._place = None
         self._options = {}
         self._events = {}
+        self._style = ''
 
     @property
     def place(self):
@@ -20,6 +22,16 @@ class CanvasNode(Node):
     @place.setter
     def place(self, value):
         self._place = value
+
+    @property
+    def style(self):
+        return self._style
+
+    @style.setter
+    @inject('apply_styles')
+    def style(self, value, apply_styles=None):
+        self._style = value
+        apply_styles(self, value)
 
     def set_attr(self, key, value):
         if hasattr(self, key):

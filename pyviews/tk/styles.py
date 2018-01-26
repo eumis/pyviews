@@ -32,6 +32,7 @@ class Styles(View):
     def __init__(self, master, xml_node: XmlNode, parent_context=None):
         super().__init__(master, xml_node, parent_context)
         self._parent_context = parent_context
+
         self._name = None
 
     def parse_children(self):
@@ -42,7 +43,7 @@ class Styles(View):
 
     def get_node_args(self, xml_node: XmlNode):
         args = super().get_node_args(xml_node)
-        args['parent_context'] = self._parent_context
+        args['parent_context']['styles'] = self._parent_context['styles']
         return args
 
 def init_styles(node: Node):

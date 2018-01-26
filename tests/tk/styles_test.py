@@ -63,14 +63,22 @@ class ParsingTest(TestCase):
     @case([('name', 'some_style'),
            ('key', 'value'),
            ('{tests.core.parsing_test.some_modifier}key', 'other_value'),
+           ('num', '{1}'),
+           ('num', '{count}'),
            ('bg', '#000')],
           [StyleItem(DEFAULT_MODIFIER, 'key', 'value'),
            StyleItem(some_modifier, 'key', 'other_value'),
-           StyleItem(DEFAULT_MODIFIER, 'bg', '#000')])
-    def test_parse_attrs_creates_style_items(self, attrs, style_items):
+           StyleItem(DEFAULT_MODIFIER, 'num', 1),
+           StyleItem(DEFAULT_MODIFIER, 'num', 2),
+           StyleItem(DEFAULT_MODIFIER, 'bg', '#000')],
+          {'count': 2})
+    def test_parse_attrs_creates_style_items(self, attrs, style_items, global_values):
         xml_node = Mock()
         xml_node.get_attrs = Mock(return_value=[XmlAttr(attr) for attr in attrs])
-        context = {'styles': InheritedDict()}
+        parent_globals = InheritedDict()
+        for key, value in global_values.items():
+            parent_globals[key] = value
+        context = {'styles': InheritedDict(), 'globals': parent_globals}
         style = Style(xml_node, context)
 
         parse_attrs(style)

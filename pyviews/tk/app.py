@@ -4,9 +4,10 @@ from pyviews.core.parsing import parse_attributes, parse_children
 from pyviews.tk.parsing import convert_to_node, apply_text
 from pyviews.tk.views import parse_view
 from pyviews.tk.modifiers import set_attr
-from pyviews.tk.styles import Style, parse_attrs as parse_style_attrs, init_styles
+from pyviews.tk.styles import Style, parse_attrs as parse_style_attrs, init_styles, apply_styles
 from pyviews.tk.geometry import Row, Column, apply_layout
 from pyviews.tk.widgets import Root
+from pyviews.tk.ttk import TtkWidgetNode
 from pyviews.tk import canvas
 
 def register_dependencies():
@@ -14,6 +15,7 @@ def register_dependencies():
     ioc.register_value('views_folder', abspath('views'))
     ioc.register_value('view_ext', '.xml')
     ioc.register_value('set_attr', set_attr)
+    ioc.register_value('apply_styles', apply_styles)
     _register_parsing_steps()
 
 def _register_parsing_steps():

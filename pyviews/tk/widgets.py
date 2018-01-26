@@ -1,4 +1,5 @@
 from tkinter import Tk, Widget, StringVar
+from pyviews.core.ioc import inject
 from pyviews.core.xml import XmlNode
 from pyviews.core.node import Node, NodeArgs
 from pyviews.core.observable import Observable
@@ -19,6 +20,7 @@ class WidgetNode(Node, Observable):
         Node.__init__(self, xml_node, parent_context)
         self.widget = widget
         self._geometry = None
+        self._style = ''
 
     @property
     def geometry(self):
@@ -40,6 +42,16 @@ class WidgetNode(Node, Observable):
     @view_model.setter
     def view_model(self, value):
         self.globals['vm'] = value
+
+    @property
+    def style(self):
+        return self._style
+
+    @style.setter
+    @inject('apply_styles')
+    def style(self, value, apply_styles=None):
+        self._style = value
+        apply_styles(self, value)
 
     def get_node_args(self, xml_node: XmlNode):
         return WidgetArgs(xml_node, self, self.widget)
