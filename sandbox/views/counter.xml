@@ -11,7 +11,7 @@
 
              view_model="{Counter()}">
 
-    <w:Styles name='styles'/>
+    <w:Container name='styles'/>
 
     <Frame geometry='{Pack(fill="x")}'>
         <Button geometry='{Pack(side="left")}'

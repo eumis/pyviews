@@ -1,13 +1,10 @@
 from unittest import TestCase, main
 from unittest.mock import Mock, call
-from pyviews.tk import modifiers
 from pyviews.tk.modifiers import bind, bind_all, set_attr, config, visible
 
 class TkModifiersTests(TestCase):
     def setUp(self):
         self.node = Mock()
-        self._apply_styles = modifiers.apply_styles
-        modifiers.apply_styles = Mock()
 
     def test_bind(self):
         event = 'event'
@@ -26,15 +23,6 @@ class TkModifiersTests(TestCase):
 
         msg = "bind_all should call bind_all of WidgetNode with passed parameters"
         self.assertEqual(self.node.bind_all.call_args, call(event, command), msg)
-
-    def test_set_attr_style(self):
-        key = 'style'
-        value = 2
-
-        set_attr(self.node, key, value)
-
-        msg = 'set_attr should apply styles for WidgetNode for "style" key'
-        self.assertEqual(modifiers.apply_styles.call_args, call(self.node, value), msg)
 
     def test_set_attr(self):
         key = 'key'
@@ -65,9 +53,6 @@ class TkModifiersTests(TestCase):
 
         msg = "visible should call geometry forget if false"
         self.assertEqual(self.node.geometry.forget.call_args, call(self.node.widget), msg)
-
-    def tearDown(self):
-        modifiers.apply_styles = self._apply_styles
 
 if __name__ == '__main__':
     main()
