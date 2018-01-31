@@ -31,6 +31,7 @@ class View(Container):
     def __init__(self, master, xml_node: XmlNode, parent_context=None):
         super().__init__(master, xml_node, parent_context)
         self._name = None
+        self._rendered = False
 
     @property
     def name(self):
@@ -41,10 +42,12 @@ class View(Container):
         if self._name == value:
             return
         self._name = value
-        self.parse_children()
+        if self._rendered:
+            self.parse_children()
 
     @inject('parse')
     def parse_children(self, parse=None):
+        self._rendered = True
         self.destroy_children()
         try:
             root_xml = get_view_root(self.name)

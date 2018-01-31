@@ -30,13 +30,18 @@ class ViewTest(TestCase):
         self.view = View(None, None)
         self.view.parse_children = Mock()
 
-    def test_name_change(self):
+    @case(True)
+    @case(False)
+    def test_name_change(self, is_rendered):
+        self.view.parse_children.reset_mock()
+        self.view._rendered = is_rendered
         self.view.name = 'view'
 
         msg = 'parse_children should be called on name change'
-        self.assertTrue(self.view.parse_children.called, msg)
+        self.assertEqual(self.view.parse_children.called, is_rendered, msg)
 
     def test_same_name_passed(self):
+        self.view._rendered = True
         view_name = 'view'
         self.view.name = view_name
         self.view.name = view_name
