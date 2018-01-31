@@ -1,5 +1,4 @@
 from tkinter.ttk import Style as TtkStyle
-from pyviews.core.compilation import InheritedDict
 from pyviews.core.node import Node
 from pyviews.tk.widgets import WidgetNode
 
@@ -33,7 +32,7 @@ class Style(Node):
     def apply(self):
         ttk_style = TtkStyle()
         if not self.name:
-            raise 'name is not defined'
+            raise KeyError("style doesn't have name")
         ttk_style.configure(self.full_name, **self.values)
 
     def get_node_args(self, xml_node):

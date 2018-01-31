@@ -54,6 +54,16 @@ class ApplyTest(TestCase):
         config_call = call(node.full_name, **values)
         self.assertEqual(self._ttk_style.configure.call_args, config_call, msg)
 
+    @case(None)
+    @case('')
+    def test_apply_raises(self, name):
+        node = ttk.Style(None)
+        node.name = name
+
+        msg = '"name" attribute value should be used as style name'
+        with self.assertRaises(KeyError, msg=msg):
+            node.apply()
+
     def tearDown(self):
         ttk.TtkStyle = self._mocked_ttk_style
 

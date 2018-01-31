@@ -147,7 +147,7 @@ class ParsingTest(TestCase):
         style = Style(xml_node)
 
         msg = '"name" attribute value should be used as style name'
-        with self.assertRaises(Exception, msg=msg):
+        with self.assertRaises(KeyError, msg=msg):
             parse_attrs(style)
 
     def tearDown(self):
