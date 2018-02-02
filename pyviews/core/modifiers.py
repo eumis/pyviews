@@ -17,3 +17,6 @@ def inject_global(node: Node, global_key, inject_key, container=None):
 
 def set_global(node: Node, key, value):
     node.globals[key] = value
+
+def call(node, key, value):
+    pass
