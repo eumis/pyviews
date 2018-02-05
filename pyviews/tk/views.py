@@ -1,7 +1,7 @@
 from os.path import join
 from pyviews.core import CoreError
 from pyviews.core.ioc import inject
-from pyviews.core.xml import get_root
+from pyviews.core.customxml import get_root
 from pyviews.core.node import NodeArgs
 
 class ViewError(CoreError):
