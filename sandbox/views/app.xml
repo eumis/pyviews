@@ -11,7 +11,6 @@
         import:show_view='sandbox.commands.show_view'
 
         background="white"
-        state="zoomed"
         view_model='{AppViewModel("")}'>
         <Frame geometry='{Pack(fill="x")}'>
                 <Button geometry='{Grid(row=0, column=0, sticky="e")}'

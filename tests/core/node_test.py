@@ -1,12 +1,10 @@
 from unittest import TestCase, main
-from xml.etree import ElementTree as ET
 from pyviews.core.xml import XmlNode
 from pyviews.core.node import Node, NodeArgs
 
 class TestNodeArgs(TestCase):
     def test_node_args(self):
-        element = ET.fromstring('<root xmlns="ns"/>')
-        xml_node = XmlNode(element)
+        xml_node = XmlNode('namespace', 'root')
         node = Node(xml_node)
         args = NodeArgs(xml_node, node).get_args(Node)
 
@@ -18,8 +16,7 @@ class TestNodeArgs(TestCase):
 
 class TestNode(TestCase):
     def test_init(self):
-        element = ET.fromstring('<root xmlns="ns"/>')
-        xml_node = XmlNode(element)
+        xml_node = XmlNode('namespace', 'root')
         node = Node(xml_node)
 
         msg = 'Node should inititalise properties from init parameters'

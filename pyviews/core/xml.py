@@ -17,7 +17,7 @@ class XmlNode:
         return self.attrs
 
 class XmlAttr:
-    def __init__(self, name, value, namespace=None):
+    def __init__(self, name, value=None, namespace=None):
         self.namespace = namespace
         self.name = name
         self.value = value

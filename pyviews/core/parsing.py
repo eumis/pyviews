@@ -93,7 +93,10 @@ def apply_twoways(expr_body, node, attr, modifier):
 def parse_children(node):
     node.parse_children()
 
-# ioc.register_value('convert_to_node', convert_to_node)
+def convert_to_node(node):
+    raise 'not implemented'
+
+ioc.register_value('convert_to_node', None)
 ioc.register_value('parse', parse)
 ioc.register_value('parsing_steps', [parse_attributes, parse_children])
 ioc.register_value('set_attr', setattr)

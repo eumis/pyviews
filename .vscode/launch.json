@@ -12,7 +12,8 @@
             },
             "linux": {
                 "program": "${workspaceRoot}//sandbox//run.py",
-                "cwd": "${workspaceRoot}//sandbox"
+                "cwd": "${workspaceRoot}//sandbox",
+                "pythonPath": "${config:python.pythonPath}"
             },
             "debugOptions": [
                 "WaitOnAbnormalExit",
@@ -34,7 +35,10 @@
                 "WaitOnAbnormalExit",
                 "WaitOnNormalExit",
                 "RedirectOutput"
-            ]
+            ],
+            "linux": {
+                "pythonPath": "${config:python.pythonPath}"
+            }
         }
     ]
 }

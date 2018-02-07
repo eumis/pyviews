@@ -1,5 +1,4 @@
 from unittest import TestCase, main
-from xml.etree import ElementTree as ET
 from tests.utility import case
 from tests.mock import some_modifier
 from pyviews.core.xml import XmlNode, XmlAttr
@@ -8,12 +7,10 @@ from pyviews.core import parsing, ioc
 
 class TestParseNode(TestCase):
     def setUp(self):
-        element = ET.fromstring('<Node xmlns="pyviews.core.node"/>')
-        xml_node = XmlNode(element)
+        xml_node = XmlNode('pyviews.core.node', 'Node')
         self.parent_node = parsing.Node(xml_node)
 
-        element = ET.fromstring('<Node xmlns="pyviews.core.node"/>')
-        self.xml_node = XmlNode(element)
+        self.xml_node = XmlNode('pyviews.core.node', 'Node')
 
     def test_parse(self):
         self.parent_node.globals['some_key'] = 'some value'
@@ -45,8 +42,7 @@ class SomeObject:
 
 class TestParseObjectNode(TestCase):
     def setUp(self):
-        element = ET.fromstring('<SomeObject xmlns="tests.core.parsing_test"/>')
-        self.xml_node = XmlNode(element)
+        self.xml_node = XmlNode('tests.core.parsing_test', 'SomeObject')
 
     def test_parse_raises(self):
         msg = 'parse should raise error if method "convert_to_node" is not registered'
@@ -54,12 +50,12 @@ class TestParseObjectNode(TestCase):
             parsing.parse(self.xml_node, parsing.NodeArgs(self.xml_node))
 
 class TestGetModifier(TestCase):
-    @case('', ioc.CONTAINER.get('set_attr'))
-    @case('attr_name', ioc.CONTAINER.get('set_attr'))
-    @case('{tests.core.parsing_test.some_modifier}', some_modifier)
-    @case('{tests.core.parsing_test.some_modifier}attr_name', some_modifier)
-    def test_get_modifier(self, name, expected):
-        xml_attr = XmlAttr((name, ''))
+    @case(None, '', ioc.CONTAINER.get('set_attr'))
+    @case(None, 'attr_name', ioc.CONTAINER.get('set_attr'))
+    @case('tests.core.parsing_test.some_modifier', '', some_modifier)
+    @case('tests.core.parsing_test.some_modifier', 'attr_name', some_modifier)
+    def test_get_modifier(self, namespace, name, expected):
+        xml_attr = XmlAttr(name, '', namespace)
         actual = parsing.get_modifier(xml_attr)
         self.assertEqual(actual, expected)
 
@@ -69,7 +65,7 @@ class TestGetModifier(TestCase):
     def test_get_modifier_raises(self, name):
         msg = 'get_modifier should raise ImportError if namespace can''t be imported'
         with self.assertRaises(ImportError, msg=msg):
-            xml_attr = XmlAttr((name, ''))
+            xml_attr = XmlAttr(name, '')
             parsing.get_modifier(xml_attr)
 
 class TestExpressions(TestCase):

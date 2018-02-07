@@ -1,4 +1,3 @@
-from xml.etree import ElementTree as ET
 from unittest import TestCase, main
 from unittest.mock import Mock, call
 from tests.utility import case
@@ -72,11 +71,9 @@ class ForTest(TestCase):
         self._child.reset_mock()
 
     def _create_node(self, child_count):
-        element = ET.fromstring(
-            '''<For xmlns="pyviews.tk">
-                {}
-               </For>'''.format('<child />' * child_count))
-        xml_node = XmlNode(element)
+        xml_node = XmlNode('pyviews.tk', 'For')
+        for i in child_count:
+            xml_node.children.append(XmlNode('pyviews.tk', 'child'))
         node = For(None, xml_node)
         return (xml_node, node)
 
@@ -189,11 +186,8 @@ class IfTest(TestCase):
         ioc.register_value('parse', self._parse)
 
     def _setup_node(self):
-        element = ET.fromstring(
-            '''<If xmlns="pyviews.tk">
-                <child />
-               </If>''')
-        xml_node = XmlNode(element)
+        xml_node = XmlNode('pyviews.tk', 'If')
+        xml_node.children.append(XmlNode('pyviews.tk', 'child'))
         self.node = If(None, xml_node)
 
     def tearDown(self):

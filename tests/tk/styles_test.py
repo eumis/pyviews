@@ -3,7 +3,7 @@ from unittest.mock import call, Mock
 from tests.utility import case
 from tests.mock import some_modifier
 from pyviews.core.ioc import CONTAINER, register_value
-from pyviews.core.xml import XmlAttr
+from pyviews.core.xml import XmlAttr, XmlNode
 from pyviews.core.compilation import InheritedDict
 from pyviews.tk.styles import StyleItem, Style, parse_attrs, apply_styles
 
@@ -100,12 +100,12 @@ class ParsingTest(TestCase):
         self.styles = {}
         register_value('styles', self.styles)
 
-    @case([('name', 'some_style'),
-           ('key', 'value'),
-           ('{tests.core.parsing_test.some_modifier}key', 'other_value'),
-           ('num', '{1}'),
-           ('num', '{count}'),
-           ('bg', '#000')],
+    @case([('name', 'some_style', None),
+           ('key', 'value', None),
+           ('key', 'other_value', 'tests.core.parsing_test.some_modifier'),
+           ('num', '{1}', None),
+           ('num', '{count}', None),
+           ('bg', '#000', None)],
           [StyleItem(DEFAULT_MODIFIER, 'key', 'value'),
            StyleItem(some_modifier, 'key', 'other_value'),
            StyleItem(DEFAULT_MODIFIER, 'num', 1),
@@ -113,8 +113,8 @@ class ParsingTest(TestCase):
            StyleItem(DEFAULT_MODIFIER, 'bg', '#000')],
           {'count': 2})
     def test_parse_attrs_creates_style_items(self, attrs, style_items, global_values):
-        xml_node = Mock()
-        xml_node.get_attrs = Mock(return_value=[XmlAttr(attr) for attr in attrs])
+        xml_node = XmlNode('pyviews.tk', 'StyleItem')
+        xml_node.attrs = [XmlAttr(attr[0], attr[1], attr[2]) for attr in attrs]
         parent_globals = InheritedDict()
         for key, value in global_values.items():
             parent_globals[key] = value
@@ -130,7 +130,7 @@ class ParsingTest(TestCase):
     @case('some name')
     def test_parse_attrs_sets_style_name(self, name):
         xml_node = Mock()
-        xml_node.get_attrs = Mock(return_value=[XmlAttr(('name', name))])
+        xml_node.get_attrs = Mock(return_value=[XmlAttr('name', name)])
         style = Style(xml_node)
 
         parse_attrs(style)
@@ -143,7 +143,7 @@ class ParsingTest(TestCase):
     @case([('name', None), ('bg', '#000')])
     def test_parse_attrs_raise_if_name_empty_or_not_exist(self, attrs):
         xml_node = Mock()
-        xml_node.get_attrs = Mock(return_value=[XmlAttr(attr) for attr in attrs])
+        xml_node.get_attrs = Mock(return_value=[XmlAttr(attr[0], attr[1]) for attr in attrs])
         style = Style(xml_node)
 
         msg = '"name" attribute value should be used as style name'

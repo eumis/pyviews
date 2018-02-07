@@ -95,6 +95,13 @@ class ParsingTests(TestCase):
                 </c1>
             </r>
           ''')
+    @case('''
+            <r xmlns='n'>
+                <c1>
+                    <c2 a='></c2>
+                </c1>
+            </r>
+          ''')
     def test_raises_for_bad_xml(self, xml_string):
         with self.assertRaises(XmlError):
             self._parse(xml_string)
