@@ -1,7 +1,7 @@
 from tempfile import TemporaryFile
 from unittest import TestCase, main
 from tests.utility import case
-from pyviews.core.xml import Parser
+from pyviews.core.xml import Parser, XmlAttr, XmlError
 
 class ParsingTests(TestCase):
     def _parse(self, xml_string):
@@ -42,7 +42,6 @@ class ParsingTests(TestCase):
         msg = 'Namespace shoud be parsed correctly'
         self.assertEqual(namespace, child.namespace, msg)
 
-    #second parameter is somethig like newick notation
     @case("<r xmlns='n'><c1/></r>", [0])
     @case("<r xmlns='n'><c1/><c1/><c1/></r>", [0, 0, 0])
     @case("<r xmlns='n'><c1/><c1><c2/><c2/></c1><c1><c2/></c1></r>", [0, [0, 0], [0]])
@@ -61,6 +60,44 @@ class ParsingTests(TestCase):
             else:
                 self._assert_right_children(child, child_structure)
 
+    @case("<r xmlns='n' xmlns:m='nsp' k='{1}' m:k='v' m:a='value'/>",
+          [XmlAttr('k', '{1}'), XmlAttr('k', 'v', 'nsp'), XmlAttr('a', 'value', 'nsp')],
+          0)
+    @case("<r xmlns='n' xmlns:m='nsp'><c1 k='{1}' m:k='v' m:a='value'/></r>",
+          [XmlAttr('k', '{1}'), XmlAttr('k', 'v', 'nsp'), XmlAttr('a', 'value', 'nsp')],
+          1)
+    @case("<r xmlns='n' xmlns:m='nsp'><c1><c2 k='{1}' m:k='v' m:a='value'/></c1></r>",
+          [XmlAttr('k', '{1}'), XmlAttr('k', 'v', 'nsp'), XmlAttr('a', 'value', 'nsp')],
+          2)
+    def test_attribute_parsing(self, xml_string, attrs, level):
+        root = self._parse(xml_string)
+        parsed_attrs = self._get_child(root, level).attrs
+
+        msg = 'attributes should be parsed correctly'
+        self.assertEqual(len(parsed_attrs), len(attrs), msg)
+        self._assert_attributes_equal(parsed_attrs, attrs, msg)
+
+    def _assert_attributes_equal(self, parsed_attrs, attrs, msg):
+        for i, parsed_attr in enumerate(parsed_attrs):
+            attr = attrs[i]
+            self.assertEqual(parsed_attr.name, attr.name, msg)
+            self.assertEqual(parsed_attr.value, attr.value, msg)
+            self.assertEqual(parsed_attr.namespace, attr.namespace, msg)
+
+    @case("<r />")
+    @case("<nsp:r xmlns='n' />")
+    @case('''
+            <r xmlns='n'>
+                <c1>
+                    <c2>
+
+                    <c2></c2>
+                </c1>
+            </r>
+          ''')
+    def test_raises_for_bad_xml(self, xml_string):
+        with self.assertRaises(XmlError):
+            self._parse(xml_string)
 
 if __name__ == '__main__':
     main()

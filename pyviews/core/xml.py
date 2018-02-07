@@ -1,4 +1,4 @@
-from xml.parsers.expat import ParserCreate
+from xml.parsers.expat import ParserCreate, ExpatError, errors
 from collections import namedtuple
 from pyviews.core import CoreError
 
@@ -23,7 +23,10 @@ class XmlAttr:
         self.value = value
 
 class XmlError(CoreError):
-    pass
+    UnknownNamespace = 'Unknown xml namespace: {0}.'
+    UnknownDefaultNamespace = 'Unknown default xml namespace.'
+    def __init__(self, message, linenumber):
+        super().__init__(message, 'Line {0}.'.format(linenumber))
 
 class Parser:
     Attribute = namedtuple('Attribute', ['name', 'value'])
@@ -67,17 +70,14 @@ class Parser:
             try:
                 namespace = self._namespaces[splitted[0]]
             except KeyError:
-                format_args = (splitted[0], self._parser.CurrentLineNumber)
-                message = 'Unknown xml namespace: {0}. Line {1}'.format(*format_args)
-                raise XmlError(message)
+                message = XmlError.UnknownNamespace.format(splitted[0])
+                raise XmlError(message, self._parser.CurrentLineNumber)
             name = splitted[1]
         else:
             try:
                 namespace = self._namespaces[''] if use_default else None
             except KeyError:
-                format_args = (self._parser.CurrentLineNumber)
-                message = 'Unknown default xml namespace. Line {0}'.format(*format_args)
-                raise XmlError(message)
+                raise XmlError(XmlError.UnknownDefaultNamespace, self._parser.CurrentLineNumber)
         return (namespace, name)
 
     def _generate_xml_attributes(self, value_attrs):
@@ -97,6 +97,17 @@ class Parser:
         node.text = '' if text is None else text.strip()
 
     def parse(self, xml_file):
+        self._setup_parser()
+        try:
+            self._parser.ParseFile(xml_file)
+        except ExpatError as error:
+            raise XmlError(errors.messages[error.code], error.lineno)
+
+        root = self._root
+        self._reset()
+        return root
+
+    def _setup_parser(self):
         self._parser = ParserCreate()
         self._parser.ordered_attributes = 1
         self._parser.buffer_text = True
@@ -104,11 +115,6 @@ class Parser:
         self._parser.StartElementHandler = self._start_element
         self._parser.EndElementHandler = self._end_element
         self._parser.CharacterDataHandler = self._set_text
-
-        self._parser.ParseFile(xml_file)
-        root = self._root
-        self._reset()
-        return root
 
     def _reset(self):
         self._parser = None
