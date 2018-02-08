@@ -1,14 +1,19 @@
+'''Observable implementations'''
+
 class Observable:
+    '''Base class for observable entities'''
     def __init__(self):
         self._callbacks = {}
         self._all_callbacks = []
 
     def observe(self, key, callback):
+        '''Subscribes to key changes'''
         if key not in self._callbacks:
             self._callbacks[key] = []
         self._callbacks[key].append(callback)
 
     def observe_all(self, callback):
+        '''Subscribes to all keys changes'''
         self._all_callbacks.append(callback)
 
     def _notify(self, key, value, old_value):
@@ -27,15 +32,18 @@ class Observable:
             callback(key, value, old_value)
 
     def release(self, key, callback):
+        '''Releases callback from key changes'''
         try:
             self._callbacks[key].remove(callback)
         except KeyError:
             pass
 
     def release_all(self, callback):
+        '''Releases callback from all keys changes'''
         self._all_callbacks.remove(callback)
 
 class ObservableEntity(Observable):
+    '''Observable general object'''
     def __init__(self):
         super().__setattr__('_callbacks', {})
         super().__setattr__('_all_callbacks', [])
@@ -47,11 +55,13 @@ class ObservableEntity(Observable):
         self._notify_all(key, value, old_val)
 
     def observe(self, key, callback):
+        '''Subscribes to key changes'''
         if key not in self.__dict__ and key not in self._callbacks:
             raise KeyError('Entity ' + str(self) + 'doesn''t have attribute' + key)
         super().observe(key, callback)
 
 class InheritedDict(Observable):
+    '''Dictionary that pulls value from parent if doesn't have own'''
     def __init__(self, parent=None):
         super().__init__()
         self._container = parent.to_dictionary() if parent else {}
@@ -82,12 +92,15 @@ class InheritedDict(Observable):
         self._set_value(key, value, old_value)
 
     def to_dictionary(self):
+        '''Returns all values as dict'''
         return self._container.copy()
 
     def has_key(self, key):
+        '''Checks key presence in hierarchy'''
         return key in self._container
 
     def remove_key(self, key):
+        '''Remove own key, value'''
         try:
             self._own_keys.discard(key)
             if self._parent and self._parent.has_key(key):

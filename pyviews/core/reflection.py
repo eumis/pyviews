@@ -1,6 +1,9 @@
+'''Import in runtime by fullname'''
+
 from importlib import import_module
 
 def import_path(path):
+    '''Imports module, class, function by full name'''
     try:
         return import_module(path)
     except ImportError:
@@ -17,6 +20,7 @@ def _import_module_entry(path):
         raise ImportError(path)
 
 def split_by_last_dot(expr):
+    '''Splits passed string by dot in two pieces. Second piece doesn't contain dot'''
     last_dot = expr.rfind('.')
     if last_dot == -1:
         return(expr, None)

@@ -1,3 +1,5 @@
+'''Core classes for creation from xml nodes'''
+
 from collections import namedtuple
 from inspect import signature, Parameter
 from pyviews.core.ioc import inject
@@ -6,6 +8,7 @@ from pyviews.core.observable import InheritedDict
 from pyviews.core.binding import ExpressionBinding
 
 class NodeArgs(dict):
+    '''Wraps arguments for children nodes creations'''
     args_tuple = namedtuple('Args', ['args', 'kwargs'])
 
     def __init__(self, xml_node: XmlNode, parent_node=None):
@@ -15,6 +18,7 @@ class NodeArgs(dict):
         self['parent_context'] = None if parent_node is None else parent_node.context
 
     def get_args(self, inst_type):
+        '''Returns tuple to pass it to inst_type constructor'''
         parameters = signature(inst_type).parameters.values()
         args = [self[p.name] for p in parameters if p.default == Parameter.empty]
         kwargs = {p.name: self[p.name] for p in parameters \
@@ -22,6 +26,7 @@ class NodeArgs(dict):
         return NodeArgs.args_tuple(args, kwargs)
 
 class Node:
+    '''Represents instance or instance wrapper created from xml node.'''
     def __init__(self, xml_node: XmlNode, parent_context=None):
         self._child_nodes = []
         self._bindings = []
@@ -35,12 +40,15 @@ class Node:
 
     @property
     def globals(self):
+        '''Values used with expression executing'''
         return self.context['globals']
 
     def add_binding(self, binding: ExpressionBinding):
+        '''Stores binding'''
         self._bindings.append(binding)
 
     def destroy(self):
+        '''Destroys itself'''
         self.destroy_children()
         self._destroy_bindings()
 
@@ -51,15 +59,18 @@ class Node:
 
     @inject('parse')
     def parse_children(self, parse=None):
+        '''Creates nodes for children'''
         self.destroy_children()
         for xml_node in self.xml_node.children:
             args = self.get_node_args(xml_node)
             self._child_nodes.append(parse(xml_node, args))
 
     def destroy_children(self):
+        '''Destroys children'''
         for child in self._child_nodes:
             child.destroy()
         self._child_nodes = []
 
     def get_node_args(self, xml_node: XmlNode):
+        '''Returns NodeArgs for children creation'''
         return NodeArgs(xml_node, self)

@@ -32,7 +32,7 @@ class ExpressionBinding:
     def bind(self, expr_vars: InheritedDict):
         self.destroy()
         self._vars = expr_vars
-        var_tree = self._expression.get_var_tree()
+        var_tree = self._expression.get_tree()
         self._create_dependencies(expr_vars, var_tree)
         self._update_target()
 
@@ -74,7 +74,7 @@ class ExpressionBinding:
 
 class ExpressionTarget:
     def __init__(self, expression):
-        self._var_tree = expression.get_var_tree()
+        self._var_tree = expression.get_tree()
         self._validate()
 
     def _validate(self):

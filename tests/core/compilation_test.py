@@ -77,7 +77,7 @@ class TestExpression(TestCase):
     def test_var_tree(self):
         expression = Expression("str(vm.vm.int_value) + vm.vm.str_value + vm.str_value")
 
-        root = expression.get_var_tree()
+        root = expression.get_tree()
 
         self.assertEqual(root.key, 'root', 'root entry should have entry with "root" key')
         self.assertEqual(sorted([e.key for e in root.entries]), sorted(['str', 'vm']), \

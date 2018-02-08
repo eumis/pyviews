@@ -1,19 +1,25 @@
+'''Module to parse and compile python expressions'''
+
 import ast
 from sys import exc_info
 from collections import namedtuple
 from pyviews.core import CoreError
-from pyviews.core.observable import InheritedDict
 
 class Entry:
+    '''Node of expression tree built by Expression class'''
     def __init__(self, key):
         self.key = key
         self.entries = None
 
-class ExpressionError(CoreError):
-    pass
+class CompilationError(CoreError):
+    '''Error for failed expression compilation'''
+    CompileFailed = 'Expression "{0}" compilation is failed.'
+    ExecutionFailed = 'Error occured in execution of "{0}"'
 
 EXPRESSION_CACHE = {}
+
 class Expression:
+    '''Builds tree for expression. Execute expression.'''
     ExpressionItem = namedtuple('ExpressionItem', ['compiled', 'tree'])
     def __init__(self, code):
         self.code = code
@@ -24,25 +30,28 @@ class Expression:
         except KeyError:
             try:
                 self._compiled = compile(code, '<string>', 'eval')
-                self._var_tree = self._compile_var_tree()
+                self._var_tree = self._build_tree()
                 EXPRESSION_CACHE[code] = Expression.ExpressionItem(self._compiled, self._var_tree)
             except SyntaxError as syntax_error:
-                raise ExpressionError('Expression "{' + code + '"} compilation is failed', syntax_error.msg) \
-                      from syntax_error
+                msg = CompilationError.CompileFailed.format(code)
+                raise CompilationError(msg, syntax_error.msg) from syntax_error
 
-    def _compile_var_tree(self):
-        parsed = ast.parse(self.code)
-        all_nodes = [node for node in ast.walk(parsed)]
-
+    def _build_tree(self):
+        ast_node = ast.parse(self.code)
+        all_nodes = [node for node in ast.walk(ast_node)]
         nodes = [node for node in all_nodes \
                  if isinstance(node, ast.Name)]
         names = {node.id: [] for node in nodes}
+
         for name in nodes:
             names[name.id].append(name)
 
         attrs = [node for node in all_nodes \
                  if isinstance(node, ast.Attribute)]
 
+        return self._create_nodes(names, attrs)
+
+    def _create_nodes(self, names, attrs):
         root = Entry('root')
         root.entries = []
         for key, nodes in names.items():
@@ -64,14 +73,16 @@ class Expression:
             res.append(entry)
         return res
 
-    def get_var_tree(self):
+    def get_tree(self):
+        '''Returns expression tree'''
         return self._var_tree
 
-    def execute(self, parameters=None):
+    def execute(self, parameters: dict = None):
+        '''Executes expression with passed parameters and returns result'''
         try:
             parameters = {} if parameters is None else parameters
             return eval(self._compiled, parameters, {})
         except:
             info = exc_info()
-            raise ExpressionError('Error occured in execution of "' + self.code + '"', str(info[1])) \
-                  from info[1]
+            msg = CompilationError.ExecutionFailed.format(self.code)
+            raise CompilationError(msg, str(info[1])) from info[1]
