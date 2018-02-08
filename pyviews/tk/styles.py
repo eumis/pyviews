@@ -40,7 +40,7 @@ class Style(Node):
         self._destroy_bindings()
 
 def parse_attrs(node: Style):
-    attrs = node.xml_node.get_attrs()
+    attrs = node.xml_node.attrs
     try:
         node.name = next(attr.value for attr in attrs if attr.name == 'name')
     except StopIteration:

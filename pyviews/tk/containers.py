@@ -103,7 +103,7 @@ class For(Container):
 
     @inject('parse')
     def _create_children(self, items, parse=None):
-        nodes = self.xml_node.get_children()
+        nodes = self.xml_node.children
         for index, item in items:
             for xml_node in nodes:
                 args = self.get_node_args(xml_node, index, item)
@@ -111,7 +111,7 @@ class For(Container):
 
     def parse_children(self):
         self._rendered = True
-        self._child_count = len(self.xml_node.get_children())
+        self._child_count = len(self.xml_node.children)
         self.destroy_children()
         self._create_children([(i, item) for i, item in enumerate(self._items)])
 

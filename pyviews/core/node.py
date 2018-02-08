@@ -52,7 +52,7 @@ class Node:
     @inject('parse')
     def parse_children(self, parse=None):
         self.destroy_children()
-        for xml_node in self.xml_node.get_children():
+        for xml_node in self.xml_node.children:
             args = self.get_node_args(xml_node)
             self._child_nodes.append(parse(xml_node, args))
 

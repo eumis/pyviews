@@ -41,7 +41,7 @@ def run_parsing_steps(node: Node, container=None):
         run_step(node)
 
 def parse_attributes(node):
-    for attr in node.xml_node.get_attrs():
+    for attr in node.xml_node.attrs:
         parse_attr(node, attr)
 
 @ioc.inject('container')

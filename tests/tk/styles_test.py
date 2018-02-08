@@ -129,8 +129,8 @@ class ParsingTest(TestCase):
     @case('name')
     @case('some name')
     def test_parse_attrs_sets_style_name(self, name):
-        xml_node = Mock()
-        xml_node.get_attrs = Mock(return_value=[XmlAttr('name', name)])
+        xml_node = XmlNode('nsp', 'node')
+        xml_node.attrs = [XmlAttr('name', name)]
         style = Style(xml_node)
 
         parse_attrs(style)
@@ -142,8 +142,8 @@ class ParsingTest(TestCase):
     @case([('name', ''), ('bg', '#000')])
     @case([('name', None), ('bg', '#000')])
     def test_parse_attrs_raise_if_name_empty_or_not_exist(self, attrs):
-        xml_node = Mock()
-        xml_node.get_attrs = Mock(return_value=[XmlAttr(attr[0], attr[1]) for attr in attrs])
+        xml_node = XmlNode('nsp', 'node')
+        xml_node.attrs = [XmlAttr(attr[0], attr[1]) for attr in attrs]
         style = Style(xml_node)
 
         msg = '"name" attribute value should be used as style name'

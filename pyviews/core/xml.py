@@ -10,12 +10,6 @@ class XmlNode:
         self.children = []
         self.attrs = []
 
-    def get_children(self):
-        return self.children
-
-    def get_attrs(self):
-        return self.attrs
-
 class XmlAttr:
     def __init__(self, name, value=None, namespace=None):
         self.namespace = namespace
