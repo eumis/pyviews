@@ -1,5 +1,5 @@
-from pyviews.core.observable import Observable
-from pyviews.core.compilation import Expression, InheritedDict, Entry
+from pyviews.core.observable import Observable, InheritedDict
+from pyviews.core.compilation import Expression, Entry
 
 class Dependency:
     def __init__(self, observable: Observable, key, callback):

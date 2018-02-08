@@ -1,8 +1,10 @@
+'''Xml parsing'''
 from xml.parsers.expat import ParserCreate, ExpatError, errors
 from collections import namedtuple
 from pyviews.core import CoreError
 
 class XmlNode:
+    '''Parsed xml node'''
     def __init__(self, namespace, name):
         self.namespace = namespace
         self.name = name
@@ -11,18 +13,21 @@ class XmlNode:
         self.attrs = []
 
 class XmlAttr:
+    '''Parsed xml attribute'''
     def __init__(self, name, value=None, namespace=None):
         self.namespace = namespace
         self.name = name
         self.value = value
 
 class XmlError(CoreError):
-    UnknownNamespace = 'Unknown xml namespace: {0}.'
-    UnknownDefaultNamespace = 'Unknown default xml namespace.'
+    '''Describes xml parsing error'''
+    Unknown_namespace = 'Unknown xml namespace: {0}.'
+    Unknown_default_namespace = 'Unknown default xml namespace.'
     def __init__(self, message, linenumber):
         super().__init__(message, 'Line {0}.'.format(linenumber))
 
 class Parser:
+    '''Wrapper under xml.parsers.expat for parsing xml files'''
     Attribute = namedtuple('Attribute', ['name', 'value'])
     Item = namedtuple('Item', ['node', 'namespaces'])
     def __init__(self):
@@ -31,10 +36,10 @@ class Parser:
         self._items = []
         self._namespaces = {}
 
-    def _start_element(self, name, attrs):
+    def _start_element(self, full_name, attrs):
         attrs = self._get_tuples(attrs)
         self._namespaces = self._get_available_namespaces(attrs)
-        (namespace, name) = self._split_namespace(name, True)
+        (namespace, name) = self._split_namespace(full_name, True)
         node = XmlNode(namespace, name)
         value_attrs = [a for a in attrs if not a.name.startswith('xmlns')]
         node.attrs = list(self._generate_xml_attributes(value_attrs))
@@ -64,14 +69,14 @@ class Parser:
             try:
                 namespace = self._namespaces[splitted[0]]
             except KeyError:
-                message = XmlError.UnknownNamespace.format(splitted[0])
+                message = XmlError.Unknown_namespace.format(splitted[0])
                 raise XmlError(message, self._parser.CurrentLineNumber)
             name = splitted[1]
         else:
             try:
                 namespace = self._namespaces[''] if use_default else None
             except KeyError:
-                raise XmlError(XmlError.UnknownDefaultNamespace, self._parser.CurrentLineNumber)
+                raise XmlError(XmlError.Unknown_default_namespace, self._parser.CurrentLineNumber)
         return (namespace, name)
 
     def _generate_xml_attributes(self, value_attrs):
@@ -79,7 +84,7 @@ class Parser:
             (namespace, name) = self._split_namespace(attr.name)
             yield XmlAttr(name, attr.value, namespace)
 
-    def _end_element(self, name):
+    def _end_element(self, full_name):
         node = self._items.pop().node
         try:
             self._items[-1].node.children.append(node)
@@ -91,10 +96,12 @@ class Parser:
         node.text = '' if text is None else text.strip()
 
     def parse(self, xml_file):
+        '''Parses xml file with xml_path and returns XmlNode'''
         self._setup_parser()
         try:
             self._parser.ParseFile(xml_file)
         except ExpatError as error:
+            # pylint: disable=E1101
             raise XmlError(errors.messages[error.code], error.lineno)
 
         root = self._root
@@ -116,7 +123,9 @@ class Parser:
         self._items = []
         self._namespaces = {}
 
+# TODO: should be moved to another module
 def get_root(xml_path):
+    '''Parses xml file with xml_path and returns XmlNode'''
     parser = Parser()
     with open(xml_path, 'rb') as xml_file:
         return parser.parse(xml_file)

@@ -1,11 +1,9 @@
 // Place your settings in this file to overwrite default and user settings.
 {
-    "python.linting.mypyArgs": [
-        "--ignore-missing-imports",
-        "--follow-imports=silent"        
-    ],
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true,
     "python.linting.pylintArgs": [
-        "--disable=C0111"   
+        "--disable="   
     ],
     "files.exclude":
     {
@@ -21,5 +19,4 @@
         "build": true,
         "dist": true
     }
-    // "python.pythonPath": "${workspaceRoot}//venv//Scripts//python.exe"
 }

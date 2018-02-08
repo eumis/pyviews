@@ -1,7 +1,8 @@
 from unittest import TestCase, main
 from unittest.mock import Mock
 from tests.utility import case
-from pyviews.core.compilation import Expression, InheritedDict
+from pyviews.core.observable import InheritedDict
+from pyviews.core.compilation import Expression
 
 class TestInheritedDict(TestCase):
     def setUp(self):

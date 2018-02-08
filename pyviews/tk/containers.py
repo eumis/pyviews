@@ -1,6 +1,6 @@
 from pyviews.core.ioc import inject
 from pyviews.core.xml import XmlNode
-from pyviews.core.compilation import InheritedDict
+from pyviews.core.observable import InheritedDict
 from pyviews.core.node import Node
 from pyviews.tk.widgets import WidgetArgs
 from pyviews.tk.views import get_view_root

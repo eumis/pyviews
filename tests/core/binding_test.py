@@ -1,8 +1,8 @@
 from unittest import TestCase, main
 from tests.utility import case
 from pyviews.core.binding import *
-from pyviews.core.compilation import Expression, InheritedDict
-from pyviews.core.observable import ObservableEntity
+from pyviews.core.compilation import Expression
+from pyviews.core.observable import ObservableEntity, InheritedDict
 
 class InnerViewModel(ObservableEntity):
     def __init__(self, int_value, str_value):

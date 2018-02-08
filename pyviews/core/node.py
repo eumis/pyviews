@@ -2,7 +2,7 @@ from collections import namedtuple
 from inspect import signature, Parameter
 from pyviews.core.ioc import inject
 from pyviews.core.xml import XmlNode
-from pyviews.core.compilation import InheritedDict
+from pyviews.core.observable import InheritedDict
 from pyviews.core.binding import ExpressionBinding
 
 class NodeArgs(dict):

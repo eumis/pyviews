@@ -64,6 +64,21 @@
 			}
 		},
 		{
+			"label": "Run package linting",
+			"group": {
+				"kind": "test",
+				"isDefault": true
+			},
+			"windows": {
+				"command": "pylint",
+				"args": ["${workspaceRoot}\\pyviews"]
+			},
+			"linux": {
+				"command": "pylint3",
+				"args": ["${workspaceRoot}//pyviews"]
+			}
+		},
+		{
 			"label": "prepare wheel",
 			"command": "python",
 			"args": [

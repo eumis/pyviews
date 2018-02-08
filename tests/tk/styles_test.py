@@ -4,7 +4,7 @@ from tests.utility import case
 from tests.mock import some_modifier
 from pyviews.core.ioc import CONTAINER, register_value
 from pyviews.core.xml import XmlAttr, XmlNode
-from pyviews.core.compilation import InheritedDict
+from pyviews.core.observable import InheritedDict
 from pyviews.tk.styles import StyleItem, Style, parse_attrs, apply_styles
 
 class StyleItemTest(TestCase):
