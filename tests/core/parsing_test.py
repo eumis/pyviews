@@ -59,13 +59,13 @@ class TestGetModifier(TestCase):
         actual = parsing.get_modifier(xml_attr)
         self.assertEqual(actual, expected)
 
-    @case('{}')
-    @case('{}attr_name')
-    @case('{tests.core.parsing_test.some_modifier_not}attr_name')
-    def test_get_modifier_raises(self, name):
+    @case('', '')
+    @case('', 'attr_name')
+    @case('tests.core.parsing_test.some_modifier_not', 'attr_name')
+    def test_get_modifier_raises(self, namespace, name):
         msg = 'get_modifier should raise ImportError if namespace can''t be imported'
         with self.assertRaises(ImportError, msg=msg):
-            xml_attr = XmlAttr(name, '')
+            xml_attr = XmlAttr(name, '', namespace)
             parsing.get_modifier(xml_attr)
 
 class TestExpressions(TestCase):

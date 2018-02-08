@@ -8,7 +8,7 @@ class XmlNode:
         self.name = name
         self.text = ''
         self.children = []
-        self.attrs = None
+        self.attrs = []
 
     def get_children(self):
         return self.children

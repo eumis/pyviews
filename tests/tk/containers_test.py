@@ -72,7 +72,7 @@ class ForTest(TestCase):
 
     def _create_node(self, child_count):
         xml_node = XmlNode('pyviews.tk', 'For')
-        for i in child_count:
+        for i in range(child_count):
             xml_node.children.append(XmlNode('pyviews.tk', 'child'))
         node = For(None, xml_node)
         return (xml_node, node)
