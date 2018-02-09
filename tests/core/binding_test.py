@@ -29,14 +29,14 @@ class SomeEntity:
         self.str_value = 'str'
 
 class TestInstanceTarget(TestCase):
-    def test_set_value(self):
+    def test_change(self):
         inst = SomeEntity()
         target = InstanceTarget(inst, 'int_value', setattr)
         new_val = 25
 
-        target.set_value(new_val)
+        target.change(new_val)
 
-        msg = 'set_value should return expression result value'
+        msg = 'change should return expression result value'
         self.assertEqual(inst.int_value, new_val, msg)
 
 class TestBindingWithSimpleExpression(TestCase):
@@ -130,21 +130,21 @@ class TestExpressionTarget(TestCase):
         with self.assertRaises(ValueError):
             ExpressionTarget(Expression(expression))
 
-    def test_set_value(self):
+    def test_change(self):
         target = ExpressionTarget(Expression("vm.int_value"))
         new_val = 25
 
-        target.set_value(self.expr_vars, new_val)
+        target.change(self.expr_vars, new_val)
 
-        msg = 'set_value should return expression result value'
+        msg = 'change should return expression result value'
         self.assertEqual(self.parent.int_value, new_val, msg)
 
     def test_set_inner_value(self):
         target = ExpressionTarget(Expression('vm.inner_vm.int_value'))
         new_val = 26
-        target.set_value(self.expr_vars, new_val)
+        target.change(self.expr_vars, new_val)
 
-        msg = 'set_value should return expression result value'
+        msg = 'change should return expression result value'
         self.assertEqual(self.parent.inner_vm.int_value, new_val, msg)
 
 class TestObservableBinding(TestCase):

@@ -1,53 +1,70 @@
+'''Classes used for binding'''
+
 from pyviews.core.observable import Observable, InheritedDict
-from pyviews.core.compilation import Expression, Entry
+from pyviews.core.compilation import Expression, ObjectNode
 
 class Dependency:
+    '''Incapsulates observable subscription'''
     def __init__(self, observable: Observable, key, callback):
         self._observable = observable
         self._key = key
         self._callback = callback
 
     def destroy(self):
+        '''Unsubscribes callback from observable'''
         self._observable.release(self._key, self._callback)
         self._observable = None
         self._key = None
         self._callback = None
 
-class InstanceTarget:
+class BindingTarget:
+    '''Target for changes, applied when binding has triggered changes'''
+    def change(self, value):
+        '''Called to apply changes'''
+        raise NotImplementedError('Targe')
+
+class InstanceTarget(BindingTarget):
+    '''Instance modifier is called on change'''
     def __init__(self, instance, prop, modifier):
         self.inst = instance
         self.prop = prop
         self._modifier = modifier
 
-    def set_value(self, value):
+    def change(self, value):
+        '''Calles modifier on instance with passed value'''
         self._modifier(self.inst, self.prop, value)
 
 class ExpressionBinding:
-    def __init__(self, target: InstanceTarget, expression: Expression):
+    '''Binds target to expression result'''
+    def __init__(self, target: BindingTarget, expression: Expression):
         self._target = target
         self._expression = expression
         self._dependencies = []
         self._vars = None
 
     def bind(self, expr_vars: InheritedDict):
+        '''Apply binding. Expression executed with passed arguments'''
         self.destroy()
         self._vars = expr_vars
-        var_tree = self._expression.get_tree()
-        self._create_dependencies(expr_vars, var_tree)
+        expr_tree = self._expression.get_object_tree()
+        self._create_dependencies(expr_vars, expr_tree)
         self._update_target()
 
-    def _create_dependencies(self, inst, var_tree: Entry):
-        try:
-            if isinstance(inst, Observable):
-                for entry in var_tree.entries:
-                    inst.observe(entry.key, self._update_callback)
-                    self._dependencies.append(Dependency(inst, entry.key, self._update_callback))
-        except KeyError:
-            pass
-        for entry in var_tree.entries:
+    def _create_dependencies(self, inst, var_tree: ObjectNode):
+        if isinstance(inst, Observable):
+            self._subscribe_for_changes(inst, var_tree)
+        for entry in var_tree.children:
             child_inst = self._get_child(inst, entry.key)
             if child_inst is not None:
                 self._create_dependencies(child_inst, entry)
+
+    def _subscribe_for_changes(self, inst: Observable, var_tree):
+        try:
+            for entry in var_tree.children:
+                inst.observe(entry.key, self._update_callback)
+                self._dependencies.append(Dependency(inst, entry.key, self._update_callback))
+        except KeyError:
+            pass
 
     def _get_child(self, inst, key):
         try:
@@ -64,7 +81,7 @@ class ExpressionBinding:
 
     def _update_target(self):
         value = self._expression.execute(self._vars.to_dictionary())
-        self._target.set_value(value)
+        self._target.change(value)
 
     def destroy(self):
         self._vars = None
@@ -74,27 +91,27 @@ class ExpressionBinding:
 
 class ExpressionTarget:
     def __init__(self, expression):
-        self._var_tree = expression.get_tree()
+        self._var_tree = expression.get_object_tree()
         self._validate()
 
     def _validate(self):
-        if len(self._var_tree.entries) != 1 or not self._var_tree.entries[0].entries:
+        if len(self._var_tree.children) != 1 or not self._var_tree.children[0].children:
             raise ValueError('expression should be property expression')
 
-    def set_value(self, expr_vars: InheritedDict, value):
+    def change(self, expr_vars: InheritedDict, value):
         (inst, prop) = self._get_target(expr_vars)
         setattr(inst, prop, value)
 
     def _get_target(self, expr_vars: InheritedDict):
-        entry = self._var_tree.entries[0]
+        entry = self._var_tree.children[0]
         inst = expr_vars[entry.key]
-        next_key = entry.entries[0].key
-        entry = entry.entries[0]
+        next_key = entry.children[0].key
+        entry = entry.children[0]
 
-        while entry.entries:
+        while entry.children:
             inst = getattr(inst, next_key)
-            next_key = entry.entries[0].key
-            entry = entry.entries[0]
+            next_key = entry.children[0].key
+            entry = entry.children[0]
 
         return (inst, next_key)
 
@@ -115,7 +132,7 @@ class ObservableBinding:
         self._update_target(new_val)
 
     def _update_target(self, value):
-        self._target.set_value(self._expr_vars, self._converter(value))
+        self._target.change(self._expr_vars, self._converter(value))
 
     def destroy(self):
         self._observable.release(self._prop, self._update_callback)

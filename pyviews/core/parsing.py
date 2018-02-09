@@ -103,7 +103,8 @@ def apply_oneway(expr_body, node, attr, modifier):
     binding.bind(node.globals)
     node.add_binding(binding)
 
-def apply_twoways(expr_body, node, attr, modifier):
+@ioc.inject('container')
+def apply_twoways(expr_body, node, attr, modifier, container=None):
     '''
     Applies "twoways" binding.
     Expression result is assigned to property.

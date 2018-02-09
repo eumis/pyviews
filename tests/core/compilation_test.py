@@ -77,28 +77,28 @@ class TestExpression(TestCase):
     def test_var_tree(self):
         expression = Expression("str(vm.vm.int_value) + vm.vm.str_value + vm.str_value")
 
-        root = expression.get_tree()
+        root = expression.get_object_tree()
 
         self.assertEqual(root.key, 'root', 'root entry should have entry with "root" key')
-        self.assertEqual(sorted([e.key for e in root.entries]), sorted(['str', 'vm']), \
-                         'root entry should contain entries for local values')
+        self.assertEqual(sorted([e.key for e in root.children]), sorted(['str', 'vm']), \
+                         'root entry should contain children for local values')
 
-        str_node = [entry for entry in root.entries if entry.key == 'str'][0]
-        self.assertEqual(sorted([e.key for e in str_node.entries]), [], \
+        str_node = [entry for entry in root.children if entry.key == 'str'][0]
+        self.assertEqual(sorted([e.key for e in str_node.children]), [], \
                          'variable entry shouldn''t contain children')
 
-        vm_node = [entry for entry in root.entries if entry.key == 'vm'][0]
-        self.assertEqual(sorted([e.key for e in vm_node.entries]), sorted(['vm', 'str_value']), \
-                         'variable entry should contain attribute entries')
+        vm_node = [entry for entry in root.children if entry.key == 'vm'][0]
+        self.assertEqual(sorted([e.key for e in vm_node.children]), sorted(['vm', 'str_value']), \
+                         'variable entry should contain attribute children')
 
-        str_node = [entry for entry in vm_node.entries if entry.key == 'str_value'][0]
-        self.assertEqual(sorted([e.key for e in str_node.entries]), [], \
-                         'attribute entry shouldn''t contain entries')
+        str_node = [entry for entry in vm_node.children if entry.key == 'str_value'][0]
+        self.assertEqual(sorted([e.key for e in str_node.children]), [], \
+                         'attribute entry shouldn''t contain children')
 
-        vm_node = [entry for entry in vm_node.entries if entry.key == 'vm'][0]
-        self.assertEqual(sorted([e.key for e in vm_node.entries]), \
+        vm_node = [entry for entry in vm_node.children if entry.key == 'vm'][0]
+        self.assertEqual(sorted([e.key for e in vm_node.children]), \
                          sorted(['int_value', 'str_value']), \
-                         'variable entry should contain attribute entries')
+                         'variable entry should contain attribute children')
 
 if __name__ == '__main__':
     main()
