@@ -5,7 +5,7 @@ from re import compile as compile_regex
 from pyviews.core import ioc, CoreError
 from pyviews.core.reflection import import_path
 from pyviews.core.compilation import Expression
-from pyviews.core.binding import ExpressionBinding, InstanceTarget, TwoWaysBinding
+from pyviews.core.binding import ExpressionBinding, InstanceTarget, TwoWaysBinding, ObservableBinding, PropertyExpressionTarget
 from pyviews.core.xml import XmlNode, XmlAttr
 from pyviews.core.node import Node, NodeArgs
 
@@ -99,8 +99,8 @@ def apply_oneway(expr_body, node, attr, modifier):
     '''
     expression = Expression(expr_body)
     target = InstanceTarget(node, attr.name, modifier)
-    binding = ExpressionBinding(target, expression)
-    binding.bind(node.globals)
+    binding = ExpressionBinding(target, expression, node.globals)
+    binding.bind()
     node.add_binding(binding)
 
 @ioc.inject('container')
@@ -111,12 +111,18 @@ def apply_twoways(expr_body, node, attr, modifier, container=None):
     Property is set on expression change.
     Wrapped instance is changed on property change
     '''
-    (converter_key, expr) = parse_expression(expr_body)
-    expression = Expression(expr)
+    (converter_key, expr_body) = parse_expression(expr_body)
+    expression = Expression(expr_body)
+    target = InstanceTarget(node, attr.name, modifier)
+    expr_binding = ExpressionBinding(target, expression, node.globals)
+
+    target = PropertyExpressionTarget(expression, node.globals)
     converter = node.globals[converter_key] if node.globals.has_key(converter_key) else None
-    binding = TwoWaysBinding(node, attr.name, modifier, converter, expression)
-    binding.bind(node.globals)
-    node.add_binding(binding)
+    obs_binding = ObservableBinding(target, node, attr.name, converter)
+
+    two_ways_binding = TwoWaysBinding(expr_binding, obs_binding)
+    two_ways_binding.bind()
+    node.add_binding(two_ways_binding)
 
 def parse_children(node):
     '''Calls node's parse_children'''

@@ -1,3 +1,8 @@
+'''
+Nodes used as abstract containers, that used to incapsulate some logic.
+Containers don't represent any widget.
+'''
+
 from pyviews.core.ioc import inject
 from pyviews.core.xml import XmlNode
 from pyviews.core.observable import InheritedDict
@@ -6,12 +11,14 @@ from pyviews.tk.widgets import WidgetArgs
 from pyviews.tk.views import get_view_root
 
 class Container(Node):
+    '''Used to combine some xml elements'''
     def __init__(self, master, xml_node: XmlNode, parent_context=None):
         super().__init__(xml_node, parent_context)
         self.master = master
 
     @property
     def view_model(self):
+        '''"vm" value from globals'''
         try:
             return self.globals['vm']
         except KeyError:
@@ -22,12 +29,14 @@ class Container(Node):
         self.globals['vm'] = value
 
     def set_attr(self, key, value):
+        '''Sets passed attribute'''
         setattr(self, key, value)
 
     def get_node_args(self, xml_node):
         return WidgetArgs(xml_node, self, self.master)
 
 class View(Container):
+    '''Loads xml from anothre file'''
     def __init__(self, master, xml_node: XmlNode, parent_context=None):
         super().__init__(master, xml_node, parent_context)
         self._name = None
@@ -35,6 +44,7 @@ class View(Container):
 
     @property
     def name(self):
+        '''Relative view path'''
         return self._name
 
     @name.setter
@@ -56,6 +66,7 @@ class View(Container):
             self._child_nodes = []
 
 class For(Container):
+    '''Renders children for every item in items collection'''
     def __init__(self, master, xml_node: XmlNode, parent_context=None):
         super().__init__(master, xml_node, parent_context)
         self._items = []
@@ -64,6 +75,7 @@ class For(Container):
 
     @property
     def items(self):
+        '''Source collection'''
         return self._items
 
     @items.setter
@@ -126,6 +138,7 @@ class For(Container):
         return args
 
 class If(Container):
+    '''Renders children if condition is True'''
     def __init__(self, master, xml_node: XmlNode, parent_context=None):
         super().__init__(master, xml_node, parent_context)
         self._condition = False
@@ -133,6 +146,7 @@ class If(Container):
 
     @property
     def condition(self):
+        '''Condition of rendering'''
         return self._condition
 
     @condition.setter

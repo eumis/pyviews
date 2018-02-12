@@ -19,9 +19,19 @@ class Dependency:
 
 class BindingTarget:
     '''Target for changes, applied when binding has triggered changes'''
-    def change(self, value):
+    def on_change(self, value):
         '''Called to apply changes'''
-        raise NotImplementedError('Targe')
+        raise NotImplementedError('{0}.on_change'.format(self.__class__.__name__))
+
+class Binding:
+    '''Binds BindingTarget to changes'''
+    def bind(self):
+        '''Applies binding'''
+        raise NotImplementedError('Binding.bind')
+
+    def destroy(self):
+        '''Destroys binding'''
+        raise NotImplementedError('Binding.destroy')
 
 class InstanceTarget(BindingTarget):
     '''Instance modifier is called on change'''
@@ -30,29 +40,28 @@ class InstanceTarget(BindingTarget):
         self.prop = prop
         self._modifier = modifier
 
-    def change(self, value):
+    def on_change(self, value):
         '''Calles modifier on instance with passed value'''
         self._modifier(self.inst, self.prop, value)
 
-class ExpressionBinding:
+class ExpressionBinding(Binding):
     '''Binds target to expression result'''
-    def __init__(self, target: BindingTarget, expression: Expression):
+    def __init__(self, target: BindingTarget, expression: Expression, expr_vars: InheritedDict):
         self._target = target
         self._expression = expression
         self._dependencies = []
-        self._vars = None
-
-    def bind(self, expr_vars: InheritedDict):
-        '''Apply binding. Expression executed with passed arguments'''
-        self.destroy()
         self._vars = expr_vars
-        expr_tree = self._expression.get_object_tree()
-        self._create_dependencies(expr_vars, expr_tree)
+
+    def bind(self):
+        self.destroy()
+        objects_tree = self._expression.get_object_tree()
+        self._create_dependencies(self._vars, objects_tree)
         self._update_target()
 
     def _create_dependencies(self, inst, var_tree: ObjectNode):
         if isinstance(inst, Observable):
             self._subscribe_for_changes(inst, var_tree)
+
         for entry in var_tree.children:
             child_inst = self._get_child(inst, entry.key)
             if child_inst is not None:
@@ -75,36 +84,37 @@ class ExpressionBinding:
 
     def _update_callback(self, new_val, old_val):
         if isinstance(new_val, Observable) or isinstance(old_val, Observable):
-            self.bind(self._vars)
+            self.bind()
         else:
             self._update_target()
 
     def _update_target(self):
         value = self._expression.execute(self._vars.to_dictionary())
-        self._target.change(value)
+        self._target.on_change(value)
 
     def destroy(self):
-        self._vars = None
         for dependency in self._dependencies:
             dependency.destroy()
         self._dependencies = []
 
-class ExpressionTarget:
-    def __init__(self, expression):
+class PropertyExpressionTarget(BindingTarget):
+    '''Property is set on change. Instance and property are passed as string pass'''
+    def __init__(self, expression, expr_vars: InheritedDict):
         self._var_tree = expression.get_object_tree()
         self._validate()
+        self._vars = expr_vars
 
     def _validate(self):
         if len(self._var_tree.children) != 1 or not self._var_tree.children[0].children:
             raise ValueError('expression should be property expression')
 
-    def change(self, expr_vars: InheritedDict, value):
-        (inst, prop) = self._get_target(expr_vars)
+    def on_change(self, value):
+        (inst, prop) = self._get_target()
         setattr(inst, prop, value)
 
-    def _get_target(self, expr_vars: InheritedDict):
+    def _get_target(self):
         entry = self._var_tree.children[0]
-        inst = expr_vars[entry.key]
+        inst = self._vars[entry.key]
         next_key = entry.children[0].key
         entry = entry.children[0]
 
@@ -115,42 +125,38 @@ class ExpressionTarget:
 
         return (inst, next_key)
 
-class ObservableBinding:
-    def __init__(self, target: ExpressionTarget, observable: Observable, prop, converter):
+class ObservableBinding(Binding):
+    '''Binds target to observable property'''
+    def __init__(self, target: BindingTarget, observable: Observable, prop, converter):
         self._target = target
         self._observable = observable
         self._prop = prop
-        self._expr_vars = None
         self._converter = converter if converter is not None else lambda value: value
 
-    def bind(self, expr_vars: InheritedDict):
+    def bind(self):
         self. destroy()
-        self._expr_vars = expr_vars
         self._observable.observe(self._prop, self._update_callback)
 
     def _update_callback(self, new_val, old_val):
         self._update_target(new_val)
 
     def _update_target(self, value):
-        self._target.change(self._expr_vars, self._converter(value))
+        self._target.on_change(self._converter(value))
 
     def destroy(self):
         self._observable.release(self._prop, self._update_callback)
-        self._expr_vars = None
 
-class TwoWaysBinding:
-    def __init__(self, inst: Observable, prop, modifier, converter, expression: Expression):
-        self._expr_binding = \
-            ExpressionBinding(InstanceTarget(inst, prop, modifier), expression)
-        self._observ_binding = \
-            ObservableBinding(ExpressionTarget(expression), inst, prop, converter)
-        self._vars = None
+class TwoWaysBinding(Binding):
+    '''Wrapper under two passed bindings'''
+    def __init__(self, one: Binding, two: Binding):
+        self._one = one
+        self._tw = two
 
-    def bind(self, expr_vars: InheritedDict):
+    def bind(self):
         self.destroy()
-        self._expr_binding.bind(expr_vars)
-        self._observ_binding.bind(expr_vars)
+        self._one.bind()
+        self._tw.bind()
 
     def destroy(self):
-        self._expr_binding.destroy()
-        self._observ_binding.destroy()
+        self._one.destroy()
+        self._tw.destroy()

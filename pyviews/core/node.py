@@ -5,7 +5,7 @@ from inspect import signature, Parameter
 from pyviews.core.ioc import inject
 from pyviews.core.xml import XmlNode
 from pyviews.core.observable import InheritedDict
-from pyviews.core.binding import ExpressionBinding
+from pyviews.core.binding import Binding
 
 class NodeArgs(dict):
     '''Wraps arguments for children nodes creations'''
@@ -43,7 +43,7 @@ class Node:
         '''Values used with expression executing'''
         return self.context['globals']
 
-    def add_binding(self, binding: ExpressionBinding):
+    def add_binding(self, binding: Binding):
         '''Stores binding'''
         self._bindings.append(binding)
 

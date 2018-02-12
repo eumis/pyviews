@@ -49,43 +49,37 @@ class Expression:
         ast_root = ast.parse(self.code)
         ast_nodes = [node for node in ast.walk(ast_root)]
 
-        return self._create_object_nodes(ast_nodes)
-
-    def _create_object_nodes(self, ast_nodes):
-        names_map = self._get_names_map(ast_nodes)
-
-        ast_attrs = [node for node in ast_nodes \
-                 if isinstance(node, ast.Attribute)]
+        is_child = lambda ast_node: isinstance(ast_node, ast.Name)
 
         root = ObjectNode('root')
-        for key, nodes in names_map.items():
-            entry = ObjectNode(key)
-            entry.children = self._get_attr_nodes(ast_attrs, nodes)
-            root.children.append(entry)
+        root.children = self._get_children(ast_nodes, is_child)
+
         return root
 
-    def _get_names_map(self, ast_nodes):
-        ast_names = [node for node in ast_nodes \
-                 if isinstance(node, ast.Name)]
-        names_map = {node.id: [] for node in ast_names}
+    def _get_children(self, ast_nodes, is_child):
+        ast_children = [n for n in ast_nodes if is_child(n)]
 
-        for name in ast_names:
-            names_map[name.id].append(name)
+        grouped = self._group_by_key(ast_children)
 
-        return names_map
+        children = []
+        for key, ast_children in grouped.items():
+            node = ObjectNode(key)
+            is_child = lambda n: isinstance(n, ast.Attribute) and n.value in ast_children
+            node.children = self._get_children(ast_nodes, is_child)
+            children.append(node)
 
-    def _get_attr_nodes(self, ast_attrs, parents):
-        attr_nodes = [attr for attr in ast_attrs if attr.value in parents]
+        return children
 
-        parent_attrs = {node.attr: [] for node in attr_nodes}
-        for node in attr_nodes:
-            parent_attrs[node.attr].append(node)
-        res = []
-        for key, nodes in parent_attrs.items():
-            entry = ObjectNode(key)
-            entry.children = self._get_attr_nodes(ast_attrs, nodes)
-            res.append(entry)
-        return res
+    def _group_by_key(self, ast_nodes):
+        try:
+            grouped_by_id = {node.id: [] for node in ast_nodes}
+            for ast_child in ast_nodes:
+                grouped_by_id[ast_child.id].append(ast_child)
+        except AttributeError:
+            grouped_by_id = {node.attr: [] for node in ast_nodes}
+            for ast_child in ast_nodes:
+                grouped_by_id[ast_child.attr].append(ast_child)
+        return grouped_by_id
 
     def _store_to_cache(self):
         item = Expression.CacheItem(self._compiled_code, self._object_tree)

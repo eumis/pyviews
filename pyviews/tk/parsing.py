@@ -1,3 +1,5 @@
+'''Customizing of tk parsing'''
+
 from tkinter import Entry
 from tkinter.ttk import Widget as TtkWidget
 from pyviews.core.xml import XmlAttr
@@ -7,6 +9,7 @@ from pyviews.tk.widgets import WidgetNode, EntryWidget
 from pyviews.tk.ttk import TtkWidgetNode
 
 def convert_to_node(inst, args: NodeArgs):
+    '''Wraps instance with WidgetNode'''
     args = (inst, args['xml_node'], args['parent_context'])
     if isinstance(inst, Entry):
         return EntryWidget(*args)
@@ -15,6 +18,7 @@ def convert_to_node(inst, args: NodeArgs):
     return WidgetNode(*args)
 
 def apply_text(node: WidgetNode):
+    '''Applies xml node content to WidgetNode'''
     if not node.xml_node.text:
         return
     text_attr = XmlAttr('text', node.xml_node.text)
