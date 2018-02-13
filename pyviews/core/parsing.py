@@ -5,7 +5,8 @@ from re import compile as compile_regex
 from pyviews.core import ioc, CoreError
 from pyviews.core.reflection import import_path
 from pyviews.core.compilation import Expression
-from pyviews.core.binding import ExpressionBinding, InstanceTarget, TwoWaysBinding, ObservableBinding, PropertyExpressionTarget
+from pyviews.core.binding import ExpressionBinding, InstanceTarget, PropertyExpressionTarget
+from pyviews.core.binding import TwoWaysBinding, ObservableBinding
 from pyviews.core.xml import XmlNode, XmlAttr
 from pyviews.core.node import Node, NodeArgs
 
