@@ -4,12 +4,13 @@
           xmlns:sb='widgets'
           xmlns:import="pyviews.core.modifiers.import_global"
           xmlns:bind="pyviews.tk.modifiers.bind"
+          xmlns:global='pyviews.core.modifiers.set_global'
 
           import:Pack='pyviews.tk.geometry.PackGeometry'
           import:ScrollVm="sandbox.scroll.ScrollVm"
 
           geometry='{Pack(fill="both", expand=True)}'
-          view_model='{ScrollVm()}'>
+          global:vm='{ScrollVm()}'>
     <w:For items='{vm.items}'>
         <Label geometry='{Pack(fill="x")}'
                bind:Button-1='once:{lambda e: item.add()}'>

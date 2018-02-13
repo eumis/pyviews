@@ -17,13 +17,6 @@ class ContainerTest(TestCase):
         msg = 'set_attr should set container property'
         self.assertEqual(self.container.property, value, msg)
 
-    def test_view_model_stored_in_globals(self):
-        view_model = 'view model'
-        self.container.view_model = view_model
-
-        msg = 'view_model property should be stored in globals'
-        self.assertEqual(self.container.globals['vm'], view_model, msg)
-
 class ViewTest(TestCase):
     def setUp(self):
         self.view = View(None, None)

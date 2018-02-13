@@ -1,3 +1,5 @@
+'''Tkinter widgets nodes'''
+
 from tkinter import Tk, Widget, StringVar
 from pyviews.core.ioc import inject
 from pyviews.core.xml import XmlNode
@@ -5,6 +7,7 @@ from pyviews.core.node import Node, NodeArgs
 from pyviews.core.observable import Observable
 
 class WidgetArgs(NodeArgs):
+    '''NodeArgs for WidgetNode'''
     def __init__(self, xml_node, parent_node=None, widget_master=None):
         super().__init__(xml_node, parent_node)
         self['master'] = widget_master
@@ -15,6 +18,7 @@ class WidgetArgs(NodeArgs):
         return super().get_args(inst_type)
 
 class WidgetNode(Node, Observable):
+    '''Wrapper under tkinter widget'''
     def __init__(self, widget, xml_node: XmlNode, parent_context=None):
         Observable.__init__(self)
         Node.__init__(self, xml_node, parent_context)
@@ -24,6 +28,7 @@ class WidgetNode(Node, Observable):
 
     @property
     def geometry(self):
+        '''Geometry'''
         return self._geometry
 
     @geometry.setter
@@ -33,18 +38,8 @@ class WidgetNode(Node, Observable):
             value.apply(self.widget)
 
     @property
-    def view_model(self):
-        try:
-            return self.globals['vm']
-        except KeyError:
-            return None
-
-    @view_model.setter
-    def view_model(self, value):
-        self.globals['vm'] = value
-
-    @property
     def style(self):
+        '''Widget style'''
         return self._style
 
     @style.setter
@@ -61,12 +56,15 @@ class WidgetNode(Node, Observable):
         self.widget.destroy()
 
     def bind(self, event, command):
+        '''Calls widget's bind'''
         self.widget.bind('<'+event+'>', command)
 
     def bind_all(self, event, command):
+        '''Calls widget's bind_all'''
         self.widget.bind_all('<'+event+'>', command, '+')
 
     def set_attr(self, key, value):
+        '''Applies passed attribute'''
         if hasattr(self, key):
             setattr(self, key, value)
         elif hasattr(self.widget, key):
@@ -75,6 +73,7 @@ class WidgetNode(Node, Observable):
             self.widget.configure(**{key:value})
 
 class EntryWidget(WidgetNode):
+    '''Wrapper under Entry widget'''
     def __init__(self, widget, xml_node: XmlNode, parent_context=None):
         super().__init__(widget, xml_node, parent_context)
         self._text_var = StringVar()
@@ -94,12 +93,14 @@ class EntryWidget(WidgetNode):
             super().set_attr(key, value)
 
 class Root(WidgetNode):
+    '''Wrapper under tkinter Root'''
     def __init__(self, xml_node: XmlNode):
         super().__init__(Tk(), xml_node)
         self._icon = None
 
     @property
     def state(self):
+        '''Widget state'''
         return self.widget.state()
 
     @state.setter
@@ -108,6 +109,7 @@ class Root(WidgetNode):
 
     @property
     def icon(self):
+        '''Icon path'''
         return self._icon
 
     @icon.setter

@@ -76,17 +76,6 @@ class Scroll(Node):
         if value is not None:
             value.apply(self._frame)
 
-    @property
-    def view_model(self):
-        try:
-            return self.globals['vm']
-        except KeyError:
-            return None
-
-    @view_model.setter
-    def view_model(self, value):
-        self.globals['vm'] = value
-
     def set_attr(self, name, value):
         if hasattr(self, name):
             setattr(self, name, value)

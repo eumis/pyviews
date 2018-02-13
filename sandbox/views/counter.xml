@@ -3,13 +3,14 @@
              xmlns:w="pyviews.tk"
              xmlns:import="pyviews.core.modifiers.import_global"
              xmlns:bind="pyviews.tk.modifiers.bind"
+             xmlns:global='pyviews.core.modifiers.set_global'
 
              import:Counter="sandbox.counter.Counter"
              import:Grid='pyviews.tk.geometry.GridGeometry'
              import:Pack='pyviews.tk.geometry.PackGeometry'
              import:to_int='pyviews.core.converters.to_int'
 
-             view_model="{Counter()}">
+             global:vm="{Counter()}">
 
     <w:View name='styles'/>
 

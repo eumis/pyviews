@@ -2,6 +2,7 @@
 <w:Root xmlns='tkinter'
         xmlns:w="pyviews.tk"
         xmlns:import='pyviews.core.modifiers.import_global'
+        xmlns:global='pyviews.core.modifiers.set_global'
         xmlns:bind='pyviews.tk.modifiers.bind'
 
         import:AppViewModel='view_model.AppViewModel'
@@ -11,7 +12,7 @@
         import:show_view='sandbox.commands.show_view'
 
         background="white"
-        view_model='{AppViewModel("")}'>
+        global:vm='{AppViewModel("")}'>
         <Frame geometry='{Pack(fill="x")}'>
                 <Button geometry='{Grid(row=0, column=0, sticky="e")}'
                         bind:Button-1="once:{lambda e: show_view(vm, 'messagebox')}">

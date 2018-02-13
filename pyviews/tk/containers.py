@@ -16,18 +16,6 @@ class Container(Node):
         super().__init__(xml_node, parent_context)
         self.master = master
 
-    @property
-    def view_model(self):
-        '''"vm" value from globals'''
-        try:
-            return self.globals['vm']
-        except KeyError:
-            return None
-
-    @view_model.setter
-    def view_model(self, value):
-        self.globals['vm'] = value
-
     def set_attr(self, key, value):
         '''Sets passed attribute'''
         setattr(self, key, value)
