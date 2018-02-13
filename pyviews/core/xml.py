@@ -123,10 +123,3 @@ class Parser:
         self._root = None
         self._items = []
         self._namespaces = {}
-
-# TODO: should be moved to another module
-def get_root(xml_path):
-    '''Parses xml file with xml_path and returns XmlNode'''
-    parser = Parser()
-    with open(xml_path, 'rb') as xml_file:
-        return parser.parse(xml_file)

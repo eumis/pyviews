@@ -3,7 +3,7 @@
 from os.path import join
 from pyviews.core import CoreError
 from pyviews.core.ioc import inject
-from pyviews.core.xml import get_root
+from pyviews.core.xml import Parser
 from pyviews.core.node import NodeArgs
 
 class ViewError(CoreError):
@@ -27,6 +27,8 @@ def get_view_root(view_name, views_folder=None, view_ext=None):
     '''Parses xml file and return root XmlNode'''
     try:
         path = join(views_folder, view_name + view_ext)
-        return get_root(path)
+        parser = Parser()
+        with open(path, 'rb') as xml_file:
+            return parser.parse(xml_file)
     except CoreError as error:
         raise ViewError(view_name, error.msg) from error
