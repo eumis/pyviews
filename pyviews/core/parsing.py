@@ -53,14 +53,14 @@ def parse_attributes(node):
     for attr in node.xml_node.attrs:
         parse_attr(node, attr)
 
-@ioc.inject('container')
-def parse_attr(node: Node, attr: XmlAttr, container=None):
+@ioc.inject('binding_factory')
+def parse_attr(node: Node, attr: XmlAttr, binding_factory=None):
     '''Maps xml attribute to instance node property and setups bindings'''
     modifier = get_modifier(attr)
     value = attr.value
     if is_code_expression(value):
         (binding_type, expr_body) = parse_expression(value)
-        apply_binding = container.get(binding_type)
+        apply_binding = binding_factory.get_apply(binding_type, node, attr, modifier)
         apply_binding(expr_body, node, attr, modifier)
     else:
         modifier(node, attr.name, value)
@@ -104,8 +104,7 @@ def apply_oneway(expr_body, node, attr, modifier):
     binding.bind()
     node.add_binding(binding)
 
-@ioc.inject('container')
-def apply_twoways(expr_body, node, attr, modifier, container=None):
+def apply_twoways(expr_body, node, attr, modifier):
     '''
     Applies "twoways" binding.
     Expression result is assigned to property.
@@ -129,10 +128,23 @@ def parse_children(node):
     '''Calls node's parse_children'''
     node.parse_children()
 
+class BindingFactory:
+    '''Factory for getting binding applier'''
+    def __init__(self):
+        self._appliers = {
+            'once': apply_once,
+            'oneway': apply_oneway,
+            'twoways': apply_twoways
+        }
+
+    def get_apply(self, binding_type, node, attr, modifier):
+        '''returns appliers'''
+        if binding_type in self._appliers:
+            return self._appliers[binding_type]
+        raise NotImplementedError
+
 ioc.register_value('convert_to_node', convert_to_node)
 ioc.register_value('parse', parse)
 ioc.register_value('parsing_steps', [parse_attributes, parse_children])
 ioc.register_value('set_attr', setattr)
-ioc.register_value('once', apply_once)
-ioc.register_value('oneway', apply_oneway)
-ioc.register_value('twoways', apply_twoways)
+ioc.register_value('binding_factory', BindingFactory())

@@ -1,10 +1,9 @@
 '''Tkinter widgets nodes'''
 
-from tkinter import Tk, Widget, StringVar
+from tkinter import Tk, Widget
 from pyviews.core.ioc import inject
 from pyviews.core.xml import XmlNode
 from pyviews.core.node import Node, NodeArgs
-from pyviews.core.observable import Observable
 
 class WidgetArgs(NodeArgs):
     '''NodeArgs for WidgetNode'''
@@ -17,14 +16,14 @@ class WidgetArgs(NodeArgs):
             return NodeArgs.args_tuple([self['master']], {})
         return super().get_args(inst_type)
 
-class WidgetNode(Node, Observable):
+class WidgetNode(Node):
     '''Wrapper under tkinter widget'''
     def __init__(self, widget, xml_node: XmlNode, parent_context=None):
-        Observable.__init__(self)
-        Node.__init__(self, xml_node, parent_context)
+        super().__init__(xml_node, parent_context)
         self.widget = widget
         self._geometry = None
         self._style = ''
+        self._setters = {}
 
     @property
     def geometry(self):
@@ -63,34 +62,20 @@ class WidgetNode(Node, Observable):
         '''Calls widget's bind_all'''
         self.widget.bind_all('<'+event+'>', command, '+')
 
+    def define_setter(self, key, setter):
+        '''Defines setteor for passed key'''
+        self._setters[key] = setter
+
     def set_attr(self, key, value):
         '''Applies passed attribute'''
-        if hasattr(self, key):
+        if key in self._setters:
+            self._setters[key](self, value)
+        elif hasattr(self, key):
             setattr(self, key, value)
         elif hasattr(self.widget, key):
             setattr(self.widget, key, value)
         else:
             self.widget.configure(**{key:value})
-
-class EntryWidget(WidgetNode):
-    '''Wrapper under Entry widget'''
-    def __init__(self, widget, xml_node: XmlNode, parent_context=None):
-        super().__init__(widget, xml_node, parent_context)
-        self._text_var = StringVar()
-        self._text_var.trace_add('write', self._write_callback)
-        self._text_value = self._text_var.get()
-        widget.config(textvariable=self._text_var)
-
-    def _write_callback(self, *args):
-        old_value = self._text_value
-        self._text_value = self._text_var.get()
-        self._notify('text', self._text_value, old_value)
-
-    def set_attr(self, key, value):
-        if key == 'text':
-            self._text_var.set(str(value))
-        else:
-            super().set_attr(key, value)
 
 class Root(WidgetNode):
     '''Wrapper under tkinter Root'''

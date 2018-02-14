@@ -3,7 +3,7 @@
 from os.path import abspath
 from pyviews.core import ioc
 from pyviews.core.parsing import parse_attributes, parse_children
-from pyviews.tk.parsing import convert_to_node, apply_text
+from pyviews.tk.parsing import convert_to_node, apply_text, TkBindingFactory
 from pyviews.tk.views import parse_view
 from pyviews.tk.modifiers import set_attr
 from pyviews.tk.styles import Style, parse_attrs as parse_style_attrs, apply_styles
@@ -20,6 +20,7 @@ def register_dependencies():
     ioc.register_value('set_attr', set_attr)
     ioc.register_value('styles', {})
     ioc.register_value('apply_styles', apply_styles)
+    ioc.register_value('binding_factory', TkBindingFactory())
     _register_parsing_steps()
 
 def _register_parsing_steps():
