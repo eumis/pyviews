@@ -150,13 +150,13 @@ class TwoWaysBinding(Binding):
     '''Wrapper under two passed bindings'''
     def __init__(self, one: Binding, two: Binding):
         self._one = one
-        self._tw = two
+        self._two = two
 
     def bind(self):
         self.destroy()
         self._one.bind()
-        self._tw.bind()
+        self._two.bind()
 
     def destroy(self):
         self._one.destroy()
-        self._tw.destroy()
+        self._two.destroy()

@@ -25,32 +25,34 @@ def apply_text(node: WidgetNode):
     text_attr = XmlAttr('text', node.xml_node.text)
     parse_attr(node, text_attr)
 
-class TkBindingFactory(BindingFactory):
-    def get_apply(self, binding_type, node, attr, modifier):
-        if hasattr(node, 'widget') and isinstance(node.widget, Entry) and binding_type == 'twoways':
-            return apply_entry_twoways
-        return super().get_apply(binding_type, node, attr, modifier)
+def is_entry_twoways(args: BindingFactory.Args):
+    '''suitable for entry two ways binding'''
+    try:
+        return isinstance(args.node.widget, Entry)
+    except AttributeError:
+        return False
 
-def apply_entry_twoways(expr_body, node: WidgetNode, attr, modifier):
+def apply_entry_twoways(args: BindingFactory.Args):
     '''
     Applies "twoways" binding.
     Expression result is assigned to property.
     Property is set on expression change.
     Wrapped instance is changed on property change
     '''
-    (converter_key, expr_body) = parse_expression(expr_body)
+    (converter_key, expr_body) = parse_expression(args.expr_body)
     var = StringVar()
-    node.widget.config(textvariable=var)
-    node.define_setter('text', lambda node, value: var.set(str(value)))
+    args.node.widget.config(textvariable=var)
+    args.node.define_setter('text', lambda node, value: var.set(str(value)))
 
     expression = Expression(expr_body)
-    target = InstanceTarget(node, attr.name, modifier)
-    expr_binding = ExpressionBinding(target, expression, node.globals)
+    target = InstanceTarget(args.node, args.attr.name, args.modifier)
+    expr_binding = ExpressionBinding(target, expression, args.node.globals)
 
-    target = PropertyExpressionTarget(expression, node.globals)
-    converter = node.globals[converter_key] if node.globals.has_key(converter_key) else None
+    target = PropertyExpressionTarget(expression, args.node.globals)
+    converter = args.node.globals[converter_key] \
+                if args.node.globals.has_key(converter_key) else None
     obs_binding = VariableBinding(target, var, converter)
 
     two_ways_binding = TwoWaysBinding(expr_binding, obs_binding)
     two_ways_binding.bind()
-    node.add_binding(two_ways_binding)
+    args.node.add_binding(two_ways_binding)
