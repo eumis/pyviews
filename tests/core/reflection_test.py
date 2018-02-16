@@ -5,7 +5,7 @@ from tests.utility import case
 from tests.mock import SomeObject
 from pyviews.core import reflection as tested
 
-class TestReflection(TestCase):
+class ReflectionTests(TestCase):
     @case('package.module.name', ('package.module', 'name'))
     @case('package.module', ('package', 'module'))
     @case('package', ('package', None))
@@ -29,9 +29,6 @@ class TestReflection(TestCase):
         msg = 'import_path should raise ImportError for invalid path ' + str(invalid_path)
         with self.assertRaises(ImportError, msg=msg):
             tested.import_path(invalid_path)
-
-def raise_(ex):
-    raise ex
 
 if __name__ == '__main__':
     main()

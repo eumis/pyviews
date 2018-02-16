@@ -5,6 +5,7 @@ from tests.mock import some_modifier
 from pyviews.core.ioc import CONTAINER, register_value
 from pyviews.core.xml import XmlAttr, XmlNode
 from pyviews.core.observable import InheritedDict
+from pyviews.rendering.dependencies import register_defaults
 from pyviews.tk.styles import StyleItem, Style, parse_attrs, apply_styles
 
 class StyleItemTest(TestCase):
@@ -92,7 +93,7 @@ def _style_items_equal(expected, actual):
             return False
 
     return True
-
+register_defaults()
 DEFAULT_MODIFIER = CONTAINER.get('set_attr')
 
 class ParsingTest(TestCase):
@@ -102,7 +103,7 @@ class ParsingTest(TestCase):
 
     @case([('name', 'some_style', None),
            ('key', 'value', None),
-           ('key', 'other_value', 'tests.core.parsing_test.some_modifier'),
+           ('key', 'other_value', 'tests.rendering.core_test.some_modifier'),
            ('num', '{1}', None),
            ('num', '{count}', None),
            ('bg', '#000', None)],

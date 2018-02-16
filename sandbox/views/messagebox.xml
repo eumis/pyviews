@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <w:Container xmlns='tkinter'
         xmlns:w="pyviews.tk"
-        xmlns:import='pyviews.core.modifiers.import_global'
+        xmlns:import='pyviews.rendering.modifiers.import_global'
         xmlns:bind='pyviews.tk.modifiers.bind'
 
         import:Pack='pyviews.tk.geometry.PackGeometry'

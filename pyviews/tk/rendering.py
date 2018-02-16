@@ -5,8 +5,10 @@ from tkinter.ttk import Widget as TtkWidget
 from pyviews.core.xml import XmlAttr
 from pyviews.core.node import NodeArgs
 from pyviews.core.compilation import Expression
-from pyviews.core.binding import InstanceTarget, ExpressionBinding, TwoWaysBinding, PropertyExpressionTarget
-from pyviews.core.parsing import parse_attr, BindingFactory, parse_expression
+from pyviews.core.binding import InstanceTarget, PropertyExpressionTarget
+from pyviews.core.binding import ExpressionBinding, TwoWaysBinding
+from pyviews.rendering.core import parse_attr, parse_expression
+from pyviews.rendering.binding import BindingFactory
 from pyviews.tk.binding import VariableBinding
 from pyviews.tk.widgets import WidgetNode
 from pyviews.tk.ttk import TtkWidgetNode

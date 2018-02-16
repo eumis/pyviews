@@ -2,8 +2,8 @@ from unittest import TestCase, main
 from pyviews.core.xml import XmlNode
 from pyviews.core.node import Node, NodeArgs
 
-class TestNodeArgs(TestCase):
-    def test_node_args(self):
+class NodeArgsTests(TestCase):
+    def test_get_args(self):
         xml_node = XmlNode('namespace', 'root')
         node = Node(xml_node)
         args = NodeArgs(xml_node, node).get_args(Node)
@@ -14,7 +14,7 @@ class TestNodeArgs(TestCase):
         msg = 'NodeArgs should return parent as kargs'
         self.assertEqual({'parent_context': node.context}, args.kwargs, msg)
 
-class TestNode(TestCase):
+class NodeTests(TestCase):
     def test_init(self):
         xml_node = XmlNode('namespace', 'root')
         node = Node(xml_node)

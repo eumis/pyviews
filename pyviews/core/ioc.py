@@ -1,5 +1,11 @@
 '''Dependency injection implementation'''
 
+from pyviews.core import CoreError
+
+class DependencyError(CoreError):
+    '''Base for ioc errors'''
+    pass
+
 class Container:
     '''Container for dependencies'''
     def __init__(self):
@@ -9,7 +15,7 @@ class Container:
     def register(self, key, initializer: callable, param=None):
         '''Add resolver to container'''
         if not callable(initializer):
-            raise ValueError('Initializer should be callable', initializer)
+            raise DependencyError('Initializer {0} is not callable'.format(initializer))
         if key not in self._initializers:
             self._initializers[key] = {}
         self._initializers[key][param] = initializer
@@ -17,7 +23,7 @@ class Container:
     def get(self, key, param=None):
         '''Resolve dependecy'''
         if key not in self._initializers or param not in self._initializers[key]:
-            raise KeyError('Dependency with name ' + key + ' is not found')
+            raise DependencyError('Dependency "{0}" is not found'.format(key))
         return self._initializers[key][param]()
 
 CONTAINER = Container()

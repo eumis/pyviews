@@ -1,7 +1,8 @@
 from unittest import TestCase, main
+from unittest.mock import Mock, call
 from pyviews.core import ioc
 
-class TestContainer(TestCase):
+class ContainerTests(TestCase):
     def setUp(self):
         self.container = ioc.Container()
 
@@ -13,13 +14,14 @@ class TestContainer(TestCase):
         self.container.register('paramed', lambda: two)
         self.container.register('paramed', lambda: three, 1)
 
-        self.assertEqual(self.container.get('key'), one, \
-                         'Registered dependency should be returned by container')
-        self.assertEqual(self.container.get('paramed'), two, \
-                         'Default dependency should be returned by container with None parameter')
-        self.assertEqual(self.container.get('paramed', 1), three, \
-                         'Registered with parameter dependency should be \
-                         returned by container with passed parameter')
+        msg = 'Registered dependency should be returned by container'
+        self.assertEqual(self.container.get('key'), one, msg)
+
+        msg = 'Default dependency should be returned by container with None parameter'
+        self.assertEqual(self.container.get('paramed'), two, msg)
+
+        msg = 'Registered with parameter dependency should be returned by container with passed parameter'
+        self.assertEqual(self.container.get('paramed', 1), three, msg)
 
     def test_last_dependency(self):
         one = object()
@@ -29,27 +31,29 @@ class TestContainer(TestCase):
         self.container.register('paramed', lambda: one, 1)
         self.container.register('paramed', lambda: two, 1)
 
-        self.assertEqual(self.container.get('key'), two, \
-                         'Last dependency should be registered for the same key')
-        self.assertEqual(self.container.get('paramed', 1), two, \
-                         'Last dependency should be registered for the same key and parameter')
+        msg = 'Last dependency should be registered for the same key'
+        self.assertEqual(self.container.get('key'), two, msg)
+
+        msg = 'Last dependency should be registered for the same key and parameter'
+        self.assertEqual(self.container.get('paramed', 1), two, msg)
 
     def test_register_raises(self):
-        with self.assertRaises(ValueError, msg='Denendency initializer should be callable'):
+        msg = 'Denendency initializer should be callable'
+        with self.assertRaises(ioc.DependencyError, msg=msg):
             self.container.register('key', object())
 
     def test_get_raises(self):
         msg = 'Container should raise exception for not existent dependency'
-        with self.assertRaises(Exception, msg=msg):
+        with self.assertRaises(ioc.DependencyError, msg=msg):
             self.container.get('key')
 
     def test_get_params_raises(self):
         msg = 'Container should raise exception for not existent dependency'
-        with self.assertRaises(Exception, msg=msg):
+        with self.assertRaises(ioc.DependencyError, msg=msg):
             self.container.get('new key')
 
         self.container.register('key', lambda: 1)
-        with self.assertRaises(Exception, msg=msg):
+        with self.assertRaises(ioc.DependencyError, msg=msg):
             self.container.get('key', 'param')
 
     def test_self_registration(self):
@@ -57,17 +61,11 @@ class TestContainer(TestCase):
         msg = 'Container should register himself with key "Container"'
         self.assertEqual(registered_container, self.container, msg=msg)
 
-class ContainerMock:
-    def __init__(self):
-        self.passed_params = None
-
-    def register(self, name, initializer, param=None):
-        self.passed_params = (name, initializer, param)
-
-class TestWrappers(TestCase):
+class WrappersTests(TestCase):
     def setUp(self):
         self._initial_container = ioc.CONTAINER
-        ioc.CONTAINER = ContainerMock()
+        ioc.CONTAINER = Mock()
+        ioc.CONTAINER.register = Mock()
 
     def tearDown(self):
         ioc.CONTAINER = self._initial_container
@@ -80,7 +78,7 @@ class TestWrappers(TestCase):
         ioc.register(name, one, param)
 
         msg = 'register method should pass same parameters to CONTAINER.register'
-        self.assertEqual(ioc.CONTAINER.passed_params, (name, one, param), msg=msg)
+        self.assertEqual(ioc.CONTAINER.register.call_args, call(name, one, param), msg=msg)
 
     def test_register_value(self):
         one = object()
@@ -89,14 +87,16 @@ class TestWrappers(TestCase):
 
         ioc.register_value(name, one, param)
 
+        args = ioc.CONTAINER.register.call_args[0]
+
         actual = (
-            ioc.CONTAINER.passed_params[0],
-            ioc.CONTAINER.passed_params[1](),
-            ioc.CONTAINER.passed_params[2])
+            args[0],
+            args[1](),
+            args[2])
         msg = 'register_value should wrap value to callbale that returns the value'
         self.assertEqual(actual, (name, one, param), msg=msg)
 
-class TestInject(TestCase):
+class InjectTests(TestCase):
     def test_inject(self):
         one = object()
         two = lambda: one

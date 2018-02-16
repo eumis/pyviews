@@ -2,7 +2,7 @@
 
 from pyviews.core.xml import XmlNode
 from pyviews.core.node import Node
-from pyviews.core.parsing import parse_attributes
+from pyviews.rendering.core import parse_attributes
 
 class Geometry:
     '''Base for wrapper'''

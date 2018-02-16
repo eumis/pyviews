@@ -28,8 +28,8 @@ class SomeEntity:
         self.int_value = 1
         self.str_value = 'str'
 
-class TestInstanceTarget(TestCase):
-    def test_change(self):
+class InstanceTargetTests(TestCase):
+    def test_on_change(self):
         inst = SomeEntity()
         target = InstanceTarget(inst, 'int_value', setattr)
         new_val = 25
@@ -39,7 +39,7 @@ class TestInstanceTarget(TestCase):
         msg = 'change should return expression result value'
         self.assertEqual(inst.int_value, new_val, msg)
 
-class TestBindingWithSimpleExpression(TestCase):
+class BindingWithSimpleExpressionTests(TestCase):
     def setUp(self):
         self.view_model = InnerViewModel(2, 'inner str')
         self.expression = Expression('str(vm.int_value) + vm.str_value')
@@ -83,7 +83,7 @@ class TestBindingWithSimpleExpression(TestCase):
         self.view_model.str_value = 'new str value'
         self.assertEqual(self.inst.str_value, expected, msg)
 
-class TestBindingWithInnerViewModel(TestCase):
+class ExpressionBindingTests(TestCase):
     def setUp(self):
         inner_vm = InnerViewModel(2, 'inner str')
         self.view_model = ParentViewModel(3, inner_vm)
@@ -117,7 +117,7 @@ class TestBindingWithInnerViewModel(TestCase):
         actual = str(self.view_model.int_value) + self.view_model.inner_vm.str_value
         self.assertEqual(self.inst.str_value, actual, msg)
 
-class TestExpressionTarget(TestCase):
+class PropertyExpressionTargetTests(TestCase):
     def setUp(self):
         self.inner = InnerViewModel(1, '1')
         self.parent = ParentViewModel(1, self.inner)
@@ -127,7 +127,7 @@ class TestExpressionTarget(TestCase):
     @case('vm')
     @case('vm.int_value + val')
     def test_raises(self, expression):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(BindingError):
             PropertyExpressionTarget(Expression(expression), self.expr_vars)
 
     def test_change(self):
@@ -147,7 +147,7 @@ class TestExpressionTarget(TestCase):
         msg = 'change should return expression result value'
         self.assertEqual(self.parent.inner_vm.int_value, new_val, msg)
 
-class TestObservableBinding(TestCase):
+class ObservableBindingTests(TestCase):
     def setUp(self):
         self.expression = Expression('vm.int_value')
         self.expr_inst = InnerViewModel(1, '1')
@@ -176,7 +176,7 @@ class TestObservableBinding(TestCase):
         msg = 'property from expression shouldn''t be updated after binding destroying'
         self.assertNotEqual(self.expr_inst, self.inst.int_value, msg)
 
-class TestTwoWaysBinding(TestCase):
+class TwoWaysBindingTests(TestCase):
     def setUp(self):
         self.expression = Expression('vm.int_value')
         self.expr_inst = InnerViewModel(1, '1')

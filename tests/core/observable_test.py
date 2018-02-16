@@ -1,6 +1,7 @@
 from unittest import TestCase, main
 from unittest.mock import Mock, call
-from pyviews.core.observable import ObservableEntity
+from tests.utility import case
+from pyviews.core.observable import ObservableEntity, InheritedDict
 
 class ObservableEnt(ObservableEntity):
     def __init__(self, private, name, value):
@@ -12,7 +13,7 @@ class ObservableEnt(ObservableEntity):
     def get_private(self):
         return self._private
 
-class TestObservableEntity(TestCase):
+class ObservableEntityTests(TestCase):
     def setUp(self):
         self.observable = ObservableEnt('priv', 'some name', 'some value')
         self.callback = Mock()
@@ -110,6 +111,64 @@ class TestObservableEntity(TestCase):
         self.assertEqual(self.add_callback.call_count, 2, msg=msg)
         msg = 'callbacks registered in another callback should be called'
         self.assertEqual(self.callback.call_count, 1, msg=msg)
+
+class InheritedDictTests(TestCase):
+    def setUp(self):
+        parent = InheritedDict()
+        parent['one'] = 1
+        parent['two'] = 2
+        self.parent = parent
+
+        self.globs = InheritedDict(InheritedDict(parent))
+        self.globs['two'] = 'two'
+        self.globs['three'] = 'three'
+
+    def test_globals_keys(self):
+        self.assertEqual(self.globs['one'], 1, 'Globals should get values from parent')
+
+        msg = 'Globals should get own value if key exists'
+        self.assertEqual(self.globs['two'], 'two', msg)
+        self.assertEqual(self.globs['three'], 'three', msg)
+
+    def test_dictionary(self):
+        msg = 'to_dictionary should return dictionary with all values'
+        self.assertEqual(
+            self.globs.to_dictionary(),
+            {'one': 1, 'two': 'two', 'three': 'three'},
+            msg)
+
+    def test_remove_keys(self):
+        self.globs.remove_key('two')
+        self.globs.remove_key('three')
+
+        msg = 'remove_key should remove own key'
+        self.assertEqual(self.globs['two'], 2, msg)
+
+        with self.assertRaises(KeyError, msg=msg):
+            self.globs['three']
+
+    @case('one', True)
+    @case('two', True)
+    @case('three', True)
+    @case('key', False)
+    def test_has_keys(self, key, expected):
+        msg = 'has_key should return true for existant keys and false in other case'
+        self.assertEqual(self.globs.has_key(key), expected, msg)
+
+    @case('key')
+    @case('hoho')
+    @case('')
+    @case(' ')
+    def test_raises(self, key):
+        with self.assertRaises(KeyError, msg='KeyError should be raised for unknown key'):
+            self.globs[key]
+
+    def test_notifying(self):
+        callback = Mock()
+        self.globs.observe('one', callback)
+        self.parent['one'] = 2
+        msg = 'change event should be raised if key changed in parent'
+        self.assertTrue(callback.called, msg)
 
 if __name__ == '__main__':
     main()

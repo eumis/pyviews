@@ -1,7 +1,12 @@
 '''Classes used for binding'''
 
+from pyviews.core import CoreError
 from pyviews.core.observable import Observable, InheritedDict
 from pyviews.core.compilation import Expression, ObjectNode
+
+class BindingError(CoreError):
+    '''Base error for binding errors'''
+    pass
 
 class Dependency:
     '''Incapsulates observable subscription'''
@@ -106,7 +111,7 @@ class PropertyExpressionTarget(BindingTarget):
 
     def _validate(self):
         if len(self._var_tree.children) != 1 or not self._var_tree.children[0].children:
-            raise ValueError('expression should be property expression')
+            raise BindingError('expression should be property expression')
 
     def on_change(self, value):
         (inst, prop) = self._get_target()

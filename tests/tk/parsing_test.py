@@ -2,10 +2,10 @@ from unittest import TestCase, main
 from unittest.mock import patch, Mock
 from tkinter import Entry
 from tests.utility import case
-from pyviews.tk import parsing
+from pyviews.tk import rendering as parsing
 
 class ParsingTests(TestCase):
-    @patch('pyviews.tk.parsing.parse_attr')
+    @patch('pyviews.tk.rendering.parse_attr')
     @case(None)
     @case('')
     def test_apply_text_none(self, parse_attr, text):
@@ -18,7 +18,7 @@ class ParsingTests(TestCase):
         msg = "parse_attr shouldn't be called if text is None"
         self.assertFalse(parse_attr.called, msg)
 
-    @patch('pyviews.tk.parsing.parse_attr')
+    @patch('pyviews.tk.rendering.parse_attr')
     @case('  ')
     @case('asdfasdf')
     def test_apply_text(self, parse_attr, text):

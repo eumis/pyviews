@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <w:Root xmlns='tkinter'
         xmlns:w="pyviews.tk"
-        xmlns:import='pyviews.core.modifiers.import_global'
-        xmlns:global='pyviews.core.modifiers.set_global'
+        xmlns:import='pyviews.rendering.modifiers.import_global'
+        xmlns:global='pyviews.rendering.modifiers.set_global'
         xmlns:bind='pyviews.tk.modifiers.bind'
 
         import:AppViewModel='view_model.AppViewModel'

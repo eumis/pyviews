@@ -4,7 +4,8 @@ from pyviews.core.xml import XmlAttr
 from pyviews.core.ioc import inject
 from pyviews.core.compilation import Expression
 from pyviews.core.node import Node
-from pyviews.core.parsing import is_code_expression, parse_expression, get_modifier
+from pyviews.rendering.expression import is_code_expression, parse_expression
+from pyviews.rendering.core import get_modifier
 
 class StyleItem:
     '''Wrapper under option'''

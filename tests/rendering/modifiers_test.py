@@ -4,10 +4,10 @@ from importlib import import_module
 from tests.utility import case
 from tests.mock import SomeObject
 from pyviews.core import ioc
-from pyviews.core.modifiers import import_global, set_global, inject_global
+from pyviews.rendering.modifiers import import_global, set_global, inject_global
 from pyviews.core.node import Node
 
-class TestModifiers(TestCase):
+class ModifiersTests(TestCase):
     def setUp(self):
         self._initial_container = ioc.CONTAINER
         ioc.CONTAINER = ioc.Container()

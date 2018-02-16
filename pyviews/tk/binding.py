@@ -31,5 +31,5 @@ class VariableBinding(Binding):
 
     def destroy(self):
         if self._trace_id:
-            self._var.trace_vdelete(self._trace_id)
+            self._var.trace_remove('write', self._trace_id)
         self._trace_id = None
