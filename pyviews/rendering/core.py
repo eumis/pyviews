@@ -34,7 +34,7 @@ def create_node(xml_node: XmlNode, node_args: NodeArgs, convert_to_node=None):
 
 def convert_to_node(inst, args: NodeArgs):
     '''Wraps instance to instance node and returns it'''
-    raise NotImplementedError('convert_to_node is not implemented', inst, args)
+    raise NotImplementedError('convert_to_node is not implemented')
 
 @ioc.inject('container')
 def run_steps(node: Node, container=None):

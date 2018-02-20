@@ -1,6 +1,7 @@
 '''Wrappers for canvas elements'''
 
 from tkinter import Canvas, TclError
+from pyviews.core import get_not_implemented_message
 from pyviews.core.ioc import inject
 from pyviews.core.node import Node
 
@@ -61,7 +62,7 @@ class CanvasNode(Node):
         self._rendered = True
 
     def _create(self):
-        raise '_create of CanvasItem is not implemented'
+        raise NotImplementedError(get_not_implemented_message(self, '_create'))
 
     def bind(self, event: str, command):
         '''Binds element to event'''

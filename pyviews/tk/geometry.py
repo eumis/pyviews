@@ -1,5 +1,6 @@
 '''Geometry managers wrappers'''
 
+from pyviews.core import get_not_implemented_message
 from pyviews.core.xml import XmlNode
 from pyviews.core.node import Node
 from pyviews.rendering.core import apply_attributes
@@ -15,7 +16,7 @@ class Geometry:
 
     def apply(self, widget):
         '''Applies geomtery with passed parameters'''
-        raise NotImplementedError('{0}.apply'.format(self.__class__.__name__))
+        raise NotImplementedError(get_not_implemented_message(self, 'apply'))
 
     def forget(self, widget):
         '''Calls forget method for geometry'''
@@ -62,7 +63,7 @@ class LayoutSetup(Node):
 
     def apply(self):
         '''Calls config with passed parameters'''
-        raise NotImplementedError('{0}.apply'.format(self.__class__.__name__))
+        raise NotImplementedError(get_not_implemented_message(self, 'apply'))
 
 class Row(LayoutSetup):
     '''Wrapper under grid_rowconfigure method'''

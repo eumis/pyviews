@@ -1,6 +1,6 @@
 '''Classes used for binding'''
 
-from pyviews.core import CoreError
+from pyviews.core import CoreError, get_not_implemented_message
 from pyviews.core.observable import Observable, InheritedDict
 from pyviews.core.compilation import Expression, ObjectNode
 
@@ -26,17 +26,17 @@ class BindingTarget:
     '''Target for changes, applied when binding has triggered changes'''
     def on_change(self, value):
         '''Called to apply changes'''
-        raise NotImplementedError('{0}.on_change'.format(self.__class__.__name__))
+        raise NotImplementedError(get_not_implemented_message(self, 'on_change'))
 
 class Binding:
     '''Binds BindingTarget to changes'''
     def bind(self):
         '''Applies binding'''
-        raise NotImplementedError('Binding.bind')
+        raise NotImplementedError(get_not_implemented_message(self, 'bind'))
 
     def destroy(self):
         '''Destroys binding'''
-        raise NotImplementedError('Binding.destroy')
+        raise NotImplementedError(get_not_implemented_message(self, 'destroy'))
 
 class InstanceTarget(BindingTarget):
     '''Instance modifier is called on change'''
