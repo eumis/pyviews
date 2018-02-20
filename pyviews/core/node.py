@@ -9,7 +9,8 @@ from pyviews.core.binding import Binding
 
 class NodeArgs(dict):
     '''Wraps arguments for children nodes creations'''
-    args_tuple = namedtuple('Args', ['args', 'kwargs'])
+
+    Result = namedtuple('Args', ['args', 'kwargs'])
 
     def __init__(self, xml_node: XmlNode, parent_node=None):
         super().__init__()
@@ -23,7 +24,7 @@ class NodeArgs(dict):
         args = [self[p.name] for p in parameters if p.default == Parameter.empty]
         kwargs = {p.name: self[p.name] for p in parameters \
                   if p.default != Parameter.empty and p.name in self}
-        return NodeArgs.args_tuple(args, kwargs)
+        return NodeArgs.Result(args, kwargs)
 
 class Node:
     '''Represents instance or instance wrapper created from xml node.'''

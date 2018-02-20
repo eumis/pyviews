@@ -29,8 +29,10 @@ class XmlError(CoreError):
 
 class Parser:
     '''Wrapper under xml.parsers.expat for parsing xml files'''
+
     Attribute = namedtuple('Attribute', ['name', 'value'])
     Item = namedtuple('Item', ['node', 'namespaces'])
+
     def __init__(self):
         self._parser = None
         self._root = None

@@ -99,10 +99,10 @@ class For(Container):
     def _create_not_existing(self):
         start = int(len(self._child_nodes) / self._child_count)
         end = len(self._items)
-        self._create_children([(i, self._items[i]) for i in range(start, end)])
+        self._render_children([(i, self._items[i]) for i in range(start, end)])
 
     @inject('render')
-    def _create_children(self, items, render=None):
+    def _render_children(self, items, render=None):
         nodes = self.xml_node.children
         for index, item in items:
             for xml_node in nodes:
@@ -113,7 +113,7 @@ class For(Container):
         self._rendered = True
         self._child_count = len(self.xml_node.children)
         self.destroy_children()
-        self._create_children([(i, item) for i, item in enumerate(self._items)])
+        self._render_children([(i, item) for i, item in enumerate(self._items)])
 
     def get_node_args(self, xml_node: XmlNode, index=None, item=None):
         args = super().get_node_args(xml_node)

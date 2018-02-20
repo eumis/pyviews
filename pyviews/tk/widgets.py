@@ -13,7 +13,7 @@ class WidgetArgs(NodeArgs):
 
     def get_args(self, inst_type=None):
         if issubclass(inst_type, Widget):
-            return NodeArgs.args_tuple([self['master']], {})
+            return NodeArgs.Result([self['master']], {})
         return super().get_args(inst_type)
 
 class WidgetNode(Node):

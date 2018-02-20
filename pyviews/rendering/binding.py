@@ -6,11 +6,12 @@ from pyviews.core.binding import ExpressionBinding, InstanceTarget, PropertyExpr
 from pyviews.core.binding import TwoWaysBinding, ObservableBinding, BindingError
 from pyviews.rendering.expression import parse_expression
 
+BindingArgs = namedtuple('BindingArgs', ['node', 'attr', 'modifier', 'expr_body'])
+
 class BindingFactory:
     '''Factory for getting binding applier'''
 
     Rule = namedtuple('BindingRule', ['suitable', 'apply'])
-    Args = namedtuple('BindingArgs', ['node', 'attr', 'modifier', 'expr_body'])
 
     def __init__(self):
         self._rules = {}
@@ -36,12 +37,12 @@ class BindingFactory:
         except (KeyError, StopIteration):
             return None
 
-def apply_once(args: BindingFactory.Args):
+def apply_once(args: BindingArgs):
     '''Applies "once" binding - expression result is assigned to property without binding'''
     value = Expression(args.expr_body).execute(args.node.globals.to_dictionary())
     args.modifier(args.node, args.attr.name, value)
 
-def apply_oneway(args):
+def apply_oneway(args: BindingArgs):
     '''
     Applies "oneway" binding.
     Expression result is assigned to property.
@@ -53,7 +54,7 @@ def apply_oneway(args):
     binding.bind()
     args.node.add_binding(binding)
 
-def apply_twoways(args):
+def apply_twoways(args: BindingArgs):
     '''
     Applies "twoways" binding.
     Expression result is assigned to property.

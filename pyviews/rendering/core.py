@@ -6,7 +6,7 @@ from pyviews.core.reflection import import_path
 from pyviews.core.xml import XmlNode, XmlAttr
 from pyviews.core.node import Node, NodeArgs
 from pyviews.rendering.expression import is_code_expression, parse_expression
-from pyviews.rendering.binding import BindingFactory
+from pyviews.rendering.binding import BindingArgs
 
 class ParsingError(CoreError):
     '''Base error for processing xml nodes'''
@@ -59,7 +59,7 @@ def apply_attribute(node: Node, attr: XmlAttr, binding_factory=None):
     value = attr.value
     if is_code_expression(value):
         (binding_type, expr_body) = parse_expression(value)
-        args = BindingFactory.Args(node, attr, modifier, expr_body)
+        args = BindingArgs(node, attr, modifier, expr_body)
         apply_binding = binding_factory.get_apply(binding_type, args)
         apply_binding(args)
     else:
