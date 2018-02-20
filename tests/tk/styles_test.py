@@ -6,7 +6,7 @@ from pyviews.core.ioc import CONTAINER, register_single
 from pyviews.core.xml import XmlAttr, XmlNode
 from pyviews.core.observable import InheritedDict
 from pyviews.rendering.dependencies import register_defaults
-from pyviews.tk.styles import StyleItem, Style, parse_attrs, apply_styles
+from pyviews.tk.styles import StyleItem, Style, apply_attributes, apply_styles
 
 class StyleItemTest(TestCase):
     @case('key', 1)
@@ -114,7 +114,7 @@ class ParsingTest(TestCase):
            StyleItem(DEFAULT_MODIFIER, 'num', 2),
            StyleItem(DEFAULT_MODIFIER, 'bg', '#000')],
           {'count': 2})
-    def test_parse_attrs_creates_style_items(self, attrs, style_items, global_values):
+    def test_apply_attributes_creates_style_items(self, attrs, style_items, global_values):
         xml_node = XmlNode('pyviews.tk', 'StyleItem')
         xml_node.attrs = [XmlAttr(attr[0], attr[1], attr[2]) for attr in attrs]
         parent_globals = InheritedDict()
@@ -123,19 +123,19 @@ class ParsingTest(TestCase):
         context = {'globals': parent_globals}
         style = Style(xml_node, context)
 
-        parse_attrs(style)
+        apply_attributes(style)
 
         msg = 'actual style_items are not equal to expected'
         self.assertTrue(_style_items_equal(style_items, self.styles[style.name]), msg)
 
     @case('name')
     @case('some name')
-    def test_parse_attrs_sets_style_name(self, name):
+    def test_apply_attributes_sets_style_name(self, name):
         xml_node = XmlNode('nsp', 'node')
         xml_node.attrs = [XmlAttr('name', name)]
         style = Style(xml_node)
 
-        parse_attrs(style)
+        apply_attributes(style)
 
         msg = '"name" attribute value should be used as style name'
         self.assertEqual(name, style.name, msg)
@@ -143,14 +143,14 @@ class ParsingTest(TestCase):
     @case([('bg', '#000')])
     @case([('name', ''), ('bg', '#000')])
     @case([('name', None), ('bg', '#000')])
-    def test_parse_attrs_raise_if_name_empty_or_not_exist(self, attrs):
+    def test_apply_attributes_raise_if_name_empty_or_not_exist(self, attrs):
         xml_node = XmlNode('nsp', 'node')
         xml_node.attrs = [XmlAttr(attr[0], attr[1]) for attr in attrs]
         style = Style(xml_node)
 
         msg = '"name" attribute value should be used as style name'
         with self.assertRaises(KeyError, msg=msg):
-            parse_attrs(style)
+            apply_attributes(style)
 
     def tearDown(self):
         register_single('styles', {})

@@ -2,7 +2,7 @@
 
 from pyviews.core.xml import XmlNode
 from pyviews.core.node import Node
-from pyviews.rendering.core import parse_attributes
+from pyviews.rendering.core import apply_attributes
 
 class Geometry:
     '''Base for wrapper'''
@@ -76,5 +76,5 @@ class Column(LayoutSetup):
 
 def apply_layout(layout: LayoutSetup):
     '''Parsing step for LayoutSetup. Parses attributes and calls apply'''
-    parse_attributes(layout)
+    apply_attributes(layout)
     layout.apply()

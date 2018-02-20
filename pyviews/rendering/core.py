@@ -12,10 +12,10 @@ class ParsingError(CoreError):
     '''Base error for processing xml nodes'''
     pass
 
-def parse(xml_node: XmlNode, args: NodeArgs):
+def render(xml_node: XmlNode, args: NodeArgs):
     '''Creates instance node'''
     node = create_node(xml_node, args)
-    run_parsing_steps(node)
+    run_steps(node)
     return node
 
 @ioc.inject('convert_to_node')
@@ -37,22 +37,23 @@ def convert_to_node(inst, args: NodeArgs):
     raise NotImplementedError('convert_to_node is not implemented', inst, args)
 
 @ioc.inject('container')
-def run_parsing_steps(node: Node, container=None):
+def run_steps(node: Node, container=None):
     '''Runs instance node creation steps'''
     try:
-        parsing_steps = container.get('parsing_steps', node.__class__)
+        steps = container.get('rendering_steps', node.__class__)
     except ioc.DependencyError:
-        parsing_steps = container.get('parsing_steps')
-    for run_step in parsing_steps:
+        steps = container.get('rendering_steps')
+
+    for run_step in steps:
         run_step(node)
 
-def parse_attributes(node):
-    '''Maps xml attributes to instance node properties and setups bindings'''
+def apply_attributes(node):
+    '''Applies xml attributes to instance node and setups bindings'''
     for attr in node.xml_node.attrs:
-        parse_attr(node, attr)
+        apply_attribute(node, attr)
 
 @ioc.inject('binding_factory')
-def parse_attr(node: Node, attr: XmlAttr, binding_factory=None):
+def apply_attribute(node: Node, attr: XmlAttr, binding_factory=None):
     '''Maps xml attribute to instance node property and setups bindings'''
     modifier = get_modifier(attr)
     value = attr.value
@@ -71,6 +72,6 @@ def get_modifier(attr: XmlAttr, set_attr=None):
         return set_attr
     return import_path(attr.namespace)
 
-def parse_children(node):
-    '''Calls node's parse_children'''
-    node.parse_children()
+def render_children(node):
+    '''Calls node's render_children'''
+    node.render_children()

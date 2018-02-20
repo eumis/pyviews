@@ -41,15 +41,15 @@ class View(Container):
             return
         self._name = value
         if self._rendered:
-            self.parse_children()
+            self.render_children()
 
-    @inject('parse')
-    def parse_children(self, parse=None):
+    @inject('render')
+    def render_children(self, render=None):
         self._rendered = True
         self.destroy_children()
         try:
             root_xml = get_view_root(self.name)
-            self._child_nodes = [parse(root_xml, self.get_node_args(root_xml))]
+            self._child_nodes = [render(root_xml, self.get_node_args(root_xml))]
         except FileNotFoundError:
             self._child_nodes = []
 
@@ -101,15 +101,15 @@ class For(Container):
         end = len(self._items)
         self._create_children([(i, self._items[i]) for i in range(start, end)])
 
-    @inject('parse')
-    def _create_children(self, items, parse=None):
+    @inject('render')
+    def _create_children(self, items, render=None):
         nodes = self.xml_node.children
         for index, item in items:
             for xml_node in nodes:
                 args = self.get_node_args(xml_node, index, item)
-                self._child_nodes.append(parse(xml_node, args))
+                self._child_nodes.append(render(xml_node, args))
 
-    def parse_children(self):
+    def render_children(self):
         self._rendered = True
         self._child_count = len(self.xml_node.children)
         self.destroy_children()
@@ -144,9 +144,9 @@ class If(Container):
         self._condition = value
         if self._rendered:
             self.destroy_children()
-            self.parse_children()
+            self.render_children()
 
-    def parse_children(self):
+    def render_children(self):
         if self._condition:
-            super().parse_children()
+            super().render_children()
         self._rendered = True

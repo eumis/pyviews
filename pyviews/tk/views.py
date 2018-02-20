@@ -12,12 +12,12 @@ class ViewError(CoreError):
         message = 'There is error in view "' + view_name + '"'
         super().__init__(message, inner_message)
 
-@inject('parse')
-def parse_view(view_name, parse=None):
+@inject('render')
+def parse_view(view_name, render=None):
     '''Process view and return root Node'''
     try:
         root_xml = get_view_root(view_name)
-        return parse(root_xml, NodeArgs(root_xml))
+        return render(root_xml, NodeArgs(root_xml))
     except CoreError as error:
         raise ViewError(view_name, error.msg) from error
 

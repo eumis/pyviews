@@ -51,7 +51,7 @@ class Style(Node):
         del styles[self.name]
         self._destroy_bindings()
 
-def parse_attrs(node: Style):
+def apply_attributes(node: Style):
     '''Parsing step. Parses attributes to style items and sets them to style'''
     attrs = node.xml_node.attrs
     try:

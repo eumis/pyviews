@@ -7,7 +7,7 @@ from pyviews.core.node import NodeArgs
 from pyviews.core.compilation import Expression
 from pyviews.core.binding import InstanceTarget, PropertyExpressionTarget
 from pyviews.core.binding import ExpressionBinding, TwoWaysBinding
-from pyviews.rendering.core import parse_attr, parse_expression
+from pyviews.rendering.core import apply_attribute, parse_expression
 from pyviews.rendering.binding import BindingFactory
 from pyviews.tk.binding import VariableBinding
 from pyviews.tk.widgets import WidgetNode
@@ -25,7 +25,7 @@ def apply_text(node: WidgetNode):
     if not node.xml_node.text:
         return
     text_attr = XmlAttr('text', node.xml_node.text)
-    parse_attr(node, text_attr)
+    apply_attribute(node, text_attr)
 
 def is_entry_twoways(args: BindingFactory.Args):
     '''suitable for entry two ways binding'''

@@ -3,12 +3,12 @@
 from os.path import abspath
 from pyviews.core import ioc
 from pyviews.rendering.dependencies import register_defaults
-from pyviews.rendering.core import parse_attributes, parse_children
+from pyviews.rendering.core import apply_attributes, render_children
 from pyviews.rendering.binding import BindingFactory, add_default_rules
 from pyviews.tk.rendering import convert_to_node, apply_text, is_entry_twoways, apply_entry_twoways
 from pyviews.tk.views import parse_view
 from pyviews.tk.modifiers import set_attr
-from pyviews.tk.styles import Style, parse_attrs as parse_style_attrs, apply_styles
+from pyviews.tk.styles import Style, apply_attributes as apply_style_attrs, apply_styles
 from pyviews.tk.geometry import Row, Column, apply_layout
 from pyviews.tk.widgets import Root
 from pyviews.tk.ttk import Style as TtkStyle, apply_ttk_style
@@ -24,29 +24,29 @@ def register_dependencies():
     ioc.register_func('set_attr', set_attr)
     ioc.register_func('apply_styles', apply_styles)
     _register_binding_factory()
-    _register_parsing_steps()
+    _register_rendering_steps()
 
-def _register_parsing_steps():
-    ioc.register_single('parsing_steps', [parse_attributes, apply_text, parse_children])
-    ioc.register_single('parsing_steps', [parse_attributes, parse_children], Root)
-    ioc.register_single('parsing_steps', [parse_style_attrs, parse_children], Style)
-    ioc.register_single('parsing_steps',
-                        [parse_attributes, apply_ttk_style, parse_children],
+def _register_rendering_steps():
+    ioc.register_single('rendering_steps', [apply_attributes, apply_text, render_children])
+    ioc.register_single('rendering_steps', [apply_attributes, render_children], Root)
+    ioc.register_single('rendering_steps', [apply_style_attrs, render_children], Style)
+    ioc.register_single('rendering_steps',
+                        [apply_attributes, apply_ttk_style, render_children],
                         TtkStyle)
-    ioc.register_single('parsing_steps', [apply_layout], Row)
-    ioc.register_single('parsing_steps', [apply_layout], Column)
-    _register_canvas_parsing_steps()
+    ioc.register_single('rendering_steps', [apply_layout], Row)
+    ioc.register_single('rendering_steps', [apply_layout], Column)
+    _register_canvas_rendering_steps()
 
-def _register_canvas_parsing_steps():
-    ioc.register_single('parsing_steps', [parse_attributes, canvas.render], canvas.Arc)
-    ioc.register_single('parsing_steps', [parse_attributes, canvas.render], canvas.Bitmap)
-    ioc.register_single('parsing_steps', [parse_attributes, canvas.render], canvas.Image)
-    ioc.register_single('parsing_steps', [parse_attributes, canvas.render], canvas.Line)
-    ioc.register_single('parsing_steps', [parse_attributes, canvas.render], canvas.Oval)
-    ioc.register_single('parsing_steps', [parse_attributes, canvas.render], canvas.Polygon)
-    ioc.register_single('parsing_steps', [parse_attributes, canvas.render], canvas.Rectangle)
-    ioc.register_single('parsing_steps', [parse_attributes, canvas.render], canvas.Text)
-    ioc.register_single('parsing_steps', [parse_attributes, canvas.render], canvas.Window)
+def _register_canvas_rendering_steps():
+    ioc.register_single('rendering_steps', [apply_attributes, canvas.render], canvas.Arc)
+    ioc.register_single('rendering_steps', [apply_attributes, canvas.render], canvas.Bitmap)
+    ioc.register_single('rendering_steps', [apply_attributes, canvas.render], canvas.Image)
+    ioc.register_single('rendering_steps', [apply_attributes, canvas.render], canvas.Line)
+    ioc.register_single('rendering_steps', [apply_attributes, canvas.render], canvas.Oval)
+    ioc.register_single('rendering_steps', [apply_attributes, canvas.render], canvas.Polygon)
+    ioc.register_single('rendering_steps', [apply_attributes, canvas.render], canvas.Rectangle)
+    ioc.register_single('rendering_steps', [apply_attributes, canvas.render], canvas.Text)
+    ioc.register_single('rendering_steps', [apply_attributes, canvas.render], canvas.Window)
 
 def _register_binding_factory():
     factory = BindingFactory()

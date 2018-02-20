@@ -20,17 +20,17 @@ class ContainerTest(TestCase):
 class ViewTest(TestCase):
     def setUp(self):
         self.view = View(None, None)
-        self.view.parse_children = Mock()
+        self.view.render_children = Mock()
 
     @case(True)
     @case(False)
     def test_name_change(self, is_rendered):
-        self.view.parse_children.reset_mock()
+        self.view.render_children.reset_mock()
         self.view._rendered = is_rendered
         self.view.name = 'view'
 
-        msg = 'parse_children should be called on name change'
-        self.assertEqual(self.view.parse_children.called, is_rendered, msg)
+        msg = 'render_children should be called on name change'
+        self.assertEqual(self.view.render_children.called, is_rendered, msg)
 
     def test_same_name_passed(self):
         self.view._rendered = True
@@ -38,8 +38,8 @@ class ViewTest(TestCase):
         self.view.name = view_name
         self.view.name = view_name
 
-        msg = 'parse_children should be called if passed name is not the same as curren'
-        self.assertEqual(self.view.parse_children.call_count, 1, msg)
+        msg = 'render_children should be called if passed name is not the same as curren'
+        self.assertEqual(self.view.render_children.call_count, 1, msg)
 
 class ForTest(TestCase):
     def setUp(self):
@@ -49,8 +49,8 @@ class ForTest(TestCase):
         self._child.destroy = Mock()
         self._child.globals = Mock()
         self._child.globals.__setitem__ = Mock(side_effect=lambda *args: None)
-        self._parse = Mock(return_value=self._child)
-        ioc.register_single('parse', self._parse)
+        self._render = Mock(return_value=self._child)
+        ioc.register_single('render', self._render)
 
     def tearDown(self):
         ioc.CONTAINER = self._container
@@ -60,7 +60,7 @@ class ForTest(TestCase):
         return self._create_node(child_count)
 
     def _reset_mocks(self):
-        self._parse.reset_mock()
+        self._render.reset_mock()
         self._child.reset_mock()
 
     def _create_node(self, child_count):
@@ -72,12 +72,12 @@ class ForTest(TestCase):
 
     @case([])
     @case(['asdf', 'qwer'])
-    def test_items_shouldnt_trigger_parse(self, items):
+    def test_items_shouldnt_trigger_render(self, items):
         node = self._init_test()[1]
         node.items = items
 
-        msg = "initial items set shouldn't call parse_children"
-        self.assertFalse(self._parse.called, msg)
+        msg = "initial items set shouldn't call render_children"
+        self.assertFalse(self._render.called, msg)
 
     @case([], 1)
     @case([1], 0)
@@ -89,10 +89,10 @@ class ForTest(TestCase):
     def test_all_children_should_be_created(self, items, child_count):
         node = self._init_test(child_count)[1]
         node.items = items
-        node.parse_children()
+        node.render_children()
 
         msg = 'all children should be created for every item'
-        self.assertEqual(self._parse.call_count, len(items) * child_count, msg)
+        self.assertEqual(self._render.call_count, len(items) * child_count, msg)
 
     @case([1], [2], 2)
     @case([1], [2], 1)
@@ -103,7 +103,7 @@ class ForTest(TestCase):
     def test_children_should_be_updated(self, items, new_items, child_count):
         node = self._init_test(child_count)[1]
         node.items = items
-        node.parse_children()
+        node.render_children()
         self._child.reset_mock()
 
         node.items = new_items
@@ -126,7 +126,7 @@ class ForTest(TestCase):
     def test_overflow_children_should_be_removed(self, items, new_items, child_count):
         node = self._init_test(child_count)[1]
         node.items = items
-        node.parse_children()
+        node.render_children()
         self._child.reset_mock()
 
         node.items = new_items
@@ -150,8 +150,8 @@ class ForTest(TestCase):
     def test_new_children_should_be_created(self, items, new_items, child_count):
         node = self._init_test(child_count)[1]
         node.items = items
-        node.parse_children()
-        self._parse.reset_mock()
+        node.render_children()
+        self._render.reset_mock()
 
         node.items = new_items
 
@@ -161,7 +161,7 @@ class ForTest(TestCase):
                 if new_count > items_count else 0
 
         msg = 'new children should be created new items'
-        self.assertEqual(self._parse.call_count, count, msg)
+        self.assertEqual(self._render.call_count, count, msg)
 
 class IfTest(TestCase):
     def setUp(self):
@@ -176,7 +176,7 @@ class IfTest(TestCase):
         self._child.globals = Mock()
         self._child.globals.__setitem__ = Mock(side_effect=lambda *args: None)
         self._parse = Mock(return_value=self._child)
-        ioc.register_single('parse', self._parse)
+        ioc.register_single('render', self._parse)
 
     def _setup_node(self):
         xml_node = XmlNode('pyviews.tk', 'If')
@@ -194,7 +194,7 @@ class IfTest(TestCase):
         self.node.condition = True
         self.node.condition = False
 
-        msg = "initial items set shouldn't call parse_children"
+        msg = "initial items set shouldn't call render_children"
         self.assertFalse(self._parse.called, msg)
         self.assertFalse(self._child.destroy.called, msg)
 
@@ -202,7 +202,7 @@ class IfTest(TestCase):
     @case(False)
     def test_same_condition_shouldnt_trigger_render(self, value):
         self.node.condition = value
-        self.node.parse_children()
+        self.node.render_children()
         self._parse.reset_mock()
         self._child.reset_mock()
 
@@ -213,7 +213,7 @@ class IfTest(TestCase):
         self.assertFalse(self._child.destroy.called, msg)
 
     def test_true_should_trigger_render(self):
-        self.node.parse_children()
+        self.node.render_children()
         self._parse.reset_mock()
         self._child.reset_mock()
 
@@ -224,7 +224,7 @@ class IfTest(TestCase):
 
     def test_false_should_trigger_destroy(self):
         self.node.condition = True
-        self.node.parse_children()
+        self.node.render_children()
         self._parse.reset_mock()
         self._child.reset_mock()
 
