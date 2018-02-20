@@ -80,12 +80,12 @@ class WrappersTests(TestCase):
         msg = 'register method should pass same parameters to CONTAINER.register'
         self.assertEqual(ioc.CONTAINER.register.call_args, call(name, one, param), msg=msg)
 
-    def test_register_value(self):
+    def test_register_single(self):
         one = object()
         name = 'name'
         param = 'param'
 
-        ioc.register_value(name, one, param)
+        ioc.register_single(name, one, param)
 
         args = ioc.CONTAINER.register.call_args[0]
 
@@ -93,15 +93,31 @@ class WrappersTests(TestCase):
             args[0],
             args[1](),
             args[2])
-        msg = 'register_value should wrap value to callbale that returns the value'
+        msg = 'register_single should wrap value to callbale that returns the value'
+        self.assertEqual(actual, (name, one, param), msg=msg)
+
+    def test_register_func(self):
+        one = lambda *args: print(args)
+        name = 'name'
+        param = 'param'
+
+        ioc.register_func(name, one, param)
+
+        args = ioc.CONTAINER.register.call_args[0]
+
+        actual = (
+            args[0],
+            args[1](),
+            args[2])
+        msg = 'register_func should wrap value to callbale that returns the value'
         self.assertEqual(actual, (name, one, param), msg=msg)
 
 class InjectTests(TestCase):
     def test_inject(self):
         one = object()
         two = lambda: one
-        ioc.register_value('one', one)
-        ioc.register_value('two', two)
+        ioc.register_single('one', one)
+        ioc.register_func('two', two)
 
         msg = 'inject should pass dependencies as optional parameters'
         self.assertEqual(self._get_default_injected(), (one, two), msg=msg)

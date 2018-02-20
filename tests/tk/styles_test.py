@@ -2,7 +2,7 @@ from unittest import TestCase, main
 from unittest.mock import call, Mock
 from tests.utility import case
 from tests.mock import some_modifier
-from pyviews.core.ioc import CONTAINER, register_value
+from pyviews.core.ioc import CONTAINER, register_single
 from pyviews.core.xml import XmlAttr, XmlNode
 from pyviews.core.observable import InheritedDict
 from pyviews.rendering.dependencies import register_defaults
@@ -32,7 +32,7 @@ def two_m():
 class StyleTest(TestCase):
     def setUp(self):
         self.styles = {}
-        register_value('styles', self.styles)
+        register_single('styles', self.styles)
         self.style = Style(None)
 
     @case('name', [])
@@ -79,7 +79,7 @@ class StyleTest(TestCase):
         self.assertFalse(self.style.name in self.styles, msg)
 
     def tearDown(self):
-        register_value('styles', {})
+        register_single('styles', {})
 
 def _style_items_equal(expected, actual):
     if len(expected) != len(actual):
@@ -99,7 +99,7 @@ DEFAULT_MODIFIER = CONTAINER.get('set_attr')
 class ParsingTest(TestCase):
     def setUp(self):
         self.styles = {}
-        register_value('styles', self.styles)
+        register_single('styles', self.styles)
 
     @case([('name', 'some_style', None),
            ('key', 'value', None),
@@ -152,7 +152,7 @@ class ParsingTest(TestCase):
             parse_attrs(style)
 
     def tearDown(self):
-        register_value('styles', {})
+        register_single('styles', {})
 
 class ApplyTest(TestCase):
     @case('one,two', ['one', 'two'], ['one', 'two', 'three'])
@@ -160,7 +160,7 @@ class ApplyTest(TestCase):
     @case(['one', 'two'], ['one', 'two'], ['one', 'two', 'three'])
     def test_apply_styles(self, styles_to_apply, styles_applied, all_styles):
         styles = {}
-        register_value('styles', styles)
+        register_single('styles', styles)
         for key in all_styles:
             styles[key] = [Mock() for i in range(0, 5)]
         node = Mock()
@@ -181,7 +181,7 @@ class ApplyTest(TestCase):
         return True
 
     def tearDown(self):
-        register_value('styles', {})
+        register_single('styles', {})
 
 if __name__ == '__main__':
     main()

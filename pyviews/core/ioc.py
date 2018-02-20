@@ -32,9 +32,13 @@ def register(key, initializer: callable, param=None):
     '''Adds resolver to global container'''
     CONTAINER.register(key, initializer, param)
 
-def register_value(key, value, param=None):
-    '''Generates resolver to return value, function, etc and adds it to global container'''
+def register_single(key, value, param=None):
+    '''Generates resolver to return singleton value and adds it to global container'''
     CONTAINER.register(key, lambda: value, param)
+
+def register_func(key, func, param=None):
+    '''Generates resolver to return passed function'''
+    register_single(key, func, param)
 
 def inject(*injections):
     '''Resolves dependencies using global container and passed it with optional parameters'''

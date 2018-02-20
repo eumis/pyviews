@@ -46,7 +46,7 @@ class ModifiersTests(TestCase):
     @case(Node(None, None), 'global_key', 'inject_key', '1')
     @case(Node(None, None), 'glob_ar', 'array', [])
     def test_inject_global(self, node, global_key, inject_key, value):
-        ioc.register_value(inject_key, value)
+        ioc.register_single(inject_key, value)
         inject_global(node, global_key, inject_key)
         msg = 'inject_global should get value by key from container and add it to node''s globals'
         self.assertEqual(node.globals[global_key], value, msg)

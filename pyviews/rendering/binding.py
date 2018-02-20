@@ -13,11 +13,6 @@ class BindingFactory:
     Args = namedtuple('BindingArgs', ['node', 'attr', 'modifier', 'expr_body'])
 
     def __init__(self):
-        self._defaults = {
-            'once': apply_once,
-            'oneway': apply_oneway,
-            'twoways': apply_twoways
-        }
         self._rules = {}
 
     def add_rule(self, binding_type, rule):
@@ -30,13 +25,9 @@ class BindingFactory:
     def get_apply(self, binding_type, args):
         '''returns apply function'''
         rule = self._find_rule(binding_type, args)
-        if rule is not None:
-            return rule.apply
-
-        if binding_type in self._defaults:
-            return self._defaults[binding_type]
-
-        raise BindingError('There is no rule for binding type {0}'.format(binding_type))
+        if rule is None:
+            raise BindingError('There is no rule for binding type {0}'.format(binding_type))
+        return rule.apply
 
     def _find_rule(self, binding_type, args):
         try:
@@ -82,3 +73,9 @@ def apply_twoways(args):
     two_ways_binding = TwoWaysBinding(expr_binding, obs_binding)
     two_ways_binding.bind()
     args.node.add_binding(two_ways_binding)
+
+def add_default_rules(factory: BindingFactory):
+    '''Adds default binding rules to passed factory'''
+    factory.add_rule('once', BindingFactory.Rule(lambda args: True, apply_once))
+    factory.add_rule('oneway', BindingFactory.Rule(lambda args: True, apply_oneway))
+    factory.add_rule('twoways', BindingFactory.Rule(lambda args: True, apply_twoways))

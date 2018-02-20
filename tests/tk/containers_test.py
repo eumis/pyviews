@@ -50,7 +50,7 @@ class ForTest(TestCase):
         self._child.globals = Mock()
         self._child.globals.__setitem__ = Mock(side_effect=lambda *args: None)
         self._parse = Mock(return_value=self._child)
-        ioc.register_value('parse', self._parse)
+        ioc.register_single('parse', self._parse)
 
     def tearDown(self):
         ioc.CONTAINER = self._container
@@ -176,7 +176,7 @@ class IfTest(TestCase):
         self._child.globals = Mock()
         self._child.globals.__setitem__ = Mock(side_effect=lambda *args: None)
         self._parse = Mock(return_value=self._child)
-        ioc.register_value('parse', self._parse)
+        ioc.register_single('parse', self._parse)
 
     def _setup_node(self):
         xml_node = XmlNode('pyviews.tk', 'If')
