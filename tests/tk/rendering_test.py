@@ -1,8 +1,7 @@
 from unittest import TestCase, main
 from unittest.mock import patch, Mock
-from tkinter import Entry
 from tests.utility import case
-from pyviews.tk import rendering as parsing
+from pyviews.tk import rendering
 
 class ParsingTests(TestCase):
     @patch('pyviews.tk.rendering.parse_attr')
@@ -13,7 +12,7 @@ class ParsingTests(TestCase):
         node.xml_node = Mock()
         node.xml_node.text = text
 
-        parsing.apply_text(node)
+        rendering.apply_text(node)
 
         msg = "parse_attr shouldn't be called if text is None"
         self.assertFalse(parse_attr.called, msg)
@@ -26,7 +25,7 @@ class ParsingTests(TestCase):
         node.xml_node = Mock()
         node.xml_node.text = text
 
-        parsing.apply_text(node)
+        rendering.apply_text(node)
 
         msg = 'parse_attr should be called with XmlAttr "text"'
         self.assertEqual(parse_attr.call_args[0][0], node, msg)

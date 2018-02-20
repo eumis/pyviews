@@ -6,13 +6,6 @@ from tests.mock import SomeObject
 from pyviews.core import reflection as tested
 
 class ReflectionTests(TestCase):
-    @case('package.module.name', ('package.module', 'name'))
-    @case('package.module', ('package', 'module'))
-    @case('package', ('package', None))
-    def test_split_by_last_dot(self, name, expected):
-        msg = 'split_by_last_dot returns wrong path parts'
-        self.assertEqual(tested.split_by_last_dot(name), expected, msg)
-
     @case('unittest', unittest)
     @case('unittest.TestCase', TestCase)
     @case('importlib.import_module', import_module)

@@ -93,6 +93,7 @@ def _style_items_equal(expected, actual):
             return False
 
     return True
+
 register_defaults()
 DEFAULT_MODIFIER = CONTAINER.get('set_attr')
 
@@ -103,7 +104,7 @@ class ParsingTest(TestCase):
 
     @case([('name', 'some_style', None),
            ('key', 'value', None),
-           ('key', 'other_value', 'tests.rendering.core_test.some_modifier'),
+           ('key', 'other_value', 'tests.mock.some_modifier'),
            ('num', '{1}', None),
            ('num', '{count}', None),
            ('bg', '#000', None)],
