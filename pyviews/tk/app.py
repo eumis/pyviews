@@ -6,7 +6,7 @@ from pyviews.rendering.dependencies import register_defaults
 from pyviews.rendering.core import apply_attributes, render_children
 from pyviews.rendering.binding import BindingFactory, add_default_rules
 from pyviews.tk.rendering import convert_to_node, apply_text, is_entry_twoways, apply_entry_twoways
-from pyviews.tk.views import parse_view
+from pyviews.tk.views import render_view
 from pyviews.tk.modifiers import set_attr
 from pyviews.tk.styles import Style, apply_attributes as apply_style_attrs, apply_styles
 from pyviews.tk.geometry import Row, Column, apply_layout
@@ -57,5 +57,5 @@ def _register_binding_factory():
 def launch(root_view=None):
     '''Runs application. Widgets are created from passed xml_files'''
     root_view = 'root' if root_view is None else root_view
-    root = parse_view(root_view)
+    root = render_view(root_view)
     root.widget.mainloop()

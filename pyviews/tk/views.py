@@ -13,7 +13,7 @@ class ViewError(CoreError):
         super().__init__(message, inner_message)
 
 @inject('render')
-def parse_view(view_name, render=None):
+def render_view(view_name, render=None):
     '''Process view and return root Node'''
     try:
         root_xml = get_view_root(view_name)
