@@ -43,7 +43,7 @@ def apply_entry_twoways(args: BindingArgs):
     '''
     (var_key, expr_body) = parse_expression(args.expr_body)
     var = args.node.globals[var_key]() \
-                if args.node.globals.has_key(var_key) else StringVar
+                if args.node.globals.has_key(var_key) else StringVar()
     args.node.widget.config(textvariable=var)
     args.node.define_setter('text', lambda node, value: var.set(value))
 
