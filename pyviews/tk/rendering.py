@@ -41,19 +41,18 @@ def apply_entry_twoways(args: BindingArgs):
     Property is set on expression change.
     Wrapped instance is changed on property change
     '''
-    (converter_key, expr_body) = parse_expression(args.expr_body)
-    var = StringVar()
+    (var_key, expr_body) = parse_expression(args.expr_body)
+    var = args.node.globals[var_key]() \
+                if args.node.globals.has_key(var_key) else StringVar
     args.node.widget.config(textvariable=var)
-    args.node.define_setter('text', lambda node, value: var.set(str(value)))
+    args.node.define_setter('text', lambda node, value: var.set(value))
 
     expression = Expression(expr_body)
     target = InstanceTarget(args.node, args.attr.name, args.modifier)
     expr_binding = ExpressionBinding(target, expression, args.node.globals)
 
     target = PropertyExpressionTarget(expression, args.node.globals)
-    converter = args.node.globals[converter_key] \
-                if args.node.globals.has_key(converter_key) else None
-    obs_binding = VariableBinding(target, var, converter)
+    obs_binding = VariableBinding(target, var)
 
     two_ways_binding = TwoWaysBinding(expr_binding, obs_binding)
     two_ways_binding.bind()

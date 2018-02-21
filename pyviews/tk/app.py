@@ -50,8 +50,8 @@ def _register_canvas_rendering_steps():
 
 def _register_binding_factory():
     factory = BindingFactory()
-    factory.add_rule('twoways', BindingFactory.Rule(is_entry_twoways, apply_entry_twoways))
     add_default_rules(factory)
+    factory.add_rule('twoways', BindingFactory.Rule(is_entry_twoways, apply_entry_twoways))
     ioc.register_single('binding_factory', factory)
 
 def launch(root_view=None):

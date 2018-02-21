@@ -13,10 +13,9 @@ class VariableTarget(BindingTarget):
 
 class VariableBinding(Binding):
     '''Binding is subscribed on tkinter Var changes'''
-    def __init__(self, target: BindingTarget, var: Variable, converter=None):
+    def __init__(self, target: BindingTarget, var: Variable):
         self._target = target
         self._var = var
-        self._converter = converter
         self._trace_id = None
 
     def bind(self):
@@ -25,8 +24,6 @@ class VariableBinding(Binding):
 
     def _callback(self, *args):
         value = self._var.get()
-        if self._converter:
-            value = self._converter(value)
         self._target.on_change(value)
 
     def destroy(self):

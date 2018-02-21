@@ -152,11 +152,10 @@ class ObservableBindingTests(TestCase):
         self.expression = Expression('vm.int_value')
         self.expr_inst = InnerViewModel(1, '1')
         self.inst = InnerViewModel(1, '1')
-        self.converter = lambda value: str(value)
         self.expr_vars = InheritedDict()
         self.expr_vars['vm'] = self.expr_inst
         target = PropertyExpressionTarget(self.expression, self.expr_vars)
-        self.binding = ObservableBinding(target, self.inst, 'int_value', self.converter)
+        self.binding = ObservableBinding(target, self.inst, 'int_value')
 
     def test_binding(self):
         self.binding.bind()
@@ -165,7 +164,7 @@ class ObservableBindingTests(TestCase):
         self.inst.int_value = new_val
 
         msg = 'property from expression should be updated on instance updating'
-        self.assertEqual(self.expr_inst.int_value, str(new_val), msg)
+        self.assertEqual(self.expr_inst.int_value, new_val, msg)
 
     def test_destroy(self):
         self.binding.bind()
@@ -188,7 +187,7 @@ class TwoWaysBindingTests(TestCase):
         one_binding = ExpressionBinding(target, self.expression, self.expr_vars)
 
         target = PropertyExpressionTarget(self.expression, self.expr_vars)
-        two_binding = ObservableBinding(target, self.inst, 'int_value', None)
+        two_binding = ObservableBinding(target, self.inst, 'int_value')
 
         self.binding = TwoWaysBinding(one_binding, two_binding)
 

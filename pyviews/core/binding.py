@@ -132,11 +132,10 @@ class PropertyExpressionTarget(BindingTarget):
 
 class ObservableBinding(Binding):
     '''Binds target to observable property'''
-    def __init__(self, target: BindingTarget, observable: Observable, prop, converter):
+    def __init__(self, target: BindingTarget, observable: Observable, prop):
         self._target = target
         self._observable = observable
         self._prop = prop
-        self._converter = converter if converter is not None else lambda value: value
 
     def bind(self):
         self. destroy()
@@ -146,7 +145,7 @@ class ObservableBinding(Binding):
         self._update_target(new_val)
 
     def _update_target(self, value):
-        self._target.on_change(self._converter(value))
+        self._target.on_change(value)
 
     def destroy(self):
         self._observable.release(self._prop, self._update_callback)

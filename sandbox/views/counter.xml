@@ -9,6 +9,7 @@
              import:Grid='pyviews.tk.geometry.GridGeometry'
              import:Pack='pyviews.tk.geometry.PackGeometry'
              import:to_int='pyviews.rendering.converters.to_int'
+             import:int_var='variables.IntVar'
 
              global:vm="{Counter()}">
 
@@ -22,7 +23,7 @@
         </Button>
 
         <Entry geometry='{Pack(side="left")}'
-               text='{to_int:{vm.count}}'>
+               text='{int_var:{vm.count}}'>
         </Entry>
 
         <Label geometry='{Pack(side="left")}'

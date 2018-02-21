@@ -61,15 +61,13 @@ def apply_twoways(args: BindingArgs):
     Property is set on expression change.
     Wrapped instance is changed on property change
     '''
-    (converter_key, expr_body) = parse_expression(args.expr_body)
+    expr_body = parse_expression(args.expr_body)[1]
     expression = Expression(expr_body)
     target = InstanceTarget(args.node, args.attr.name, args.modifier)
     expr_binding = ExpressionBinding(target, expression, args.node.globals)
 
     target = PropertyExpressionTarget(expression, args.node.globals)
-    converter = args.node.globals[converter_key] \
-                if args.node.globals.has_key(converter_key) else None
-    obs_binding = ObservableBinding(target, args.node, args.attr.name, converter)
+    obs_binding = ObservableBinding(target, args.node, args.attr.name)
 
     two_ways_binding = TwoWaysBinding(expr_binding, obs_binding)
     two_ways_binding.bind()
