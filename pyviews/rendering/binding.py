@@ -33,7 +33,7 @@ class BindingFactory:
     def _find_rule(self, binding_type, args):
         try:
             rules = self._rules[binding_type]
-            return next(rule for rule in rules if rule.suitable(args))
+            return next(rule for rule in reversed(rules) if rule.suitable(args))
         except (KeyError, StopIteration):
             return None
 

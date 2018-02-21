@@ -9,11 +9,11 @@ class BindingFactoryTests(TestCase):
         self.factory = BindingFactory()
         self.args = BindingArgs(None, None, None, None)
 
-    @case([True, True], 0)
+    @case([True, True], 1)
     @case([False, True], 1)
     @case([False, True, False], 1)
-    @case([False, True, True], 1)
-    @case([False, False, True], 2)
+    @case([False, True, True], 2)
+    @case([True, False, False], 0)
     def test_get_apply_returns_first_suitable(self, suitables, rule_index):
         factory = BindingFactory()
         args = BindingArgs(None, None, None, None)
