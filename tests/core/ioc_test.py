@@ -131,5 +131,80 @@ class InjectTests(TestCase):
     def _get_kwargs_injected(self, **kwargs):
         return (kwargs['one'], kwargs['two'])
 
+class ScopeTests(TestCase):
+    def setUp(self):
+        self._container = ioc.CONTAINER
+
+    def test_scope(self):
+        ioc.register_single('value', 0)
+        with ioc.Scope('one'):
+            ioc.register_single('value', 1)
+        with ioc.Scope('two'):
+            ioc.register_single('value', 2)
+
+        msg = 'Scope should use own Container for resolving dependencies'
+        with ioc.Scope('one'):
+            self.assertEqual(self._get_injected_value(), 1, msg)
+        with ioc.Scope('two'):
+            self.assertEqual(self._get_injected_value(), 2, msg)
+        self.assertEqual(self._get_injected_value(), 0, msg)
+
+    def test_inner_scope(self):
+        ioc.register_single('value', 0)
+        with ioc.Scope('one'):
+            ioc.register_single('value', 1)
+            with ioc.Scope('two'):
+                ioc.register_single('value', 2)
+
+        msg = 'Scope should use own Container for resolving dependencies if used inside other scope'
+        with ioc.Scope('one'):
+            self.assertEqual(self._get_injected_value(), 1, msg)
+        with ioc.Scope('two'):
+            self.assertEqual(self._get_injected_value(), 2, msg)
+        self.assertEqual(self._get_injected_value(), 0, msg)
+
+    @ioc.inject('value')
+    def _get_injected_value(self, value=None):
+        return value
+
+    def test_scope_decorator(self):
+        ioc.register_single('value', 0)
+        with ioc.Scope('one'):
+            ioc.register_single('value', 1)
+        with ioc.Scope('two'):
+            ioc.register_single('value', 2)
+
+        msg = 'scope decorator should wrap function call with passed scope'
+        self.assertEqual(self._get_injected_value(), 0, msg)
+        self.assertEqual(self._get_one_scope_value(), 1, msg)
+        self.assertEqual(self._get_two_scope_value(), 2, msg)
+
+    @ioc.scope('one')
+    @ioc.inject('value')
+    def _get_one_scope_value(self, value=None):
+        return value
+
+    @ioc.scope('two')
+    @ioc.inject('value')
+    def _get_two_scope_value(self, value=None):
+        return value
+
+    def test_wrap_with_scope(self):
+        ioc.register_single('value', 0)
+        with ioc.Scope('one'):
+            ioc.register_single('value', 1)
+        with ioc.Scope('two'):
+            ioc.register_single('value', 2)
+
+        one = ioc.wrap_with_scope(self._get_injected_value, 'one')
+        two = ioc.wrap_with_scope(self._get_injected_value, 'two')
+
+        msg = 'wrap_with_scope should wrap passed function call with scope'
+        self.assertEqual(one(), 1, msg)
+        self.assertEqual(two(), 2, msg)
+
+    def tearDown(self):
+        ioc.CONTAINER = self._container
+
 if __name__ == '__main__':
     main()

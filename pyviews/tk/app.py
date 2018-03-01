@@ -23,7 +23,7 @@ def register_dependencies():
     ioc.register_func('convert_to_node', convert_to_node)
     ioc.register_func('set_attr', set_attr)
     ioc.register_func('apply_styles', apply_styles)
-    _register_binding_factory()
+    register_binding_factory()
     _register_rendering_steps()
 
 def _register_rendering_steps():
@@ -48,8 +48,8 @@ def _register_canvas_rendering_steps():
     ioc.register_single('rendering_steps', [apply_attributes, canvas.render], canvas.Text)
     ioc.register_single('rendering_steps', [apply_attributes, canvas.render], canvas.Window)
 
-def _register_binding_factory():
-    factory = BindingFactory()
+def register_binding_factory(factory=None):
+    factory = factory if factory else BindingFactory()
     add_default_rules(factory)
     factory.add_rule('twoways', BindingFactory.Rule(is_entry_twoways, apply_entry_twoways))
     ioc.register_single('binding_factory', factory)
