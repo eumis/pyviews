@@ -9,14 +9,21 @@ class Observable:
     def observe(self, key, callback):
         '''Subscribes to key changes'''
         if key not in self._callbacks:
-            self._callbacks[key] = []
+            self._add_key(key)
         self._callbacks[key].append(callback)
+
+    def _add_key(self, key):
+        self._callbacks[key] = []
 
     def observe_all(self, callback):
         '''Subscribes to all keys changes'''
         self._all_callbacks.append(callback)
 
-    def _notify(self, key, value, old_value):
+    def _notify(self, key, value, old_val):
+        self._notify_prop(key, value, old_val)
+        self._notify_all(key, value, old_val)
+
+    def _notify_prop(self, key, value, old_value):
         if value == old_value:
             return
         try:
@@ -52,7 +59,6 @@ class ObservableEntity(Observable):
         old_val = getattr(self, key) if key in self.__dict__ else None
         super().__setattr__(key, value)
         self._notify(key, value, old_val)
-        self._notify_all(key, value, old_val)
 
     def observe(self, key, callback):
         '''Subscribes to key changes'''
@@ -84,7 +90,6 @@ class InheritedDict(Observable):
     def _set_value(self, key, value, old_value):
         self._container[key] = value
         self._notify(key, value, old_value)
-        self._notify_all(key, value, old_value)
 
     def _parent_changed(self, key, value, old_value):
         if key in self._own_keys:

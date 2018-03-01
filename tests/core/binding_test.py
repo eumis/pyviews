@@ -7,21 +7,35 @@ from pyviews.core.observable import ObservableEntity, InheritedDict
 class InnerViewModel(ObservableEntity):
     def __init__(self, int_value, str_value):
         super().__init__()
+        self._val = ''
         self.int_value = int_value
         self.str_value = str_value
+        self._add_key('get_val')
 
-    def to_string(self):
-        return str(self.int_value) + self.str_value
+    def set_val(self, value):
+        old_val = self._val
+        self._val = value
+        self._notify('get_val', value, old_val)
+
+    def get_val(self):
+        return self._val
 
 class ParentViewModel(ObservableEntity):
     def __init__(self, int_value, inner_vm):
         super().__init__()
+        self._val = ''
         self.int_value = int_value
         self.inner_vm = inner_vm
         self.another_vm = inner_vm
+        self._add_key('get_val')
 
-    def to_string(self):
-        return str(self.int_value)
+    def set_val(self, value):
+        old_val = self._val
+        self._val = value
+        self._notify('get_val', value, old_val)
+
+    def get_val(self):
+        return self._val
 
 class SomeEntity:
     def __init__(self):
@@ -87,34 +101,26 @@ class ExpressionBindingTests(TestCase):
     def setUp(self):
         inner_vm = InnerViewModel(2, 'inner str')
         self.view_model = ParentViewModel(3, inner_vm)
-        self.expression = Expression('str(vm.int_value) + vm.inner_vm.str_value')
+        self.expression = Expression('str(vm.int_value) + vm.inner_vm.str_value + vm.get_val() + vm.inner_vm.get_val()')
         self.inst = SomeEntity()
         self.vars = InheritedDict()
         self.vars['vm'] = self.view_model
         self.target = InstanceTarget(self.inst, 'str_value', setattr)
         self.binding = ExpressionBinding(self.target, self.expression, self.vars)
 
-    def test_binding(self):
+    @case(lambda vm: setattr(vm, 'int_value', 3))
+    @case(lambda vm: setattr(vm.inner_vm, 'str_value', 'new str value'))
+    @case(lambda vm: setattr(vm, 'inner_vm', InnerViewModel(50, 'new inner value')))
+    @case(lambda vm: setattr(vm.inner_vm, 'str_value', 'new str value'))
+    @case(lambda vm: vm.set_val('asdf'))
+    @case(lambda vm: vm.inner_vm.set_val('asdf'))
+    def test_binding(self, change):
         self.binding.bind()
 
-        msg = 'property should be updated on vm change'
-        self.view_model.int_value = 3
-        actual = str(self.view_model.int_value) + self.view_model.inner_vm.str_value
-        self.assertEqual(self.inst.str_value, actual, msg)
-
-        msg = 'property should be updated on inner vm change'
-        self.view_model.inner_vm.str_value = 'new str value'
-        actual = str(self.view_model.int_value) + self.view_model.inner_vm.str_value
-        self.assertEqual(self.inst.str_value, actual, msg)
-
-        msg = 'property should be updated on inner vm change'
-        self.view_model.inner_vm = InnerViewModel(50, 'new inner value')
-        actual = str(self.view_model.int_value) + self.view_model.inner_vm.str_value
-        self.assertEqual(self.inst.str_value, actual, msg)
-
-        msg = 'property should be updated on inner vm property change'
-        self.view_model.inner_vm.str_value = 'new str value'
-        actual = str(self.view_model.int_value) + self.view_model.inner_vm.str_value
+        msg = 'property should be updated on expression change'
+        change(self.view_model)
+        actual = str(self.view_model.int_value) + self.view_model.inner_vm.str_value \
+                 + self.view_model.get_val() + self.view_model.inner_vm.get_val()
         self.assertEqual(self.inst.str_value, actual, msg)
 
 class PropertyExpressionTargetTests(TestCase):

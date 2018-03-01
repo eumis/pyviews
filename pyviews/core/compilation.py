@@ -62,10 +62,10 @@ class Expression:
         grouped = self._group_by_key(ast_children)
 
         children = []
-        for key, ast_children in grouped.items():
+        for key, key_nodes in grouped.items():
             node = ObjectNode(key)
-            is_child = lambda n: isinstance(n, ast.Attribute) and n.value in ast_children
-            node.children = self._get_children(ast_nodes, is_child)
+            is_attribute = lambda n, nds=key_nodes: isinstance(n, ast.Attribute) and n.value in nds
+            node.children = self._get_children(ast_nodes, is_attribute)
             children.append(node)
 
         return children

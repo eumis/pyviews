@@ -15,7 +15,7 @@ class ExpressionTests(TestCase):
         self.assertEqual(expression.execute(params), expected, msg)
 
     def test_object_tree(self):
-        expression = Expression("str(vm.vm.int_value) + vm.vm.str_value + vm.str_value")
+        expression = Expression("str(vm.vm.int_value) + vm.vm.str_value + vm.str_value + vm.get()")
 
         root = expression.get_object_tree()
 
@@ -28,7 +28,7 @@ class ExpressionTests(TestCase):
                          'variable entry shouldn''t contain children')
 
         vm_node = [entry for entry in root.children if entry.key == 'vm'][0]
-        self.assertEqual(sorted([e.key for e in vm_node.children]), sorted(['vm', 'str_value']), \
+        self.assertEqual(sorted([e.key for e in vm_node.children]), sorted(['vm', 'str_value', 'get']), \
                          'variable entry should contain attribute children')
 
         str_node = [entry for entry in vm_node.children if entry.key == 'str_value'][0]
