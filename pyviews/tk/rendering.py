@@ -5,7 +5,7 @@ from tkinter.ttk import Widget as TtkWidget
 from pyviews.core.xml import XmlAttr
 from pyviews.core.node import NodeArgs
 from pyviews.core.compilation import Expression
-from pyviews.core.binding import InstanceTarget, PropertyExpressionTarget
+from pyviews.core.binding import InstanceTarget, get_expression_target
 from pyviews.core.binding import ExpressionBinding, TwoWaysBinding
 from pyviews.rendering.core import apply_attribute, parse_expression
 from pyviews.rendering.binding import BindingArgs
@@ -51,7 +51,7 @@ def apply_entry_twoways(args: BindingArgs):
     target = InstanceTarget(args.node, args.attr.name, args.modifier)
     expr_binding = ExpressionBinding(target, expression, args.node.globals)
 
-    target = PropertyExpressionTarget(expression, args.node.globals)
+    target = get_expression_target(expression, args.node.globals)
     obs_binding = VariableBinding(target, var)
 
     two_ways_binding = TwoWaysBinding(expr_binding, obs_binding)

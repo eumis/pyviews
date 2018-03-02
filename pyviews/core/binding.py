@@ -103,8 +103,8 @@ class ExpressionBinding(Binding):
         self._dependencies = []
 
 class PropertyExpressionTarget(BindingTarget):
-    '''Property is set on change. Instance and property are passed as string pass'''
-    def __init__(self, expression, expr_vars: InheritedDict):
+    '''Property is set on change. Instance and property are defined in expression'''
+    def __init__(self, expression: Expression, expr_vars: InheritedDict):
         self._var_tree = expression.get_object_tree()
         self._validate()
         self._vars = expr_vars
@@ -129,6 +129,21 @@ class PropertyExpressionTarget(BindingTarget):
             entry = entry.children[0]
 
         return (inst, next_key)
+
+class GlobalValueExpressionTarget(BindingTarget):
+    '''Global dictionary value is set on change. Key are defined in expression'''
+    def __init__(self, expression: Expression, expr_vars: InheritedDict):
+        root = expression.get_object_tree()
+        self._validate(root)
+        self._key = expression.code
+        self._vars = expr_vars
+
+    def _validate(self, root):
+        if len(root.children) != 1 or root.children[0].children:
+            raise BindingError('expression should be dictionary key')
+
+    def on_change(self, value):
+        self._vars[self._key] = value
 
 class ObservableBinding(Binding):
     '''Binds target to observable property'''
@@ -164,3 +179,10 @@ class TwoWaysBinding(Binding):
     def destroy(self):
         self._one.destroy()
         self._two.destroy()
+
+def get_expression_target(expression: Expression, expr_vars: InheritedDict):
+    '''Factory method to create expression target'''
+    root = expression.get_object_tree()
+    if root.children[0].children:
+        return PropertyExpressionTarget(expression, expr_vars)
+    return GlobalValueExpressionTarget(expression, expr_vars)

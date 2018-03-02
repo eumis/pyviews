@@ -153,6 +153,26 @@ class PropertyExpressionTargetTests(TestCase):
         msg = 'change should return expression result value'
         self.assertEqual(self.parent.inner_vm.int_value, new_val, msg)
 
+class GlobalValueExpressionTargetTests(TestCase):
+    def setUp(self):
+        self.expr_vars = InheritedDict()
+        self.expr_vars['vm'] = 1
+
+    @case('vm.int_value')
+    @case('vm + val')
+    def test_raises(self, expression):
+        with self.assertRaises(BindingError):
+            GlobalValueExpressionTarget(Expression(expression), self.expr_vars)
+
+    def test_change(self):
+        target = GlobalValueExpressionTarget(Expression("vm"), self.expr_vars)
+        new_val = 25
+
+        target.on_change(25)
+
+        msg = 'change should return expression result value'
+        self.assertEqual(self.expr_vars['vm'], new_val, msg)
+
 class ObservableBindingTests(TestCase):
     def setUp(self):
         self.expression = Expression('vm.int_value')

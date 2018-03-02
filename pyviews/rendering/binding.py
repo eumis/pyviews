@@ -2,7 +2,7 @@
 
 from collections import namedtuple
 from pyviews.core.compilation import Expression
-from pyviews.core.binding import ExpressionBinding, InstanceTarget, PropertyExpressionTarget
+from pyviews.core.binding import ExpressionBinding, InstanceTarget, get_expression_target
 from pyviews.core.binding import TwoWaysBinding, ObservableBinding, BindingError
 from pyviews.rendering.expression import parse_expression
 
@@ -66,7 +66,7 @@ def apply_twoways(args: BindingArgs):
     target = InstanceTarget(args.node, args.attr.name, args.modifier)
     expr_binding = ExpressionBinding(target, expression, args.node.globals)
 
-    target = PropertyExpressionTarget(expression, args.node.globals)
+    target = get_expression_target(expression, args.node.globals)
     obs_binding = ObservableBinding(target, args.node, args.attr.name)
 
     two_ways_binding = TwoWaysBinding(expr_binding, obs_binding)
