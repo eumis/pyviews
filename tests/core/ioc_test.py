@@ -63,13 +63,11 @@ class ContainerTests(TestCase):
 
 class WrappersTests(TestCase):
     def setUp(self):
-        self._initial_container = ioc.CONTAINER
-        ioc.CONTAINER = Mock()
-        ioc.CONTAINER.register = Mock()
+        container = Mock()
+        container = Mock()
+        ioc.Scope._scope_containers['WrappersTests'] = container
 
-    def tearDown(self):
-        ioc.CONTAINER = self._initial_container
-
+    @ioc.scope('WrappersTests')
     def test_register(self):
         one = object()
         name = 'name'
@@ -78,8 +76,10 @@ class WrappersTests(TestCase):
         ioc.register(name, one, param)
 
         msg = 'register method should pass same parameters to CONTAINER.register'
-        self.assertEqual(ioc.CONTAINER.register.call_args, call(name, one, param), msg=msg)
+        container = ioc.Scope.Current.container
+        self.assertEqual(container.register.call_args, call(name, one, param), msg=msg)
 
+    @ioc.scope('WrappersTests')
     def test_register_single(self):
         one = object()
         name = 'name'
@@ -87,7 +87,7 @@ class WrappersTests(TestCase):
 
         ioc.register_single(name, one, param)
 
-        args = ioc.CONTAINER.register.call_args[0]
+        args = ioc.Scope.Current.container.register.call_args[0]
 
         actual = (
             args[0],
@@ -96,6 +96,7 @@ class WrappersTests(TestCase):
         msg = 'register_single should wrap value to callbale that returns the value'
         self.assertEqual(actual, (name, one, param), msg=msg)
 
+    @ioc.scope('WrappersTests')
     def test_register_func(self):
         one = lambda *args: print(args)
         name = 'name'
@@ -103,7 +104,7 @@ class WrappersTests(TestCase):
 
         ioc.register_func(name, one, param)
 
-        args = ioc.CONTAINER.register.call_args[0]
+        args = ioc.Scope.Current.container.register.call_args[0]
 
         actual = (
             args[0],
@@ -132,9 +133,6 @@ class InjectTests(TestCase):
         return (kwargs['one'], kwargs['two'])
 
 class ScopeTests(TestCase):
-    def setUp(self):
-        self._container = ioc.CONTAINER
-
     def test_scope(self):
         ioc.register_single('value', 0)
         with ioc.Scope('one'):
@@ -148,6 +146,26 @@ class ScopeTests(TestCase):
         with ioc.Scope('two'):
             self.assertEqual(self._get_injected_value(), 2, msg)
         self.assertEqual(self._get_injected_value(), 0, msg)
+
+    def test_current_scope(self):
+        msg = 'Scope should use own Container for resolving dependencies'
+        with ioc.Scope('one') as one_scope:
+            self.assertEqual(one_scope, ioc.Scope.Current, msg)
+            with ioc.Scope('two') as two_scope:
+                self.assertEqual(two_scope, ioc.Scope.Current, msg)
+            self.assertEqual(one_scope, ioc.Scope.Current, msg)
+
+    def test_wrap_same_scope(self):
+        with ioc.Scope('scope') as outer_scope:
+            with ioc.Scope('scope') as inner_scope:
+                msg = '__enter__ should return new Scope object'
+                self.assertNotEqual(outer_scope, inner_scope, msg)
+
+                msg = 'Outer scope should be current'
+                self.assertEqual(outer_scope, ioc.Scope.Current, msg)
+
+                msg = 'Scopes with same name should use same container'
+                self.assertEqual(outer_scope.container, inner_scope.container, msg)
 
     def test_inner_scope(self):
         ioc.register_single('value', 0)
@@ -203,8 +221,18 @@ class ScopeTests(TestCase):
         self.assertEqual(one(), 1, msg)
         self.assertEqual(two(), 2, msg)
 
-    def tearDown(self):
-        ioc.CONTAINER = self._container
+    def test_wrap_with_current_scope(self):
+        ioc.register_single('value', 0)
+        with ioc.Scope('one'):
+            ioc.register_single('value', 1)
+            one = ioc.wrap_with_scope(self._get_injected_value)
+        with ioc.Scope('two'):
+            ioc.register_single('value', 2)
+            two = ioc.wrap_with_scope(self._get_injected_value)
+
+        msg = 'wrap_with_scope should wrap passed function call with scope'
+        self.assertEqual(one(), 1, msg)
+        self.assertEqual(two(), 2, msg)
 
 if __name__ == '__main__':
     main()

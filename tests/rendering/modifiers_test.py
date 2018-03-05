@@ -3,18 +3,11 @@ from unittest import TestCase, main
 from importlib import import_module
 from tests.utility import case
 from tests.mock import SomeObject
-from pyviews.core import ioc
+from pyviews.core.ioc import scope, register_single
 from pyviews.rendering.modifiers import import_global, set_global, inject_global
 from pyviews.core.node import Node
 
 class ModifiersTests(TestCase):
-    def setUp(self):
-        self._initial_container = ioc.CONTAINER
-        ioc.CONTAINER = ioc.Container()
-
-    def tearDown(self):
-        ioc.CONTAINER = self._initial_container
-
     @case(Node(None, None), 'key', 'unittest', unittest)
     @case(Node(None, None), 'anotherKey', 'unittest.TestCase', TestCase)
     @case(Node(None, None), 'someKey', 'importlib.import_module', import_module)
@@ -42,11 +35,12 @@ class ModifiersTests(TestCase):
         msg = 'set_global should add value to global'
         self.assertEqual(node.globals[key], value, msg)
 
+    @scope('test_inject_global')
     @case(Node(None, None), 'global_key', 'inject_key', 1)
     @case(Node(None, None), 'global_key', 'inject_key', '1')
     @case(Node(None, None), 'glob_ar', 'array', [])
     def test_inject_global(self, node, global_key, inject_key, value):
-        ioc.register_single(inject_key, value)
+        register_single(inject_key, value)
         inject_global(node, global_key, inject_key)
         msg = 'inject_global should get value by key from container and add it to node''s globals'
         self.assertEqual(node.globals[global_key], value, msg)

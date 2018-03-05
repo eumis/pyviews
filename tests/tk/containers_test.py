@@ -43,17 +43,13 @@ class ViewTest(TestCase):
 
 class ForTest(TestCase):
     def setUp(self):
-        self._container = ioc.CONTAINER
-        ioc.CONTAINER = ioc.Container()
         self._child = Mock()
         self._child.destroy = Mock()
         self._child.globals = Mock()
         self._child.globals.__setitem__ = Mock(side_effect=lambda *args: None)
         self._render = Mock(return_value=self._child)
-        ioc.register_single('render', self._render)
-
-    def tearDown(self):
-        ioc.CONTAINER = self._container
+        with ioc.Scope('ForTest'):
+            ioc.register_single('render', self._render)
 
     def _init_test(self, child_count=3):
         self._reset_mocks()
@@ -79,6 +75,7 @@ class ForTest(TestCase):
         msg = "initial items set shouldn't call render_children"
         self.assertFalse(self._render.called, msg)
 
+    @ioc.scope('ForTest')
     @case([], 1)
     @case([1], 0)
     @case([1], 1)
@@ -94,6 +91,7 @@ class ForTest(TestCase):
         msg = 'all children should be created for every item'
         self.assertEqual(self._render.call_count, len(items) * child_count, msg)
 
+    @ioc.scope('ForTest')
     @case([1], [2], 2)
     @case([1], [2], 1)
     @case([1, 2], [2], 1)
@@ -115,6 +113,7 @@ class ForTest(TestCase):
         msg = 'children should be updated when items are updated'
         self.assertEqual(set_item_mock.call_args_list, calls, msg)
 
+    @ioc.scope('ForTest')
     @case([1], [2], 2)
     @case([1], [2], 1)
     @case([1, 2], [2], 1)
@@ -139,6 +138,7 @@ class ForTest(TestCase):
         msg = 'overflow children should be removed when items are updated'
         self.assertEqual(self._child.destroy.call_count, count, msg)
 
+    @ioc.scope('ForTest')
     @case([1], [2], 2)
     @case([1], [2], 1)
     @case([1, 2], [2], 1)
@@ -169,27 +169,24 @@ class IfTest(TestCase):
         self._setup_node()
 
     def _setup_ioc(self):
-        self._container = ioc.CONTAINER
-        ioc.CONTAINER = ioc.Container()
         self._child = Mock()
         self._child.destroy = Mock()
         self._child.globals = Mock()
         self._child.globals.__setitem__ = Mock(side_effect=lambda *args: None)
         self._parse = Mock(return_value=self._child)
-        ioc.register_single('render', self._parse)
+        with ioc.Scope('IfTest'):
+            ioc.register_single('render', self._parse)
 
     def _setup_node(self):
         xml_node = XmlNode('pyviews.tk', 'If')
         xml_node.children.append(XmlNode('pyviews.tk', 'child'))
         self.node = If(None, xml_node)
 
-    def tearDown(self):
-        ioc.CONTAINER = self._container
-
     def test_default_condition_false(self):
         msg = 'default "condition" value should be False'
         self.assertFalse(self.node.condition, msg)
 
+    @ioc.scope('IfTest')
     def test_init_setup_shouldnt_trigger_render(self):
         self.node.condition = True
         self.node.condition = False
@@ -198,6 +195,7 @@ class IfTest(TestCase):
         self.assertFalse(self._parse.called, msg)
         self.assertFalse(self._child.destroy.called, msg)
 
+    @ioc.scope('IfTest')
     @case(True)
     @case(False)
     def test_same_condition_shouldnt_trigger_render(self, value):
@@ -212,6 +210,7 @@ class IfTest(TestCase):
         self.assertFalse(self._parse.called, msg)
         self.assertFalse(self._child.destroy.called, msg)
 
+    @ioc.scope('IfTest')
     def test_true_should_trigger_render(self):
         self.node.render_children()
         self._parse.reset_mock()
@@ -222,6 +221,7 @@ class IfTest(TestCase):
         msg = "True value shouldn't trigger parsing"
         self.assertTrue(self._parse.called, msg)
 
+    @ioc.scope('IfTest')
     def test_false_should_trigger_destroy(self):
         self.node.condition = True
         self.node.render_children()

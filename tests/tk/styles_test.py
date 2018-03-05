@@ -2,11 +2,11 @@ from unittest import TestCase, main
 from unittest.mock import call, Mock
 from tests.utility import case
 from tests.mock import some_modifier
-from pyviews.core.ioc import CONTAINER, register_single
+from pyviews.core.ioc import Scope, scope, register_single
 from pyviews.core.xml import XmlAttr, XmlNode
 from pyviews.core.observable import InheritedDict
-from pyviews.rendering.dependencies import register_defaults
 from pyviews.tk.styles import StyleItem, Style, apply_attributes, apply_styles
+from pyviews.tk.modifiers import set_attr
 
 class StyleItemTest(TestCase):
     @case('key', 1)
@@ -32,9 +32,11 @@ def two_m():
 class StyleTest(TestCase):
     def setUp(self):
         self.styles = {}
-        register_single('styles', self.styles)
+        with Scope('StyleTest'):
+            register_single('styles', self.styles)
         self.style = Style(None)
 
+    @scope('StyleTest')
     @case('name', [])
     @case('other_name', [StyleItem(None, None, None)])
     def test_set_items_should_set_to_styles_by_name(self, name, items):
@@ -44,6 +46,7 @@ class StyleTest(TestCase):
         msg = 'set_items should add passed items to context'
         self.assertEqual(items, self.styles[name], msg)
 
+    @scope('StyleTest')
     @case([StyleItem(one_m, 'key', 'value')], [StyleItem(one_m, 'key', 'another_value')], \
           [StyleItem(one_m, 'key', 'another_value')])
     @case([StyleItem(one_m, 'key', 'value')], [StyleItem(two_m, 'key', 'another_value')], \
@@ -60,6 +63,7 @@ class StyleTest(TestCase):
         msg = 'actual style_items are not equal to expected'
         self.assertTrue(_style_items_equal(expected, self.styles[name]), msg)
 
+    @scope('StyleTest')
     @case('')
     @case(None)
     def test_set_items_should_raise_if_name_is_not_set(self, name):
@@ -69,6 +73,7 @@ class StyleTest(TestCase):
         with self.assertRaises(Exception, msg=msg):
             self.style.set_items([])
 
+    @scope('StyleTest')
     def test_destroy_should_remove_styles_from_context(self):
         self.style.name = 'name'
         self.style.set_items([])
@@ -77,9 +82,6 @@ class StyleTest(TestCase):
 
         msg = 'destroy should remove items from context'
         self.assertFalse(self.style.name in self.styles, msg)
-
-    def tearDown(self):
-        register_single('styles', {})
 
 def _style_items_equal(expected, actual):
     if len(expected) != len(actual):
@@ -94,25 +96,25 @@ def _style_items_equal(expected, actual):
 
     return True
 
-register_defaults()
-DEFAULT_MODIFIER = CONTAINER.get('set_attr')
-
 class ParsingTest(TestCase):
     def setUp(self):
         self.styles = {}
-        register_single('styles', self.styles)
+        with Scope('ParsingTest'):
+            register_single('styles', self.styles)
+            register_single('set_attr', set_attr)
 
+    @scope('ParsingTest')
     @case([('name', 'some_style', None),
            ('key', 'value', None),
            ('key', 'other_value', 'tests.mock.some_modifier'),
            ('num', '{1}', None),
            ('num', '{count}', None),
            ('bg', '#000', None)],
-          [StyleItem(DEFAULT_MODIFIER, 'key', 'value'),
+          [StyleItem(set_attr, 'key', 'value'),
            StyleItem(some_modifier, 'key', 'other_value'),
-           StyleItem(DEFAULT_MODIFIER, 'num', 1),
-           StyleItem(DEFAULT_MODIFIER, 'num', 2),
-           StyleItem(DEFAULT_MODIFIER, 'bg', '#000')],
+           StyleItem(set_attr, 'num', 1),
+           StyleItem(set_attr, 'num', 2),
+           StyleItem(set_attr, 'bg', '#000')],
           {'count': 2})
     def test_apply_attributes_creates_style_items(self, attrs, style_items, global_values):
         xml_node = XmlNode('pyviews.tk', 'StyleItem')
@@ -128,6 +130,7 @@ class ParsingTest(TestCase):
         msg = 'actual style_items are not equal to expected'
         self.assertTrue(_style_items_equal(style_items, self.styles[style.name]), msg)
 
+    @scope('ParsingTest')
     @case('name')
     @case('some name')
     def test_apply_attributes_sets_style_name(self, name):
@@ -140,6 +143,7 @@ class ParsingTest(TestCase):
         msg = '"name" attribute value should be used as style name'
         self.assertEqual(name, style.name, msg)
 
+    @scope('ParsingTest')
     @case([('bg', '#000')])
     @case([('name', ''), ('bg', '#000')])
     @case([('name', None), ('bg', '#000')])
@@ -151,9 +155,6 @@ class ParsingTest(TestCase):
         msg = '"name" attribute value should be used as style name'
         with self.assertRaises(KeyError, msg=msg):
             apply_attributes(style)
-
-    def tearDown(self):
-        register_single('styles', {})
 
 class ApplyTest(TestCase):
     @case('one,two', ['one', 'two'], ['one', 'two', 'three'])
