@@ -3,8 +3,8 @@ from setuptools import setup, find_packages
 def setup_package():
     setup(
         name='pyviews',
-        version='0.9.6',
-        description='Package for creating tkinter applications in declarative way.',
+        version='0.9.7',
+        description='Base package for xml views',
         url='https://github.com/eumis/pyviews',
         author='eumis(Eugen Misievich)',
         author_email='misievich@gmail.com',
@@ -21,8 +21,8 @@ def setup_package():
             'Programming Language :: Python :: 3.6'
         ],
         python_requires='>=3.6',
-        keywords='binding tkinter tk pyviews python mvvm',
-        packages=find_packages(exclude=['sandbox', 'tests', 'tests.*']))
+        keywords='binding tkviews tk tkinter pyviews python mvvm',
+        packages=find_packages(exclude=['tests', 'tests.*']))
 
 if __name__ == '__main__':
     setup_package()

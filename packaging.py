@@ -1,8 +1,11 @@
+'''Script to prepare package'''
+
 from shutil import rmtree
 from os.path import abspath
 from setup import setup_package
 
 def clean():
+    '''Removes temporary files and folders'''
     try:
         directories = ['build', 'dist', 'pyviews.egg-info']
         for directory in directories:
