@@ -19,7 +19,7 @@ class NodeArgs(dict):
         self['parent_context'] = None if parent_node is None else parent_node.context
 
     def get_args(self, inst_type):
-        '''Returns tuple to pass it to inst_type constructor'''
+        '''Returns tuple with args and kwargs to pass it to inst_type constructor'''
         parameters = signature(inst_type).parameters.values()
         args = [self[p.name] for p in parameters if p.default == Parameter.empty]
         kwargs = {p.name: self[p.name] for p in parameters \
@@ -33,7 +33,7 @@ class Node:
         self._bindings = []
         self.xml_node = xml_node
         self.context = {} if parent_context is None else \
-                       {key: InheritedDict(value) if isinstance(value, InheritedDict) else value \
+                       {key: _inherit_value(value) \
                         for (key, value) in parent_context.items()}
         if 'globals' not in self.context:
             self.context['globals'] = InheritedDict()
@@ -75,3 +75,6 @@ class Node:
     def get_node_args(self, xml_node: XmlNode):
         '''Returns NodeArgs for children creation'''
         return NodeArgs(xml_node, self)
+
+def _inherit_value(value):
+    return InheritedDict(value) if isinstance(value, InheritedDict) else value
