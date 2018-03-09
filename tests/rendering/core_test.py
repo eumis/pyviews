@@ -1,5 +1,5 @@
 from unittest import TestCase, main
-from tests.utility import case
+from pyviews.testing import case
 from tests.mock import some_modifier
 from pyviews.core.xml import XmlNode, XmlAttr
 from pyviews.core.node import Node, NodeArgs

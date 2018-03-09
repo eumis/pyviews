@@ -1,5 +1,5 @@
 from unittest import TestCase, main
-from tests.utility import case
+from pyviews.testing import case
 from pyviews.core.compilation import Expression, CompilationError
 
 class ExpressionTests(TestCase):

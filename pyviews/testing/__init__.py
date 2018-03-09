@@ -1,4 +1,7 @@
+'''Utility for unit testing pyviews'''
+
 def case(*params):
+    '''Passes parameters to test method. In case several decorators wraps every case to sub test'''
     def case_decorator(func):
         def decorated(*args):
             for i, params in enumerate(reversed(decorated.params)):

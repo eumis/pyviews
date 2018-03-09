@@ -1,5 +1,5 @@
 from unittest import TestCase, main
-from tests.utility import case
+from pyviews.testing import case
 from pyviews.core.binding import BindingError
 from pyviews.rendering.binding import BindingFactory, BindingArgs, add_default_rules
 from pyviews.rendering.binding import apply_once, apply_oneway, apply_twoways

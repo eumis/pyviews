@@ -1,5 +1,5 @@
 from unittest import TestCase, main
-from tests.utility import case
+from pyviews.testing import case
 from pyviews.core.binding import *
 from pyviews.core.compilation import Expression
 from pyviews.core.observable import ObservableEntity, InheritedDict

@@ -1,6 +1,6 @@
 from tempfile import TemporaryFile
 from unittest import TestCase, main
-from tests.utility import case
+from pyviews.testing import case
 from pyviews.core.xml import Parser, XmlAttr, XmlError
 
 class ParsingTests(TestCase):

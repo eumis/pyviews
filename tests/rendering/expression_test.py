@@ -1,5 +1,5 @@
 from unittest import TestCase, main
-from tests.utility import case
+from pyviews.testing import case
 from pyviews.rendering.expression import is_code_expression, parse_expression
 
 class ExpressionsTests(TestCase):
