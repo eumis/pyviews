@@ -1,6 +1,6 @@
 # pyviews
 
-Base package for [tkviews](https://github.com/eumis/tkviews)
+Base package for [tkviews](https://github.com/eumis/tkviews) and [wxviews](https://github.com/eumis/wxviews)
 
 ## Installation
 
