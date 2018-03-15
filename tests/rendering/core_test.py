@@ -1,26 +1,27 @@
 from unittest import TestCase, main
-from pyviews.testing import case
+from unittest.mock import Mock, call
 from tests.mock import some_modifier
+from pyviews.testing import case
 from pyviews.core.xml import XmlNode, XmlAttr
-from pyviews.core.node import Node, NodeArgs
+from pyviews.core.node import Node, RenderArgs
 from pyviews.core.ioc import Scope, register_single, scope
 from pyviews.rendering import core
 from pyviews.rendering.dependencies import register_defaults
 
-class ParseNodeTests(TestCase):
+class NodeRenderingTests(TestCase):
     def setUp(self):
         xml_node = XmlNode('pyviews.core.node', 'Node')
         self.parent_node = Node(xml_node)
 
         self.xml_node = XmlNode('pyviews.core.node', 'Node')
-        with Scope('ParseNodeTests'):
+        with Scope('NodeRenderingTests'):
             register_defaults()
 
-    @scope('ParseNodeTests')
+    @scope('NodeRenderingTests')
     def test_render(self):
         self.parent_node.globals['some_key'] = 'some value'
 
-        node = core.render(self.xml_node, NodeArgs(self.xml_node, self.parent_node))
+        node = core.render(self.xml_node, RenderArgs(self.xml_node, self.parent_node))
 
         msg = 'parse should init node with right passed xml_node'
         self.assertIsInstance(node, Node, msg=msg)
@@ -42,7 +43,7 @@ class ParseObjectNodeTests(TestCase):
     def test_parse_raises(self):
         msg = 'parse should raise error if method "convert_to_node" is not registered'
         with self.assertRaises(NotImplementedError, msg=msg):
-            core.render(self.xml_node, core.NodeArgs(self.xml_node))
+            core.render(self.xml_node, core.RenderArgs(self.xml_node))
 
 def set_attr():
     pass
@@ -71,6 +72,31 @@ class GetModifierTests(TestCase):
         with self.assertRaises(ImportError, msg=msg):
             xml_attr = XmlAttr(name, '', namespace)
             core.get_modifier(xml_attr)
+
+class RenderStepTests(TestCase):
+    @case({})
+    @case({'key': 1})
+    def test_render_step(self, args):
+        step = Mock()
+        decorated_step = core.render_step(step)
+        node = Mock()
+
+        decorated_step(node, args)
+
+        msg = 'render_step pass node to step'
+        self.assertEqual(step.call_args, call(node), msg)
+
+    @case({})
+    @case({'key': 1, 'key2': 'value'})
+    def test_render_step_with_parameters(self, args):
+        step = Mock()
+        decorated_step = core.render_step(*args.keys())(step)
+        node = Mock()
+
+        decorated_step(node, args)
+
+        msg = 'render_step should pass args to step'
+        self.assertEqual(step.call_args, call(node, **args), msg)
 
 if __name__ == '__main__':
     main()

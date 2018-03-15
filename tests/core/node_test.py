@@ -1,16 +1,16 @@
 from unittest import TestCase, main
-from unittest.mock import Mock, call
+from unittest.mock import Mock
 from pyviews.testing import case
 from pyviews.core.ioc import Scope, register_single
 from pyviews.core.xml import XmlNode
-from pyviews.core.node import Node, NodeArgs
+from pyviews.core.node import Node, RenderArgs
 from pyviews.core.observable import InheritedDict
 
-class NodeArgsTests(TestCase):
+class RenderArgsTests(TestCase):
     def test_get_args(self):
         xml_node = XmlNode('namespace', 'root')
         node = Node(xml_node)
-        args = NodeArgs(xml_node, node).get_args(Node)
+        args = RenderArgs(xml_node, node).get_args(Node)
 
         msg = 'NodeArgs should return XmlNode as args'
         self.assertEqual([xml_node], args.args, msg)
@@ -71,9 +71,9 @@ class NodeTests(TestCase):
         for binding in mocks:
             self.assertTrue(binding.destroy.called, msg)
 
-    def test_get_node_args(self):
+    def test_get_render_args(self):
         xml_node = XmlNode('namespace', 'node')
-        args = self.node.get_node_args(xml_node)
+        args = self.node.get_render_args(xml_node)
 
         msg = 'get_node_args should return args with passed xml_node'
         self.assertEqual(args['xml_node'], xml_node, msg)

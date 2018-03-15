@@ -4,7 +4,7 @@ from os.path import join
 from pyviews.core import CoreError
 from pyviews.core.ioc import inject
 from pyviews.core.xml import Parser
-from pyviews.core.node import NodeArgs
+from pyviews.core.node import RenderArgs
 
 class ViewError(CoreError):
     '''Common error for parsing exceptions'''
@@ -17,7 +17,7 @@ def render_view(view_name, render=None):
     '''Process view and return root Node'''
     try:
         root_xml = get_view_root(view_name)
-        return render(root_xml, NodeArgs(root_xml))
+        return render(root_xml, RenderArgs(root_xml))
     except CoreError as error:
         raise ViewError(view_name, error.msg) from error
 
