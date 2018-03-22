@@ -1,12 +1,13 @@
 '''Classes used for binding'''
 
+from sys import exc_info
 from pyviews.core import CoreError, get_not_implemented_message
 from pyviews.core.observable import Observable, InheritedDict
 from pyviews.core.compilation import Expression, ObjectNode
 
 class BindingError(CoreError):
     '''Base error for binding errors'''
-    pass
+    TargetUpdateError = 'Error occured during target update'
 
 class Dependency:
     '''Incapsulates observable subscription'''
@@ -30,6 +31,9 @@ class BindingTarget:
 
 class Binding:
     '''Binds BindingTarget to changes'''
+    def __init__(self):
+        self.add_error_info = lambda error: None
+
     def bind(self):
         '''Applies binding'''
         raise NotImplementedError(get_not_implemented_message(self, 'bind'))
@@ -52,6 +56,7 @@ class InstanceTarget(BindingTarget):
 class ExpressionBinding(Binding):
     '''Binds target to expression result'''
     def __init__(self, target: BindingTarget, expression: Expression, expr_vars: InheritedDict):
+        super().__init__()
         self._target = target
         self._expression = expression
         self._dependencies = []
@@ -88,10 +93,19 @@ class ExpressionBinding(Binding):
             return None
 
     def _update_callback(self, new_val, old_val):
-        if isinstance(new_val, Observable) or isinstance(old_val, Observable):
-            self.bind()
-        else:
-            self._update_target()
+        try:
+            if isinstance(new_val, Observable) or isinstance(old_val, Observable):
+                self.bind()
+            else:
+                self._update_target()
+        except CoreError as error:
+            self.add_error_info(error)
+            raise
+        except:
+            info = exc_info()
+            error = BindingError(BindingError.TargetUpdateError)
+            self.add_error_info(error)
+            raise error from info[1]
 
     def _update_target(self):
         value = self._expression.execute(self._vars.to_dictionary())
@@ -105,13 +119,16 @@ class ExpressionBinding(Binding):
 class PropertyExpressionTarget(BindingTarget):
     '''Property is set on change. Instance and property are defined in expression'''
     def __init__(self, expression: Expression, expr_vars: InheritedDict):
+        self._expression_code = expression.code
         self._var_tree = expression.get_object_tree()
         self._validate()
         self._vars = expr_vars
 
     def _validate(self):
         if len(self._var_tree.children) != 1 or not self._var_tree.children[0].children:
-            raise BindingError('expression should be property expression')
+            error = BindingError('Expression should be property expression')
+            error.add_info('Expression', self._expression_code)
+            raise error
 
     def on_change(self, value):
         (inst, prop) = self._get_target()
@@ -134,13 +151,15 @@ class GlobalValueExpressionTarget(BindingTarget):
     '''Global dictionary value is set on change. Key are defined in expression'''
     def __init__(self, expression: Expression, expr_vars: InheritedDict):
         root = expression.get_object_tree()
-        self._validate(root)
         self._key = expression.code
         self._vars = expr_vars
+        self._validate(root)
 
     def _validate(self, root):
         if len(root.children) != 1 or root.children[0].children:
-            raise BindingError('expression should be dictionary key')
+            error = BindingError('Expression should be dictionary key')
+            error.add_info('Expression', self._key)
+            raise error
 
     def on_change(self, value):
         self._vars[self._key] = value
@@ -148,6 +167,7 @@ class GlobalValueExpressionTarget(BindingTarget):
 class ObservableBinding(Binding):
     '''Binds target to observable property'''
     def __init__(self, target: BindingTarget, observable: Observable, prop):
+        super().__init__()
         self._target = target
         self._observable = observable
         self._prop = prop
@@ -155,9 +175,19 @@ class ObservableBinding(Binding):
     def bind(self):
         self. destroy()
         self._observable.observe(self._prop, self._update_callback)
+        self._update_target(getattr(self._observable, self._prop))
 
     def _update_callback(self, new_val, old_val):
-        self._update_target(new_val)
+        try:
+            self._update_target(new_val)
+        except CoreError as error:
+            self.add_error_info(error)
+            raise
+        except:
+            info = exc_info()
+            error = BindingError(BindingError.TargetUpdateError)
+            self.add_error_info(error)
+            raise error from info[1]
 
     def _update_target(self, value):
         self._target.on_change(value)
@@ -168,8 +198,21 @@ class ObservableBinding(Binding):
 class TwoWaysBinding(Binding):
     '''Wrapper under two passed bindings'''
     def __init__(self, one: Binding, two: Binding):
+        self._add_error_info = None
         self._one = one
         self._two = two
+        super().__init__()
+
+    @property
+    def add_error_info(self):
+        '''Callback to add info to catched error'''
+        return self._add_error_info
+
+    @add_error_info.setter
+    def add_error_info(self, value):
+        self._add_error_info = value
+        self._one.add_error_info = value
+        self._two.add_error_info = value
 
     def bind(self):
         self.destroy()

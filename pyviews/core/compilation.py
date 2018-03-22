@@ -13,8 +13,10 @@ class ObjectNode:
 
 class CompilationError(CoreError):
     '''Error for failed expression compilation'''
-    CompileFailed = 'Expression "{0}" compilation is failed.'
-    ExecutionFailed = 'Error occured in execution of "{0}"'
+    def __init__(self, message, expression):
+        super().__init__(message)
+        self.expression = expression
+        self.add_info('Expression', expression)
 
 class Expression:
     '''Parses and executes expression.'''
@@ -42,8 +44,7 @@ class Expression:
         try:
             return compile(self.code, '<string>', 'eval')
         except SyntaxError as syntax_error:
-            msg = CompilationError.CompileFailed.format(self.code)
-            raise CompilationError(msg, syntax_error.msg) from syntax_error
+            raise CompilationError(syntax_error.text, self.code) from syntax_error
 
     def _build_object_tree(self):
         ast_root = ast.parse(self.code)
@@ -96,5 +97,4 @@ class Expression:
             return eval(self._compiled_code, parameters, {})
         except:
             info = exc_info()
-            msg = CompilationError.ExecutionFailed.format(self.code)
-            raise CompilationError(msg, str(info[1])) from info[1]
+            raise CompilationError('Error occured in expression execution', self.code) from info[1]

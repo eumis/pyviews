@@ -6,12 +6,7 @@ from pyviews.core.node import Node
 
 def import_global(node: Node, key, path):
     '''Import passed module, class, function full name and stores it to node's globals'''
-    imported = None
-    try:
-        imported = import_path(path)
-    except ImportError:
-        node.globals[key] = None
-    node.globals[key] = imported
+    node.globals[key] = import_path(path)
 
 @inject('container')
 def inject_global(node: Node, global_key, inject_key, container=None):

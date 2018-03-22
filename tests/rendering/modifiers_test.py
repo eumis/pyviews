@@ -1,8 +1,8 @@
 import unittest
 from unittest import TestCase, main
 from importlib import import_module
-from pyviews.testing import case
 from tests.mock import SomeObject
+from pyviews.testing import case
 from pyviews.core.ioc import scope, register_single
 from pyviews.rendering.modifiers import import_global, set_global, inject_global
 from pyviews.core.node import Node
@@ -16,16 +16,6 @@ class ModifiersTests(TestCase):
         import_global(node, key, value)
         msg = 'import_global should import path and add it to node''s globals'
         self.assertEqual(node.globals[key], expected, msg)
-
-    @case(Node(None, None), 'key', None)
-    @case(Node(None, None), 'anotherKey', '')
-    @case(Node(None, None), 'someKey', '   ')
-    @case(Node(None, None), 'key', 'asdf')
-    @case(Node(None, None), 'key', 'unittest.asdf')
-    def test_import_global_invalid_path(self, node, key, value):
-        import_global(node, key, value)
-        msg = 'import_global should set None to globals for invalid path'
-        self.assertEqual(node.globals[key], None, msg)
 
     @case(Node(None, None), 'key', 'value')
     @case(Node(None, None), 'key', None)

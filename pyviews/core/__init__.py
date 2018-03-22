@@ -1,12 +1,38 @@
 '''Package for creation instances from xml and its values to expressions'''
 
 from os import linesep
+from collections import namedtuple
+
+ViewInfo = namedtuple('ViewInfo', ['view', 'line'])
 
 class CoreError(Exception):
     '''Base error class for custom exceptions'''
-    def __init__(self, message, inner_message=None):
-        self.msg = message if inner_message is None else message + linesep + '\t' + inner_message
-        super().__init__(self.msg)
+    def __init__(self, message, view_info: ViewInfo = None):
+        super().__init__(linesep)
+        self._view_infos = []
+        self.message = message
+        self.add_info('Message', message)
+        if view_info:
+            self.add_view_info(view_info)
+
+    def add_view_info(self, view_info: ViewInfo):
+        '''Adds view information to error message'''
+        try:
+            next(info for info in self._view_infos if info.view == view_info.view)
+        except StopIteration:
+            indent = len(self._view_infos) * '\t'
+            self._view_infos.append(view_info)
+            info = 'Line {0} in "{1}"'.format(view_info.line, view_info.view)
+            self.add_info(indent + 'View info', info)
+
+    def add_info(self, header, message):
+        '''Adds "header: message" line to error message'''
+        current_message = self.args[0]
+        message = current_message + self._format_info(header, message)
+        self.args = (message,) + self.args[1:]
+
+    def _format_info(self, header, message):
+        return '{0}: {1}{2}'.format(header, message, linesep)
 
 def get_not_implemented_message(instance, method):
     '''returns error message for NotImplementedError'''

@@ -1,5 +1,6 @@
 '''Processing of xml nodes and creation of instance nodes'''
 
+from sys import exc_info
 from importlib import import_module
 from pyviews.core import ioc, CoreError
 from pyviews.core.reflection import import_path
@@ -9,15 +10,23 @@ from pyviews.core.node import Node, RenderArgs
 from pyviews.rendering.expression import is_code_expression, parse_expression
 from pyviews.rendering.binding import BindingArgs
 
-class ParsingError(CoreError):
-    '''Base error for processing xml nodes'''
+class RenderingError(CoreError):
+    '''Error for rendering'''
     pass
 
 def render(xml_node: XmlNode, args: RenderArgs):
     '''Creates instance node'''
-    node = create_node(xml_node, args)
-    run_steps(node, args)
-    return node
+    try:
+        node = create_node(xml_node, args)
+        run_steps(node, args)
+        return node
+    except CoreError as error:
+        error.add_view_info(xml_node.view_info)
+        raise
+    except:
+        info = exc_info()
+        msg = 'Unknown error occured during rendering'
+        raise RenderingError(msg, xml_node.view_info) from info[1]
 
 @ioc.inject('convert_to_node')
 def create_node(xml_node: XmlNode, render_args: RenderArgs, convert_to_node=None):
@@ -33,8 +42,9 @@ def _get_node_class(xml_node: XmlNode):
     (module_path, class_name) = (xml_node.namespace, xml_node.name)
     try:
         return import_module(module_path).__dict__[class_name]
-    except KeyError:
-        raise ParsingError('Unknown class "{0}.{1}".'.format(module_path, class_name))
+    except (KeyError, ImportError, ModuleNotFoundError):
+        message = 'Import "{0}.{1}" is failed.'.format(module_path, class_name)
+        raise RenderingError(message, xml_node.view_info)
 
 def _get_init_args(xml_node: XmlNode, render_args: RenderArgs):
     try:
@@ -78,17 +88,17 @@ def run_steps(node: Node, args: RenderArgs, container=None):
 def render_step(*args):
     '''Resolves dependencies using global container and passed it with optional parameters'''
     keys = args
-    def decorate(func):
-        def decorated(node, render_args=None):
+    def _decorate(func):
+        def _decorated(node, render_args=None):
             render_args = render_args if render_args else {}
             kwargs = {key: render_args[key] for key in keys}
             return func(node, **kwargs)
-        return decorated
+        return _decorated
 
     if len(args) == 1 and callable(args[0]):
         keys = []
-        return decorate(args[0])
-    return decorate
+        return _decorate(args[0])
+    return _decorate
 
 @render_step('xml_node')
 def apply_attributes(node, xml_node=None):

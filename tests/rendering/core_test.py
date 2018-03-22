@@ -42,7 +42,7 @@ class ParseObjectNodeTests(TestCase):
     @scope('ParseObjectNodeTests')
     def test_parse_raises(self):
         msg = 'parse should raise error if method "convert_to_node" is not registered'
-        with self.assertRaises(NotImplementedError, msg=msg):
+        with self.assertRaises(core.RenderingError, msg=msg):
             core.render(self.xml_node, core.RenderArgs(self.xml_node))
 
 def set_attr():

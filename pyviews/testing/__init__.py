@@ -2,9 +2,9 @@
 
 def case(*params):
     '''Passes parameters to test method. In case several decorators wraps every case to sub test'''
-    def case_decorator(func):
-        def decorated(*args):
-            for i, params in enumerate(reversed(decorated.params)):
+    def _case_decorator(func):
+        def _decorated(*args):
+            for params in reversed(_decorated.params):
                 case_params = args + params
                 try:
                     with args[0].subTest(case=params):
@@ -12,9 +12,9 @@ def case(*params):
                 except AssertionError as error:
                     error.args = error.args + params
                     raise error
-        if func.__name__ == 'decorated':
+        if func.__name__ == '_decorated':
             func.params.append(params)
             return func
-        decorated.params = [params]
-        return decorated
-    return case_decorator
+        _decorated.params = [params]
+        return _decorated
+    return _case_decorator

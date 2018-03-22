@@ -50,7 +50,7 @@ class Scope:
             Scope.Current = self
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, exc_type, value, traceback):
         Scope.Current = self._previous_scope
 
 Scope.Current = Scope('')
@@ -70,9 +70,9 @@ def register_func(key, func, param=None):
 
 def scope(name):
     '''Calls function with passed scope'''
-    def decorate(func):
+    def _decorate(func):
         return wrap_with_scope(func, name)
-    return decorate
+    return _decorate
 
 def wrap_with_scope(func, scope_name=None):
     '''Wraps function with scope. If scope_name is None current scope is used'''
@@ -86,12 +86,12 @@ def _call_with_scope(func, scope_name, args, kwargs):
 
 def inject(*injections):
     '''Resolves dependencies using global container and passed it with optional parameters'''
-    def decorate(func):
-        def decorated(*args, **kwargs):
+    def _decorate(func):
+        def _decorated(*args, **kwargs):
             args = list(args)
             keys_to_inject = [name for name in injections if name not in kwargs]
             for key in keys_to_inject:
                 kwargs[key] = Scope.Current.container.get(key)
             return func(*args, **kwargs)
-        return decorated
-    return decorate
+        return _decorated
+    return _decorate
