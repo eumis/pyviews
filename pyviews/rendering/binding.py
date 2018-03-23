@@ -2,9 +2,8 @@
 
 from collections import namedtuple
 from pyviews.core.compilation import Expression
-from pyviews.core.binding import ExpressionBinding, InstanceTarget, get_expression_target
-from pyviews.core.binding import TwoWaysBinding, ObservableBinding, BindingError
-from pyviews.rendering.expression import parse_expression
+from pyviews.core.binding import ExpressionBinding, InstanceTarget
+from pyviews.core.binding import BindingError
 
 BindingArgs = namedtuple('BindingArgs', ['node', 'attr', 'modifier', 'expr_body'])
 
@@ -27,7 +26,10 @@ class BindingFactory:
         '''returns apply function'''
         rule = self._find_rule(binding_type, args)
         if rule is None:
-            raise BindingError('There is no rule for binding type {0}'.format(binding_type))
+            error = BindingError('Binding rule is not found')
+            error.add_info('Binding type', binding_type)
+            error.add_info('Expression', args.expr_body)
+            raise error
         return rule.apply
 
     def _find_rule(self, binding_type, args):
@@ -54,27 +56,7 @@ def apply_oneway(args: BindingArgs):
     binding.bind()
     args.node.add_binding(binding)
 
-def apply_twoways(args: BindingArgs):
-    '''
-    Applies "twoways" binding.
-    Expression result is assigned to property.
-    Property is set on expression change.
-    Wrapped instance is changed on property change
-    '''
-    expr_body = parse_expression(args.expr_body)[1]
-    expression = Expression(expr_body)
-    target = InstanceTarget(args.node, args.attr.name, args.modifier)
-    expr_binding = ExpressionBinding(target, expression, args.node.globals)
-
-    target = get_expression_target(expression, args.node.globals)
-    obs_binding = ObservableBinding(target, args.node, args.attr.name)
-
-    two_ways_binding = TwoWaysBinding(expr_binding, obs_binding)
-    two_ways_binding.bind()
-    args.node.add_binding(two_ways_binding)
-
 def add_default_rules(factory: BindingFactory):
     '''Adds default binding rules to passed factory'''
     factory.add_rule('once', BindingFactory.Rule(lambda args: True, apply_once))
     factory.add_rule('oneway', BindingFactory.Rule(lambda args: True, apply_oneway))
-    factory.add_rule('twoways', BindingFactory.Rule(lambda args: True, apply_twoways))

@@ -2,7 +2,7 @@ from unittest import TestCase, main
 from pyviews.testing import case
 from pyviews.core.binding import BindingError
 from pyviews.rendering.binding import BindingFactory, BindingArgs, add_default_rules
-from pyviews.rendering.binding import apply_once, apply_oneway, apply_twoways
+from pyviews.rendering.binding import apply_once, apply_oneway
 
 class BindingFactoryTests(TestCase):
     def setUp(self):
@@ -37,7 +37,6 @@ class BindingFactoryTests(TestCase):
 class DefaultRulesTests(TestCase):
     @case('once', apply_once)
     @case('oneway', apply_oneway)
-    @case('twoways', apply_twoways)
     def test_add_default_rules(self, binding_type, apply):
         factory = BindingFactory()
         args = BindingArgs(None, None, None, None)
