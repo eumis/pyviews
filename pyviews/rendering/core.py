@@ -14,7 +14,8 @@ class RenderingError(CoreError):
     '''Error for rendering'''
     pass
 
-def render(xml_node: XmlNode, args: RenderArgs):
+@ioc.inject('create_node')
+def render(xml_node: XmlNode, args: RenderArgs, create_node=None):
     '''Creates instance node'''
     try:
         node = create_node(xml_node, args)
@@ -32,8 +33,7 @@ def render(xml_node: XmlNode, args: RenderArgs):
 def create_node(xml_node: XmlNode, render_args: RenderArgs, convert_to_node=None):
     '''Initializes instance node from passed arguments'''
     node_class = _get_node_class(xml_node)
-    init_args = _get_init_args(xml_node, render_args)
-    node = create_inst(node_class, render_args, init_args)
+    node = create_inst(node_class, render_args)
     if not isinstance(node, Node):
         node = convert_to_node(node, render_args)
     return node
@@ -46,25 +46,10 @@ def _get_node_class(xml_node: XmlNode):
         message = 'Import "{0}.{1}" is failed.'.format(module_path, class_name)
         raise RenderingError(message, xml_node.view_info)
 
-def _get_init_args(xml_node: XmlNode, render_args: RenderArgs):
-    try:
-        attr_value = next(attr.value for attr in xml_node.attrs \
-                     if attr.name == 'init_args' and attr.namespace is None)
-        expr_body = parse_expression(attr_value)[1]
-        parent_globals = render_args['parent_node'].globals.to_dictionary() \
-                         if 'parent_node' in render_args else {}
-        init_args = Expression(expr_body).execute(parent_globals)
-        if callable(init_args):
-            return init_args(**render_args)
-        return init_args
-    except StopIteration:
-        return None
-
-def create_inst(inst_class, args: RenderArgs, init_args=None):
+def create_inst(inst_class, args: RenderArgs):
     '''Creates class instance with args'''
     args = args.get_args(inst_class)
-    init_args = init_args if init_args else args.args
-    return inst_class(*init_args, **args.kwargs)
+    return inst_class(*args.args, **args.kwargs)
 
 def convert_to_node(inst, args: RenderArgs):
     '''Wraps instance to instance node and returns it'''
