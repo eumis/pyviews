@@ -53,6 +53,17 @@ class InstanceTargetTests(TestCase):
         msg = 'change should return expression result value'
         self.assertEqual(inst.int_value, new_val, msg)
 
+class FunctionTargetTests(TestCase):
+    def test_on_change(self):
+        inst = SomeEntity()
+        target = FunctionTarget(lambda value: setattr(inst, 'int_value', value))
+        new_val = 25
+
+        target.on_change(new_val)
+
+        msg = 'change should return expression result value'
+        self.assertEqual(inst.int_value, new_val, msg)
+
 class BindingWithSimpleExpressionTests(TestCase):
     def setUp(self):
         self.view_model = InnerViewModel(2, 'inner str')

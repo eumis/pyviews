@@ -53,6 +53,14 @@ class InstanceTarget(BindingTarget):
         '''Calles modifier on instance with passed value'''
         self._modifier(self.inst, self.prop, value)
 
+class FunctionTarget(BindingTarget):
+    '''Function is called on change'''
+    def __init__(self, func):
+        self.func = func
+
+    def on_change(self, value):
+        self.func(value)
+
 class ExpressionBinding(Binding):
     '''Binds target to expression result'''
     def __init__(self, target: BindingTarget, expression: Expression, expr_vars: InheritedDict):

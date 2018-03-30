@@ -42,7 +42,7 @@ class Observable:
         '''Releases callback from key changes'''
         try:
             self._callbacks[key].remove(callback)
-        except KeyError:
+        except (KeyError, ValueError):
             pass
 
     def release_all(self, callback):
