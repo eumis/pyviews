@@ -24,4 +24,6 @@ class Code(Node):
         except:
             info = exc_info()
             msg = 'Code execution is failed:\n{0}'.format(self.text)
-            raise CompilationError(msg, str(info[1])) from info[1]
+            error = CompilationError(msg, str(info[1]))
+            error.add_cause(info[1])
+            raise error from info[1]

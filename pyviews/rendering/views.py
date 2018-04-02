@@ -22,8 +22,9 @@ def render_view(view_name, render=None):
         raise
     except:
         info = exc_info()
-        raise ViewError('Unknown error occured during rendering', ViewInfo(view_name, None)) \
-        from info[1]
+        error = ViewError('Unknown error occured during rendering', ViewInfo(view_name, None))
+        error.add_cause(info[1])
+        raise error from info[1]
 
 @inject('views_folder')
 @inject('view_ext')
@@ -35,11 +36,15 @@ def get_view_root(view_name, views_folder=None, view_ext=None):
         with open(path, 'rb') as xml_file:
             return parser.parse(xml_file, view_name)
     except FileNotFoundError as error:
-        raise ViewError('View is not found', ViewInfo(view_name, None)) from error
+        error = ViewError('View is not found')
+        error.add_info('View name', view_name)
+        error.add_info('Path', path)
+        raise error
     except CoreError as error:
         error.add_view_info(ViewInfo(view_name, None))
         raise
     except:
         info = exc_info()
-        raise ViewError('Unknown error occured during parsing xml', ViewInfo(view_name, None)) \
-        from info[1]
+        error = ViewError('Unknown error occured during parsing xml', ViewInfo(view_name, None))
+        error.add_cause(info[1])
+        raise error from info[1]

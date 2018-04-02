@@ -44,7 +44,9 @@ class Expression:
         try:
             return compile(self.code, '<string>', 'eval')
         except SyntaxError as syntax_error:
-            raise CompilationError(syntax_error.text, self.code) from syntax_error
+            error = CompilationError(syntax_error.text, self.code)
+            error.add_cause(syntax_error)
+            raise error from syntax_error
 
     def _build_object_tree(self):
         ast_root = ast.parse(self.code)
@@ -97,4 +99,6 @@ class Expression:
             return eval(self._compiled_code, parameters, {})
         except:
             info = exc_info()
-            raise CompilationError('Error occured in expression execution', self.code) from info[1]
+            error = CompilationError('Error occured in expression execution', self.code)
+            error.add_cause(info[1])
+            raise error from info[1]

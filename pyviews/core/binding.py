@@ -113,6 +113,7 @@ class ExpressionBinding(Binding):
             info = exc_info()
             error = BindingError(BindingError.TargetUpdateError)
             self.add_error_info(error)
+            error.add_cause(info[1])
             raise error from info[1]
 
     def _update_target(self):
@@ -195,6 +196,7 @@ class ObservableBinding(Binding):
             info = exc_info()
             error = BindingError(BindingError.TargetUpdateError)
             self.add_error_info(error)
+            error.add_cause(info[1])
             raise error from info[1]
 
     def _update_target(self, value):

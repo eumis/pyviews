@@ -34,6 +34,9 @@ class CoreError(Exception):
     def _format_info(self, header, message):
         return '{0}: {1}{2}'.format(header, message, linesep)
 
+    def add_cause(self, error):
+        self.add_info('Cause error', error)
+
 def get_not_implemented_message(instance, method):
     '''returns error message for NotImplementedError'''
     return 'Method "{0}" is not defind in {1}'.format(method, instance.__class__.__name__)

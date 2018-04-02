@@ -27,7 +27,9 @@ def render(xml_node: XmlNode, args: RenderArgs, create_node=None):
     except:
         info = exc_info()
         msg = 'Unknown error occured during rendering'
-        raise RenderingError(msg, xml_node.view_info) from info[1]
+        error = RenderingError(msg, xml_node.view_info)
+        error.add_cause(info[1])
+        raise error from info[1]
 
 @ioc.inject('convert_to_node')
 def create_node(xml_node: XmlNode, render_args: RenderArgs, convert_to_node=None):
