@@ -4,7 +4,6 @@ from sys import exc_info
 from importlib import import_module
 from pyviews.core import ioc, CoreError
 from pyviews.core.reflection import import_path
-from pyviews.core.compilation import Expression
 from pyviews.core.xml import XmlNode, XmlAttr
 from pyviews.core.node import Node, RenderArgs
 from pyviews.rendering.expression import is_code_expression, parse_expression
@@ -117,3 +116,10 @@ def get_modifier(attr: XmlAttr, set_attr=None):
 def render_children(node):
     '''Calls node's render_children'''
     node.render_children()
+
+@render_step('xml_node')
+def apply_code(node, xml_node=None):
+    '''Sets text for Code node'''
+    if not xml_node.text:
+        return
+    node.text = xml_node.text

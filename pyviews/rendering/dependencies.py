@@ -2,8 +2,9 @@
 
 from pyviews.core.ioc import register_single, register_func
 from pyviews.rendering.core import render, apply_attributes, render_children
-from pyviews.rendering.core import convert_to_node, create_node
+from pyviews.rendering.core import convert_to_node, create_node, apply_code
 from pyviews.rendering.binding import BindingFactory
+from pyviews.rendering.node import Code
 
 def register_defaults():
     '''Registers defaults dependencies'''
@@ -12,4 +13,5 @@ def register_defaults():
     register_func('render', render)
     register_func('set_attr', setattr)
     register_single('rendering_steps', [apply_attributes, render_children])
+    register_single('rendering_steps', [apply_code, render_children], Code)
     register_single('binding_factory', BindingFactory())
