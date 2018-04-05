@@ -1,5 +1,6 @@
 '''Dependency injection implementation'''
 
+from threading import local as thread_local
 from pyviews.core import CoreError
 
 class DependencyError(CoreError):
@@ -26,6 +27,22 @@ class Container:
             raise DependencyError('Dependency "{0}" is not found'.format(key))
         return self._initializers[key][param]()
 
+_THREAD_LOCAL = thread_local()
+
+def _get_holder():
+    holder = getattr(_THREAD_LOCAL, 'scope_holder', None)
+    if holder is None:
+        raise DependencyError("ioc is not set up for current thread")
+    return holder
+
+def get_current_scope():
+    '''returns current scope'''
+    return _get_holder().current
+
+class ScopeHolder:
+    def __init__(self, containers):
+        self.containers = containers
+
 class Scope:
     '''Dependencies scope'''
 
@@ -35,8 +52,9 @@ class Scope:
     def __init__(self, name):
         self._previous_scope = None
         self.name = name
-        if name not in Scope._scope_containers:
-            Scope._scope_containers[name] = Container()
+        holder = _get_holder()
+        if name not in holder.containers:
+            holder.containers[name] = Container()
 
     @property
     def container(self):
@@ -44,7 +62,7 @@ class Scope:
         return Scope._scope_containers[self.name]
 
     def __enter__(self):
-        self._previous_scope = Scope.Current
+        self._previous_scope = get_current_scope()
         if self.name != Scope.Current.name:
             self.container.register('scope', lambda: self)
             Scope.Current = self
@@ -78,7 +96,8 @@ def wrap_with_scope(func, scope_name=None):
     '''Wraps function with scope. If scope_name is None current scope is used'''
     if scope_name is None:
         scope_name = Scope.Current.name
-    return lambda *args, **kwargs: _call_with_scope(func, scope_name, args, kwargs)
+    return lambda *args, scope=scope_name, **kwargs: \
+           _call_with_scope(func, scope, args, kwargs)
 
 def _call_with_scope(func, scope_name, args, kwargs):
     with Scope(scope_name):
