@@ -76,7 +76,7 @@ class WrappersTests(TestCase):
         ioc.register(name, one, param)
 
         msg = 'register method should pass same parameters to CONTAINER.register'
-        container = ioc.Scope.Current.container
+        container = ioc.get_current_scope().container
         self.assertEqual(container.register.call_args, call(name, one, param), msg=msg)
 
     @ioc.scope('WrappersTests')
@@ -87,7 +87,7 @@ class WrappersTests(TestCase):
 
         ioc.register_single(name, one, param)
 
-        args = ioc.Scope.Current.container.register.call_args[0]
+        args = ioc.get_current_scope().container.register.call_args[0]
 
         actual = (
             args[0],
@@ -104,7 +104,7 @@ class WrappersTests(TestCase):
 
         ioc.register_func(name, one, param)
 
-        args = ioc.Scope.Current.container.register.call_args[0]
+        args = ioc.get_current_scope().container.register.call_args[0]
 
         actual = (
             args[0],
@@ -150,10 +150,10 @@ class ScopeTests(TestCase):
     def test_current_scope(self):
         msg = 'Scope should use own Container for resolving dependencies'
         with ioc.Scope('one') as one_scope:
-            self.assertEqual(one_scope, ioc.Scope.Current, msg)
+            self.assertEqual(one_scope, ioc.get_current_scope(), msg)
             with ioc.Scope('two') as two_scope:
-                self.assertEqual(two_scope, ioc.Scope.Current, msg)
-            self.assertEqual(one_scope, ioc.Scope.Current, msg)
+                self.assertEqual(two_scope, ioc.get_current_scope(), msg)
+            self.assertEqual(one_scope, ioc.get_current_scope(), msg)
 
     def test_wrap_same_scope(self):
         with ioc.Scope('scope') as outer_scope:
@@ -162,7 +162,7 @@ class ScopeTests(TestCase):
                 self.assertNotEqual(outer_scope, inner_scope, msg)
 
                 msg = 'Outer scope should be current'
-                self.assertEqual(outer_scope, ioc.Scope.Current, msg)
+                self.assertEqual(outer_scope, ioc.get_current_scope(), msg)
 
                 msg = 'Scopes with same name should use same container'
                 self.assertEqual(outer_scope.container, inner_scope.container, msg)

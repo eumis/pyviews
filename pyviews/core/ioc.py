@@ -29,32 +29,27 @@ class Container:
 
 _THREAD_LOCAL = thread_local()
 
-def _get_holder():
-    holder = getattr(_THREAD_LOCAL, 'scope_holder', None)
-    if holder is None:
-        raise DependencyError("ioc is not set up for current thread")
-    return holder
-
 def get_current_scope():
-    '''returns current scope'''
-    return _get_holder().current
+    '''return current scope'''
+    current_scope = getattr(_THREAD_LOCAL, 'current_scope', None)
+    if current_scope is None:
+        raise DependencyError("ioc is not set up for current thread")
+    return _THREAD_LOCAL.current_scope
 
-class ScopeHolder:
-    def __init__(self, containers):
-        self.containers = containers
+def set_current_scope(current_scope):
+    '''sets current scope'''
+    _THREAD_LOCAL.current_scope = current_scope
 
 class Scope:
     '''Dependencies scope'''
 
     _scope_containers = {}
-    Current = None
 
     def __init__(self, name):
         self._previous_scope = None
         self.name = name
-        holder = _get_holder()
-        if name not in holder.containers:
-            holder.containers[name] = Container()
+        if name not in Scope._scope_containers:
+            Scope._scope_containers[name] = Container()
 
     @property
     def container(self):
@@ -62,25 +57,27 @@ class Scope:
         return Scope._scope_containers[self.name]
 
     def __enter__(self):
-        self._previous_scope = get_current_scope()
-        if self.name != Scope.Current.name:
+        try:
+            self._previous_scope = get_current_scope()
+        except DependencyError:
+            self._previous_scope = None
+        if not self._previous_scope or self.name != self._previous_scope.name:
             self.container.register('scope', lambda: self)
-            Scope.Current = self
+            set_current_scope(self)
         return self
 
     def __exit__(self, exc_type, value, traceback):
-        Scope.Current = self._previous_scope
+        set_current_scope(self._previous_scope)
 
-Scope.Current = Scope('')
-Scope.Current.__enter__()
+Scope('').__enter__()
 
 def register(key, initializer: callable, param=None):
     '''Adds resolver to global container'''
-    Scope.Current.container.register(key, initializer, param)
+    get_current_scope().container.register(key, initializer, param)
 
 def register_single(key, value, param=None):
     '''Generates resolver to return singleton value and adds it to global container'''
-    Scope.Current.container.register(key, lambda: value, param)
+    get_current_scope().container.register(key, lambda: value, param)
 
 def register_func(key, func, param=None):
     '''Generates resolver to return passed function'''
@@ -95,7 +92,7 @@ def scope(name):
 def wrap_with_scope(func, scope_name=None):
     '''Wraps function with scope. If scope_name is None current scope is used'''
     if scope_name is None:
-        scope_name = Scope.Current.name
+        scope_name = get_current_scope().name
     return lambda *args, scope=scope_name, **kwargs: \
            _call_with_scope(func, scope, args, kwargs)
 
@@ -110,7 +107,7 @@ def inject(*injections):
             args = list(args)
             keys_to_inject = [name for name in injections if name not in kwargs]
             for key in keys_to_inject:
-                kwargs[key] = Scope.Current.container.get(key)
+                kwargs[key] = get_current_scope().container.get(key)
             return func(*args, **kwargs)
         return _decorated
     return _decorate
