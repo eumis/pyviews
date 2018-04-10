@@ -15,16 +15,13 @@ class BindingFactoryTests(TestCase):
     @case([False, True, True], 2)
     @case([True, False, False], 0)
     def test_get_apply_returns_first_suitable(self, suitables, rule_index):
-        factory = BindingFactory()
-        args = BindingArgs(None, None, None, None)
-
         binding_type = 'type'
         rules = [BindingFactory.Rule(lambda args, s=suitable: s, lambda binding_type, args: None) \
                  for suitable in suitables]
 
         for rule in rules:
-            factory.add_rule(binding_type, rule)
-        actual_apply = factory.get_apply(binding_type, args)
+            self.factory.add_rule(binding_type, rule)
+        actual_apply = self.factory.get_apply(binding_type, self.args)
 
         msg = 'get_apply should return first suitable apply'
         self.assertEqual(rules[rule_index].apply, actual_apply, msg=msg)
