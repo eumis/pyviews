@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 def setup_package():
     setup(
         name='pyviews',
-        version='0.9.7',
+        version='0.9.8',
         description='Base package for xml views',
         url='https://github.com/eumis/pyviews',
         author='eumis(Eugen Misievich)',
