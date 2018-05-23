@@ -64,7 +64,6 @@ class ContainerTests(TestCase):
 class WrappersTests(TestCase):
     def setUp(self):
         container = Mock()
-        container = Mock()
         ioc.Scope._scope_containers['WrappersTests'] = container
 
     @ioc.scope('WrappersTests')
