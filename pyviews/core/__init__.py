@@ -34,8 +34,9 @@ class CoreError(Exception):
     def _format_info(self, header, message):
         return '{0}: {1}{2}'.format(header, message, linesep)
 
-    def add_cause(self, error):
-        self.add_info('Cause error', error)
+    def add_cause(self, error: Exception):
+        '''Adds cause error to error message'''
+        self.add_info('Cause error', '{0} - {1}'.format(type(error).__name__, error))
 
 def get_not_implemented_message(instance, method):
     '''returns error message for NotImplementedError'''
