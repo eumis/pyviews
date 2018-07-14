@@ -182,7 +182,7 @@ class InheritedDictTests(TestCase):
     @case('')
     @case(1)
     @case(True)
-    def test_get_default(self, default):
+    def test_get_passed_default(self, default):
         inh_dict = InheritedDict()
 
         value = inh_dict.get('key', default)
