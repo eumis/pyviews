@@ -18,6 +18,5 @@
         "pip-selfcheck.json": true,
         "build": true,
         "dist": true
-    },
-    "python.pythonPath": "C:\\Users\\eugenmisievich\\AppData\\Local\\Programs\\Python\\Python36-32\\python.exe"
+    }
 }

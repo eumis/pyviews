@@ -114,4 +114,11 @@ class InheritedDict(Observable):
                 del self._container[key]
         except KeyError:
             pass
+
+    def get(self, key, default=None):
+        '''Retuns value by value. default is return in case key does not exist'''
+        try:
+            return self[key]
+        except KeyError:
+            return default
             

@@ -170,5 +170,25 @@ class InheritedDictTests(TestCase):
         msg = 'change event should be raised if key changed in parent'
         self.assertTrue(callback.called, msg)
 
+    def test_get_default(self):
+        inh_dict = InheritedDict()
+
+        value = inh_dict.get('key')
+
+        msg = 'get should return None by default in case key is not exists'
+        self.assertIsNone(value, msg)
+
+    @case(None)
+    @case('')
+    @case(1)
+    @case(True)
+    def test_get_default(self, default):
+        inh_dict = InheritedDict()
+
+        value = inh_dict.get('key', default)
+
+        msg = 'get should return passed default in case key is not exists'
+        self.assertEqual(value, default, msg)
+
 if __name__ == '__main__':
     main()
