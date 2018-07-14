@@ -44,7 +44,7 @@ class Expression:
         try:
             return compile(self.code, '<string>', 'eval')
         except SyntaxError as syntax_error:
-            error = CompilationError(syntax_error.text, self.code)
+            error = CompilationError(syntax_error.msg, self.code)
             error.add_cause(syntax_error)
             raise error from syntax_error
 
