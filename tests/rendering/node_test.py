@@ -40,6 +40,14 @@ class CodeTests(TestCase):
         ''',
         {'key': 'key'},
         {'one': 1, 'str_value': 'str_value', 'global_key': 'key'})
+    @case(
+        '''
+            one = 1
+            str_value = 'str_value'
+            global_key = key
+        ''',
+        {'key': 'key'},
+        {'one': 1, 'str_value': 'str_value', 'global_key': 'key'})
     def test_variables_definitions(self, content, globals_dict, expected):
         parent_globals = self._get_parent_globals(globals_dict)
         code = self._get_code_node(parent_globals, content)

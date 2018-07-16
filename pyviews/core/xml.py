@@ -97,7 +97,7 @@ class Parser:
 
     def _set_text(self, text):
         node = self._items[-1].node
-        node.text = '' if text is None else text.strip()
+        node.text = '' if text is None else text
 
     def parse(self, xml_file, view_name=None):
         '''Parses xml file with xml_path and returns XmlNode'''
