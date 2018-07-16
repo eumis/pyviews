@@ -96,14 +96,14 @@ def apply_attributes(node, xml_node=None):
 def apply_attribute(node: Node, attr: XmlAttr, binding_factory=None):
     '''Maps xml attribute to instance node property and setups bindings'''
     modifier = get_modifier(attr)
-    value = attr.value
-    if is_code_expression(value):
-        (binding_type, expr_body) = parse_expression(value)
+    stripped_value = attr.value.strip() if attr.value else ''
+    if is_code_expression(stripped_value):
+        (binding_type, expr_body) = parse_expression(stripped_value)
         args = BindingArgs(node, attr, modifier, expr_body)
         apply_binding = binding_factory.get_apply(binding_type, args)
         apply_binding(args)
     else:
-        modifier(node, attr.name, value)
+        modifier(node, attr.name, attr.value)
 
 @ioc.inject('set_attr')
 def get_modifier(attr: XmlAttr, set_attr=None):
