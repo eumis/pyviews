@@ -31,7 +31,7 @@ def render_view(view_name, render=None):
 def get_view_root(view_name, views_folder=None, view_ext=None):
     '''Parses xml file and return root XmlNode'''
     try:
-        path = join(views_folder, view_name + view_ext)
+        path = join(views_folder, '{0}.{1}'.format(view_name, view_ext))
         parser = Parser()
         with open(path, 'rb') as xml_file:
             return parser.parse(xml_file, view_name)
