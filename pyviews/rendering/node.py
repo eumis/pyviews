@@ -2,6 +2,7 @@
 
 from sys import exc_info
 from textwrap import dedent
+from traceback import extract_tb
 from pyviews.core.node import Node
 from pyviews.core.compilation import CompilationError
 
@@ -21,9 +22,19 @@ class Code(Node):
                         if key != '__builtins__' and not self._parent_globals.has_key(key)]
             for key, value in definitions:
                 self._parent_globals[key] = value
+        except SyntaxError as err:
+            error = self._get_compilation_error('Invalid syntax', err, err.lineno)
+            raise error from err
         except:
             info = exc_info()
-            msg = 'Code execution is failed:\n{0}'.format(self.text)
-            error = CompilationError(msg, str(info[1]))
-            error.add_cause(info[1])
-            raise error from info[1]
+            cause = info[1]
+            line_number = extract_tb(info[2])[-1][1]
+            error = self._get_compilation_error('Code execution is failed', cause, line_number)
+            raise error from cause
+
+    def _get_compilation_error(self, title, cause, line_number):
+        msg = '{0}:\n{1}'.format(title, self.text)
+        error = CompilationError(msg, str(cause))
+        error.add_cause(cause)
+        error.add_info('Line number', line_number)
+        return error
