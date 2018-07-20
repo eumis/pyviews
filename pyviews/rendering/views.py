@@ -26,6 +26,8 @@ def render_view(view_name, render=None):
         error.add_cause(info[1])
         raise error from info[1]
 
+_XML_CACHE = {}
+
 @inject('views_folder')
 @inject('view_ext')
 def get_view_root(view_name, views_folder=None, view_ext=None):
@@ -33,8 +35,10 @@ def get_view_root(view_name, views_folder=None, view_ext=None):
     try:
         path = join(views_folder, '{0}.{1}'.format(view_name, view_ext))
         parser = Parser()
-        with open(path, 'rb') as xml_file:
-            return parser.parse(xml_file, view_name)
+        if path not in _XML_CACHE:
+            with open(path, 'rb') as xml_file:
+                _XML_CACHE[path] = parser.parse(xml_file, view_name)
+        return _XML_CACHE[path]
     except FileNotFoundError as error:
         error = ViewError('View is not found')
         error.add_info('View name', view_name)
