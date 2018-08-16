@@ -100,6 +100,13 @@ def _call_with_scope(func, scope_name, args, kwargs):
     with Scope(scope_name):
         return func(*args, **kwargs)
 
+class Services:
+    '''Provides interface for getting dependencies'''
+    def __getattr__(self, key):
+        return get_current_scope().container.get(key)
+
+SERVICES = Services()
+
 def inject(*injections):
     '''Resolves dependencies using global container and passed it with optional parameters'''
     def _decorate(func):

@@ -112,7 +112,7 @@ class WrappersTests(TestCase):
         msg = 'register_func should wrap value to callbale that returns the value'
         self.assertEqual(actual, (name, one, param), msg=msg)
 
-class InjectTests(TestCase):
+class InjectionTests(TestCase):
     def test_inject(self):
         one = object()
         two = lambda: one
@@ -232,6 +232,31 @@ class ScopeTests(TestCase):
         msg = 'wrap_with_scope should wrap passed function call with scope'
         self.assertEqual(one(), 1, msg)
         self.assertEqual(two(), 2, msg)
+
+class ServicesTests(TestCase):
+    def test_injection(self):
+        one = object()
+        two = lambda: one
+        ioc.register_single('one', one)
+        ioc.register_func('two', two)
+
+        msg = 'services should return registered dependencies'
+        self.assertEqual(ioc.SERVICES.one, one, msg=msg)
+        self.assertEqual(ioc.SERVICES.two, two, msg=msg)
+
+    def test_scope_injection(self):
+        one = object()
+        two = object()
+        with ioc.Scope('one'):
+            ioc.register_single('dep', one)
+        with ioc.Scope('two'):
+            ioc.register_single('dep', two)
+
+        msg = 'services should return registered dependencies in current scope'
+        with ioc.Scope('one'):
+            self.assertEqual(ioc.SERVICES.dep, one, msg=msg)
+        with ioc.Scope('two'):
+            self.assertEqual(ioc.SERVICES.dep, two, msg=msg)
 
 if __name__ == '__main__':
     main()
