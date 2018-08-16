@@ -17,17 +17,17 @@ class NodeRenderingTests(TestCase):
         with Scope('NodeRenderingTests'):
             register_defaults()
 
-    # @scope('NodeRenderingTests')
-    # def test_render(self):
-    #     self.parent_node.globals['some_key'] = 'some value'
+    @scope('NodeRenderingTests')
+    def test_render(self):
+        self.parent_node.globals['some_key'] = 'some value'
 
-    #     node = core.render(self.xml_node, RenderArgs(self.xml_node, self.parent_node))
+        node = core.render(self.xml_node, RenderArgs(self.xml_node, self.parent_node))
 
-    #     msg = 'parse should init node with right passed xml_node'
-    #     self.assertIsInstance(node, Node, msg=msg)
+        msg = 'parse should init node with right passed xml_node'
+        self.assertIsInstance(node, Node, msg=msg)
 
-    #     msg = 'parse should init node with passed parent'
-    #     self.assertEqual(node.globals['some_key'], 'some value', msg=msg)
+        msg = 'parse should init node with passed parent'
+        self.assertEqual(node.globals['some_key'], 'some value', msg=msg)
 
 class SomeObject:
     def __init__(self):

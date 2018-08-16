@@ -113,125 +113,60 @@ class ObservableEntityTests(TestCase):
         self.assertEqual(self.callback.call_count, 1, msg=msg)
 
 class InheritedDictTests(TestCase):
-    def _create_inh_dict(self, own, parent):
-        inh_dict = InheritedDict(own)
-        if parent:
-            inh_dict.inherit(parent)
-        return inh_dict
+    def setUp(self):
+        parent = InheritedDict()
+        parent['one'] = 1
+        parent['two'] = 2
+        self.parent = parent
 
-    @case({})
-    @case({'key': 'value'})
-    @case({'key': 'value', 'two': 1})
-    def test_dict_source(self, source):
-        inh_dict = InheritedDict(source)
+        self.globs = InheritedDict(InheritedDict(parent))
+        self.globs['two'] = 'two'
+        self.globs['three'] = 'three'
 
-        msg = '__init__ should copy values from source dict'
-        self.assertDictEqual(inh_dict.to_dictionary(), source, msg)
+    def test_globals_keys(self):
+        self.assertEqual(self.globs['one'], 1, 'Globals should get values from parent')
 
-    @case({}, 'key', 'value')
-    @case({'key': 'value'}, 'key', 1)
-    @case({'key': 'value', 'two': 1}, 'two', 'new value')
-    def test_inherited_dict_source(self, source, key, value):
-        source = InheritedDict(source)
+        msg = 'Globals should get own value if key exists'
+        self.assertEqual(self.globs['two'], 'two', msg)
+        self.assertEqual(self.globs['three'], 'three', msg)
 
-        inh_dict = InheritedDict(source)
+    def test_dictionary(self):
+        msg = 'to_dictionary should return dictionary with all values'
+        self.assertEqual(
+            self.globs.to_dictionary(),
+            {'one': 1, 'two': 'two', 'three': 'three'},
+            msg)
 
-        msg = '__init__ should inherit from source inherited dict'
-        self.assertDictEqual(inh_dict.to_dictionary(), source.to_dictionary(), msg)
-
-        source[key] = value
-        self.assertEqual(inh_dict[key], source[key], msg)
-
-    @case({}, 'key', 'value')
-    @case({'key': 'value'}, 'key', 1)
-    @case({'key': 'value', 'two': 1}, 'two', 'new value')
-    def inherit_should_set_parent_dict(self, parent, key, value):
-        parent = InheritedDict(parent)
-        inh_dict = InheritedDict()
-
-        inh_dict.inherit(parent)
-
-        msg = 'inherit should use passed dict as parent'
-        self.assertDictEqual(inh_dict.to_dictionary(), parent.to_dictionary(), msg)
-
-        parent[key] = value
-        self.assertEqual(inh_dict[key], parent[key], msg)
-
-    @case(None, {'key': 'value'}, {'key': 'value'})
-    @case({}, {'key': 'value'}, {'key': 'value'})
-    @case({'key': 'value'}, {}, {'key': 'value'})
-    @case({'key': 'value'}, {'key': 'own value'}, {'key': 'own value'})
-    @case({'key': 'value', 'one': 1}, {'key': 'own value'}, {'key': 'own value', 'one': 1})
-    def test_keys(self, parent, own, result):
-        parent = InheritedDict(parent) if parent else None
-        inh_dict = self._create_inh_dict(own, parent)
-
-        msg = 'value by key should return own value, if it exists, otherwise value from parent'
-        self.assertDictEqual(inh_dict.to_dictionary(), result, msg)
-
-    @case({'key': 'own value'}, 'key')
-    def test_remove_key(self, source, key):
-        inh_dict = InheritedDict(source)
-
-        inh_dict.remove_key(key)
+    def test_remove_keys(self):
+        self.globs.remove_key('two')
+        self.globs.remove_key('three')
 
         msg = 'remove_key should remove own key'
-        self.assertFalse(inh_dict.has_key(key), msg)
+        self.assertEqual(self.globs['two'], 2, msg)
 
-    @case({'key': 'value'}, {'key': 'own value'}, 'key', 'value')
-    def test_remove_key_start_using_parent(self, parent, own, key, value):
-        parent = InheritedDict(parent)
-        inh_dict = self._create_inh_dict(own, parent)
+        with self.assertRaises(KeyError, msg=msg):
+            self.globs['three']
 
-        inh_dict.remove_key(key)
+    @case('one', True)
+    @case('two', True)
+    @case('three', True)
+    @case('key', False)
+    def test_has_keys(self, key, expected):
+        msg = 'has_key should return true for existant keys and false in other case'
+        self.assertEqual(self.globs.has_key(key), expected, msg)
 
-        msg = 'remove_key should remove own key and use parent'
-        self.assertTrue(inh_dict.has_key(key), msg)
-        self.assertEqual(inh_dict[key], value, msg)
-
-    @case(None, {}, 'key', False)
-    @case({}, {}, 'key', False)
-    @case({'key': 'value'}, {}, 'key', True)
-    @case({'key': 'value'}, {'key': 'value'}, 'key', True)
-    @case(None, {'key': 'value'}, 'key', True)
-    @case({}, {'key': 'value'}, 'key', True)
-    @case({'key': 'value'}, {}, 'other key', False)
-    @case({}, {'key': 'value'}, 'other key', False)
-    def test_has_keys(self, parent, source, key, expected):
-        parent = InheritedDict(parent) if parent else None
-        inh_dict = self._create_inh_dict(source, parent)
-
-        actual = inh_dict.has_key(key)
-
-        msg = 'has_key should return true for existant keys, otherwise false'
-        self.assertEqual(actual, expected, msg)
-
-    def test_raises(self):
-        inh_dict = InheritedDict()
-
+    @case('key')
+    @case('hoho')
+    @case('')
+    @case(' ')
+    def test_raises(self, key):
         with self.assertRaises(KeyError, msg='KeyError should be raised for unknown key'):
-            inh_dict['some key']
+            self.globs[key]
 
-    def test_notifying_on_change(self):
-        inh_dict = InheritedDict()
+    def test_notifying(self):
         callback = Mock()
-        key = 'key'
-
-        inh_dict.observe(key, callback)
-        inh_dict[key] = 2
-
-        msg = 'change event should be raised if key changed'
-        self.assertTrue(callback.called, msg)
-
-    def test_notifying_on_parent_change(self):
-        parent = InheritedDict()
-        inh_dict = InheritedDict(parent)
-        callback = Mock()
-        key = 'key'
-
-        inh_dict.observe(key, callback)
-        parent[key] = 2
-
+        self.globs.observe('one', callback)
+        self.parent['one'] = 2
         msg = 'change event should be raised if key changed in parent'
         self.assertTrue(callback.called, msg)
 
@@ -254,20 +189,6 @@ class InheritedDictTests(TestCase):
 
         msg = 'get should return passed default in case key is not exists'
         self.assertEqual(value, default, msg)
-
-    @case(0)
-    @case(1)
-    @case(10)
-    def test_len_should_return_keys_count(self, count):
-        inh_dict = InheritedDict()
-        for i in range(count):
-            inh_dict[str(i)] = i
-
-        msg = 'len should return keys count'
-        self.assertEqual(len(inh_dict), count, msg)
-
-    def test_inherit(self):
-        parent_dict = InheritedDict()
 
 if __name__ == '__main__':
     main()

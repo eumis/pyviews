@@ -68,13 +68,17 @@ class ObservableEntity(Observable):
 
 class InheritedDict(Observable):
     '''Dictionary that pulls value from parent if doesn't have own'''
-    def __init__(self, parent=None):
+    def __init__(self, source=None):
         super().__init__()
-        self._container = parent.to_dictionary() if parent else {}
-        self._parent = parent
-        if self._parent:
-            self._parent.observe_all(self._parent_changed)
+        self._parent = None
+        self._container = {}
         self._own_keys = set()
+
+        if isinstance(source, InheritedDict):
+            self.inherit(source)
+        elif source:
+            self._container = source.copy()
+            self._own_keys = set(self._container.keys())
 
     def __getitem__(self, key):
         return self._container[key]
@@ -96,7 +100,21 @@ class InheritedDict(Observable):
             return
         self._set_value(key, value, old_value)
 
-    def to_dictionary(self):
+    def __len__(self):
+        return len(self._container)
+
+    def inherit(self, parent):
+        '''Inherit passed dictionary'''
+        if self._parent == parent:
+            return
+        if self._parent:
+            self._parent.release_all(self._parent_changed)
+        self_values = {key: self._container[key] for key in self._own_keys}
+        self._container = {**parent.to_dictionary(), **self_values}
+        self._parent = parent
+        self._parent.observe_all(self._parent_changed)
+
+    def to_dictionary(self) -> dict:
         '''Returns all values as dict'''
         return self._container.copy()
 

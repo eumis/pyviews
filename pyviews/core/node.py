@@ -17,7 +17,7 @@ class RenderArgs(dict):
         super().__init__()
         self['parent_node'] = parent_node
         self['xml_node'] = xml_node
-        self['parent_context'] = None if parent_node is None else parent_node.context
+        self['parent_context'] = None
 
     def get_args(self, inst_type):
         '''Returns tuple with args and kwargs to pass it to inst_type constructor'''
@@ -33,16 +33,11 @@ class RenderArgs(dict):
 
 class Node:
     '''Represents instance or instance wrapper created from xml node.'''
-    def __init__(self, xml_node: XmlNode, parent_context=None):
+    def __init__(self, xml_node: XmlNode, *args, **kwargs):
         self._child_nodes = []
         self._bindings = []
         self._xml_node = xml_node
-        self.context = {} if parent_context is None else \
-                       {key: _inherit_value(value) \
-                        for (key, value) in parent_context.items()}
-        if 'globals' not in self.context:
-            self.context['globals'] = InheritedDict()
-        self.globals['node'] = self
+        self._globals = InheritedDict({'node': self})
 
     @property
     def xml_node(self):
@@ -50,42 +45,11 @@ class Node:
         return self._xml_node
 
     @property
-    def globals(self):
+    def globals(self) -> InheritedDict:
         '''Values used with expression executing'''
-        return self.context['globals']
+        return self._globals
 
     def add_binding(self, binding: Binding):
         '''Stores binding'''
         binding.add_error_info = lambda error: error.add_view_info(self._xml_node.view_info)
         self._bindings.append(binding)
-
-    def destroy(self):
-        '''Destroys itself'''
-        self.destroy_children()
-        self._destroy_bindings()
-
-    def _destroy_bindings(self):
-        for binding in self._bindings:
-            binding.destroy()
-        self._bindings = []
-
-    @inject('render')
-    def render_children(self, render=None):
-        '''Creates nodes for children'''
-        self.destroy_children()
-        for xml_node in self.xml_node.children:
-            args = self.get_render_args(xml_node)
-            self._child_nodes.append(render(xml_node, args))
-
-    def destroy_children(self):
-        '''Destroys children'''
-        for child in self._child_nodes:
-            child.destroy()
-        self._child_nodes = []
-
-    def get_render_args(self, xml_node: XmlNode):
-        '''Returns NodeArgs for children creation'''
-        return RenderArgs(xml_node, self)
-
-def _inherit_value(value):
-    return InheritedDict(value) if isinstance(value, InheritedDict) else value
