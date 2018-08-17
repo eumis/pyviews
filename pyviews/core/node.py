@@ -3,7 +3,6 @@
 from collections import namedtuple
 from inspect import signature, Parameter
 from pyviews.core import CoreError
-from pyviews.core.ioc import inject
 from pyviews.core.xml import XmlNode
 from pyviews.core.observable import InheritedDict
 from pyviews.core.binding import Binding
@@ -32,12 +31,13 @@ class RenderArgs(dict):
         return RenderArgs.Result(args, kwargs)
 
 class Node:
-    '''Represents instance or instance wrapper created from xml node.'''
+    '''Contains bindings and instance rendered from xml node'''
     def __init__(self, xml_node: XmlNode, *args, **kwargs):
         self._child_nodes = []
         self._bindings = []
         self._xml_node = xml_node
         self._globals = InheritedDict({'node': self})
+        self._instance = None
 
     @property
     def xml_node(self):
@@ -48,6 +48,11 @@ class Node:
     def globals(self) -> InheritedDict:
         '''Values used with expression executing'''
         return self._globals
+
+    @property
+    def inst(self):
+        '''Returns rendered instance'''
+        return self._instance
 
     def add_binding(self, binding: Binding):
         '''Stores binding'''

@@ -99,7 +99,7 @@ class Parser:
         node = self._items[-1].node
         node.text = '' if text is None else text
 
-    def parse(self, xml_file, view_name=None):
+    def parse(self, xml_file, view_name=None) -> XmlNode:
         '''Parses xml file with xml_path and returns XmlNode'''
         self._setup_parser()
         try:

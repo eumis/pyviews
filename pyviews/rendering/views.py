@@ -1,11 +1,12 @@
 '''View logic'''
 
-from sys import exc_info
 from os.path import join
+from sys import exc_info
+
 from pyviews.core import CoreError, ViewInfo
 from pyviews.core.ioc import inject
-from pyviews.core.xml import Parser
 from pyviews.core.node import RenderArgs
+from pyviews.core.xml import Parser, XmlNode
 
 class ViewError(CoreError):
     '''Common error for parsing exceptions'''
@@ -29,8 +30,8 @@ def render_view(view_name, render=None):
 _XML_CACHE = {}
 
 @inject('views_folder')
-@inject('view_ext')
-def get_view_root(view_name, views_folder=None, view_ext=None):
+@inject('view_ext', 'views_folder')
+def get_view_root(view_name: str, views_folder: str = None, view_ext: str = None) -> XmlNode:
     '''Parses xml file and return root XmlNode'''
     try:
         path = join(views_folder, '{0}.{1}'.format(view_name, view_ext))
