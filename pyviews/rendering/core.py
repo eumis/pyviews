@@ -2,10 +2,15 @@
 
 from sys import exc_info
 from importlib import import_module
-from pyviews.core import ioc, CoreError
+from inspect import signature, Parameter
+from typing import Tuple, List, Dict, Any
+from pyviews.core import CoreError
+from pyviews.core.ioc import SERVICES as deps, DependencyError
 from pyviews.core.reflection import import_path
 from pyviews.core.xml import XmlNode, XmlAttr
-from pyviews.core.node import Node, RenderArgs
+from pyviews.core.node import Node, RenderArgs, InstanceNode
+from pyviews.core.observable import InheritedDict
+from pyviews.rendering.setup import NodeSetup
 from pyviews.rendering.expression import is_code_expression, parse_expression
 from pyviews.rendering.binding import BindingArgs
 
@@ -13,11 +18,12 @@ class RenderingError(CoreError):
     '''Error for rendering'''
     pass
 
-@ioc.inject('create_node')
-def render(xml_node: XmlNode, args: RenderArgs, create_node=None):
+def render(xml_node: XmlNode, args: RenderArgs) -> Node:
     '''Creates instance node'''
     try:
-        node = create_node(xml_node, args)
+        node = deps.create_node(xml_node, args)
+        node_setup = get_setup(node)
+        node.setup(node_setup.setters)
         run_steps(node, args)
         return node
     except CoreError as error:
@@ -30,16 +36,29 @@ def render(xml_node: XmlNode, args: RenderArgs, create_node=None):
         error.add_cause(info[1])
         raise error from info[1]
 
-@ioc.inject('convert_to_node')
-def create_node(xml_node: XmlNode, render_args: RenderArgs, convert_to_node=None):
+def create_node_old(xml_node: XmlNode, render_args: RenderArgs) -> Node:
     '''Initializes instance node from passed arguments'''
-    node_class = _get_node_class(xml_node)
-    node = create_inst(node_class, render_args)
-    if not isinstance(node, Node):
-        node = convert_to_node(node, render_args)
-    return node
+    inst_type = _get_inst_type(xml_node)
+    inst = create_inst_old(inst_type, render_args)
+    if not isinstance(inst, Node):
+        inst = deps.convert_to_node(inst, render_args)
+    return inst
 
-def _get_node_class(xml_node: XmlNode):
+def create_inst_old(inst_class, args: RenderArgs):
+    '''Creates class instance with args'''
+    args = args.get_args(inst_class)
+    return inst_class(*args.args, **args.kwargs)
+
+def create_node(xml_node: XmlNode, **init_args):
+    '''Creates node from xml node using namespace as module and tag name as class name'''
+    inst_type = _get_inst_type(xml_node)
+    init_args['xml_node'] = xml_node
+    inst = create_inst(inst_type, **init_args)
+    if not isinstance(inst, Node):
+        inst = convert_to_node(inst, **init_args)
+    return inst
+
+def _get_inst_type(xml_node: XmlNode):
     (module_path, class_name) = (xml_node.namespace, xml_node.name)
     try:
         return import_module(module_path).__dict__[class_name]
@@ -47,26 +66,40 @@ def _get_node_class(xml_node: XmlNode):
         message = 'Import "{0}.{1}" is failed.'.format(module_path, class_name)
         raise RenderingError(message, xml_node.view_info)
 
-def create_inst(inst_class, args: RenderArgs):
+def create_inst(inst_type, **init_args):
     '''Creates class instance with args'''
-    args = args.get_args(inst_class)
-    return inst_class(*args.args, **args.kwargs)
+    args, kwargs = get_init_args(inst_type, **init_args)
+    return inst_type(*args, **kwargs)
 
-def convert_to_node(inst, args: RenderArgs):
-    '''Wraps instance to instance node and returns it'''
-    raise NotImplementedError(
-        '''
-            convert_to_node is not implemented.
-            Add implementation to ioc container with "convert_to_node" key.
-        ''')
+def get_init_args(inst_type, **init_args) -> Tuple[List, Dict]:
+    '''Returns tuple with args and kwargs to pass it to inst_type constructor'''
+    try:
+        parameters = signature(inst_type).parameters.values()
+        args = [init_args[p.name] for p in parameters if p.default == Parameter.empty]
+        kwargs = {p.name: init_args[p.name] for p in parameters \
+                    if p.default != Parameter.empty and p.name in init_args}
+    except KeyError as key_error:
+        msg_format = 'parameter with key "{0}" is not found in node args'
+        raise RenderingError(msg_format.format(key_error.args[0]))
+    return (args, kwargs)
 
-@ioc.inject('container')
-def run_steps(node: Node, args: RenderArgs, container=None):
+def convert_to_node(instance, xml_node: XmlNode, node_globals: InheritedDict = None) -> InstanceNode:
+    '''Wraps passed instance with InstanceNode'''
+    return InstanceNode(instance, xml_node, node_globals)
+
+def get_setup(node: Node) -> NodeSetup:
+    '''Gets node setup for passed node'''
+    try:
+        return deps.for_(node.inst.__class__).setup
+    except DependencyError:
+        return deps.for_(node.__class__).setup
+
+def run_steps(node: Node, args: RenderArgs):
     '''Runs instance node creation steps'''
     try:
-        steps = container.get('rendering_steps', node.__class__)
-    except ioc.DependencyError:
-        steps = container.get('rendering_steps')
+        steps = deps.for_(node.__class__).rendering_steps
+    except DependencyError:
+        steps = deps.rendering_steps
 
     for run_step in steps:
         run_step(node, args)
@@ -92,24 +125,22 @@ def apply_attributes(node, xml_node=None):
     for attr in xml_node.attrs:
         apply_attribute(node, attr)
 
-@ioc.inject('binding_factory')
-def apply_attribute(node: Node, attr: XmlAttr, binding_factory=None):
+def apply_attribute(node: Node, attr: XmlAttr):
     '''Maps xml attribute to instance node property and setups bindings'''
     modifier = get_modifier(attr)
     stripped_value = attr.value.strip() if attr.value else ''
     if is_code_expression(stripped_value):
         (binding_type, expr_body) = parse_expression(stripped_value)
         args = BindingArgs(node, attr, modifier, expr_body)
-        apply_binding = binding_factory.get_apply(binding_type, args)
+        apply_binding = deps.binding_factory.get_apply(binding_type, args)
         apply_binding(args)
     else:
         modifier(node, attr.name, attr.value)
 
-@ioc.inject('set_attr')
-def get_modifier(attr: XmlAttr, set_attr=None):
+def get_modifier(attr: XmlAttr):
     '''Returns modifier for xml attribute'''
     if attr.namespace is None:
-        return set_attr
+        return deps.set_attr
     return import_path(attr.namespace)
 
 @render_step

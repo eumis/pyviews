@@ -102,8 +102,15 @@ def _call_with_scope(func, scope_name, args, kwargs):
 
 class Services:
     '''Provides interface for getting dependencies'''
+    def __init__(self, param=None):
+        self._param = param
+
     def __getattr__(self, key):
-        return get_current_scope().container.get(key)
+        return get_current_scope().container.get(key, self._param)
+
+    def for_(self, param):
+        return Services(param)
+
 
 SERVICES = Services()
 

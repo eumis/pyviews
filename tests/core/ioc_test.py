@@ -258,5 +258,15 @@ class ServicesTests(TestCase):
         with ioc.Scope('two'):
             self.assertEqual(ioc.SERVICES.dep, two, msg=msg)
 
+    def test_for_(self):
+        one = object()
+        two = object()
+        ioc.register_single('dep', one, 'one')
+        ioc.register_single('dep', two, 'two')
+
+        msg = 'for_ should return services that using passed param'
+        self.assertEqual(ioc.SERVICES.for_('one').dep, one, msg=msg)
+        self.assertEqual(ioc.SERVICES.for_('two').dep, two, msg=msg)
+
 if __name__ == '__main__':
     main()
