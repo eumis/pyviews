@@ -2,14 +2,11 @@
 
 from sys import exc_info
 from importlib import import_module
-from inspect import signature, Parameter
-from typing import Tuple, List, Dict, Any
 from pyviews.core import CoreError
 from pyviews.core.ioc import SERVICES as deps, DependencyError
 from pyviews.core.reflection import import_path
 from pyviews.core.xml import XmlNode, XmlAttr
-from pyviews.core.node import Node, RenderArgs, InstanceNode
-from pyviews.core.observable import InheritedDict
+from pyviews.core.node import Node, RenderArgs
 from pyviews.rendering.setup import NodeSetup
 from pyviews.rendering.expression import is_code_expression, parse_expression
 from pyviews.rendering.binding import BindingArgs
@@ -18,7 +15,7 @@ class RenderingError(CoreError):
     '''Error for rendering'''
     pass
 
-def render(xml_node: XmlNode, args: RenderArgs) -> Node:
+def render_old(xml_node: XmlNode, args: RenderArgs) -> Node:
     '''Creates instance node'''
     try:
         node = deps.create_node(xml_node, args)
@@ -44,20 +41,6 @@ def create_node_old(xml_node: XmlNode, render_args: RenderArgs) -> Node:
         inst = deps.convert_to_node(inst, render_args)
     return inst
 
-def create_inst_old(inst_class, args: RenderArgs):
-    '''Creates class instance with args'''
-    args = args.get_args(inst_class)
-    return inst_class(*args.args, **args.kwargs)
-
-def create_node(xml_node: XmlNode, **init_args):
-    '''Creates node from xml node using namespace as module and tag name as class name'''
-    inst_type = _get_inst_type(xml_node)
-    init_args['xml_node'] = xml_node
-    inst = create_inst(inst_type, **init_args)
-    if not isinstance(inst, Node):
-        inst = convert_to_node(inst, **init_args)
-    return inst
-
 def _get_inst_type(xml_node: XmlNode):
     (module_path, class_name) = (xml_node.namespace, xml_node.name)
     try:
@@ -66,26 +49,11 @@ def _get_inst_type(xml_node: XmlNode):
         message = 'Import "{0}.{1}" is failed.'.format(module_path, class_name)
         raise RenderingError(message, xml_node.view_info)
 
-def create_inst(inst_type, **init_args):
+def create_inst_old(inst_class, args: RenderArgs):
     '''Creates class instance with args'''
-    args, kwargs = get_init_args(inst_type, **init_args)
-    return inst_type(*args, **kwargs)
+    args = args.get_args(inst_class)
+    return inst_class(*args.args, **args.kwargs)
 
-def get_init_args(inst_type, **init_args) -> Tuple[List, Dict]:
-    '''Returns tuple with args and kwargs to pass it to inst_type constructor'''
-    try:
-        parameters = signature(inst_type).parameters.values()
-        args = [init_args[p.name] for p in parameters if p.default == Parameter.empty]
-        kwargs = {p.name: init_args[p.name] for p in parameters \
-                    if p.default != Parameter.empty and p.name in init_args}
-    except KeyError as key_error:
-        msg_format = 'parameter with key "{0}" is not found in node args'
-        raise RenderingError(msg_format.format(key_error.args[0]))
-    return (args, kwargs)
-
-def convert_to_node(instance, xml_node: XmlNode, node_globals: InheritedDict = None) -> InstanceNode:
-    '''Wraps passed instance with InstanceNode'''
-    return InstanceNode(instance, xml_node, node_globals)
 
 def get_setup(node: Node) -> NodeSetup:
     '''Gets node setup for passed node'''

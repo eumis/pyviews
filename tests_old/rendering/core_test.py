@@ -21,7 +21,7 @@ class NodeRenderingTests(TestCase):
     def test_render(self):
         self.parent_node.globals['some_key'] = 'some value'
 
-        node = core.render(self.xml_node, RenderArgs(self.xml_node, self.parent_node))
+        node = core.render_old(self.xml_node, RenderArgs(self.xml_node, self.parent_node))
 
         msg = 'parse should init node with right passed xml_node'
         self.assertIsInstance(node, Node, msg=msg)
@@ -43,7 +43,7 @@ class ParseObjectNodeTests(TestCase):
     def test_parse_raises(self):
         msg = 'parse should raise error if method "convert_to_node" is not registered'
         with self.assertRaises(core.RenderingError, msg=msg):
-            core.render(self.xml_node, core.RenderArgs(self.xml_node))
+            core.render_old(self.xml_node, core.RenderArgs(self.xml_node))
 
 def set_attr():
     pass
