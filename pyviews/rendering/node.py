@@ -10,7 +10,7 @@ from pyviews.core.node import Node, InstanceNode
 from pyviews.core.xml import XmlNode
 from pyviews.core.compilation import CompilationError
 from pyviews.core.observable import InheritedDict
-from pyviews.rendering.core import RenderingError
+from pyviews.rendering import RenderingError
 
 class Code(Node):
     '''Wrapper under python code inside view'''

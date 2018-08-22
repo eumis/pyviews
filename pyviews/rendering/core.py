@@ -7,13 +7,10 @@ from pyviews.core.ioc import SERVICES as deps, DependencyError
 from pyviews.core.reflection import import_path
 from pyviews.core.xml import XmlNode, XmlAttr
 from pyviews.core.node import Node, RenderArgs
+from pyviews.rendering import RenderingError
 from pyviews.rendering.setup import NodeSetup
 from pyviews.rendering.expression import is_code_expression, parse_expression
 from pyviews.rendering.binding import BindingArgs
-
-class RenderingError(CoreError):
-    '''Error for rendering'''
-    pass
 
 def render_old(xml_node: XmlNode, args: RenderArgs) -> Node:
     '''Creates instance node'''
