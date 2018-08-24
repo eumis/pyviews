@@ -33,14 +33,14 @@ class RenderArgs(dict):
 
 class Node:
     '''Represents node with properties and bindings created from xml node'''
-    def __init__(self, xml_node: XmlNode, globals: InheritedDict = None):
+    def __init__(self, xml_node: XmlNode, node_globals: InheritedDict = None):
         self._child_nodes = []
         self._bindings = []
         self._xml_node = xml_node
         self._globals = InheritedDict({'node': self})
-        if globals:
-            self._globals.inherit(globals)
-        self._setters = []
+        if node_globals:
+            self._globals.inherit(node_globals)
+        self.setter = None
 
     @property
     def xml_node(self) -> XmlNode:
@@ -51,16 +51,6 @@ class Node:
     def globals(self) -> InheritedDict:
         '''Values used with expression executing'''
         return self._globals
-
-    @property
-    def setters(self) -> List:
-        '''Returns property setters'''
-        return self._setters
-
-    def setup(self, setters: List = None):
-        '''Setups node'''
-        if setters:
-            self._setters = setters
 
     def add_binding(self, binding: Binding):
         '''Stores binding'''

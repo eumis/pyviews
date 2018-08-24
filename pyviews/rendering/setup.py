@@ -1,22 +1,17 @@
 '''Used for node setup'''
 
 from typing import List
-from pyviews.core.node import SETTER
+from pyviews.core.node import SETTER, Node
 
 class NodeSetup:
     '''Contains node setters, render steps, e.t.c'''
-    def __init__(self, setters: List[SETTER] = None, render_steps=None, get_child_init_args=None):
-        self._setters = setters
+    def __init__(self, setter=None, render_steps=None, get_child_init_args=None):
+        self._setter = setter
         self._render_steps = render_steps
         self._get_child_init_args = get_child_init_args
 
     @property
-    def setters(self):
-        '''Returns property setters'''
-        return self._setters
-
-    @property
-    def render_steps(self):
+    def render_steps(self) -> List:
         '''Returns render steps'''
         return self._render_steps
 
@@ -26,3 +21,7 @@ class NodeSetup:
         if self._get_child_init_args:
             args = self._get_child_init_args(node)
         return args if args else {}
+
+    def apply(self, node: Node):
+        '''Applies setup to passed node'''
+        node.setter = self._setter

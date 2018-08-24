@@ -1,7 +1,7 @@
 from unittest import TestCase, main
 from unittest.mock import Mock
 from pyviews.testing import case
-from pyviews.core.xml import XmlNode, XmlAttr
+from pyviews.core.xml import XmlNode
 from pyviews.core.observable import InheritedDict, Observable
 from pyviews.core.compilation import CompilationError
 from pyviews.core.node import Node, InstanceNode
