@@ -10,7 +10,7 @@ class NodeSetupTests(TestCase):
     @case(lambda node: {}, {})
     @case(lambda node: {'one': 1, 'two': 'value'}, {'one': 1, 'two': 'value'})
     def test_get_child_args(self, get_child_init_args, expected_args):
-        setup = NodeSetup(get_child_init_args=get_child_init_args)
+        setup = NodeSetup(child_init_args_getter=get_child_init_args)
 
         actual_args = setup.get_child_init_args(Mock())
 

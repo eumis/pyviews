@@ -1,15 +1,16 @@
 from unittest import TestCase, main
 from unittest.mock import Mock, call, patch
 from pyviews.testing import case
-from pyviews.core.node import Node
+from pyviews.core.node import Node, InstanceNode
 from pyviews.core.xml import XmlAttr
-from pyviews.core.ioc import Scope, register_single
+from pyviews.core.ioc import Scope, register_single, scope
+from pyviews.rendering import RenderingError
 from pyviews.rendering.modifiers import import_global
 from pyviews.rendering.binding import BindingFactory, add_default_rules, BindingArgs
 from pyviews.rendering.setup import NodeSetup
 from pyviews.rendering.flow import default_setter, get_setter
 from pyviews.rendering.flow import apply_attribute, apply_attributes
-from pyviews.rendering.flow import run_steps
+from pyviews.rendering.flow import run_steps, get_node_setup
 
 class RenderingTests(TestCase):
     @case(0, {'one': 1})
@@ -25,6 +26,73 @@ class RenderingTests(TestCase):
         msg = 'run_steps should call all steps with passed args'
         for step in steps:
             self.assertEqual(step.call_args, call(node, node_setup=node_setup, **args), msg)
+
+    def test_get_node_setup_should_return_default_setup(self):
+        node_setup = NodeSetup()
+        with Scope('test_get_node_setup_def'):
+            register_single('setup', node_setup)
+
+            node = Node(Mock())
+            actual_setup = get_node_setup(node)
+
+        msg = 'get_node_setup should return default setup'
+        self.assertEqual(actual_setup, node_setup, msg)
+
+    @case(Node, Node(Mock()))
+    @case(InstanceNode, InstanceNode(Mock(), Mock()))
+    def test_get_node_setup_should_return_setup_by_node_type(self, node_type, node):
+        node_setup = NodeSetup()
+        with Scope('test_get_node_setup_node'):
+            register_single('setup', node_setup, node_type)
+
+            actual_setup = get_node_setup(node)
+
+        msg = 'get_node_setup should return setup by node type'
+        self.assertEqual(actual_setup, node_setup, msg)
+
+    def test_get_node_setup_should_return_setup_by_instance_type(self):
+        node_setup = NodeSetup()
+        with Scope('test_get_node_setup_inst'):
+            register_single('setup', node_setup, XmlAttr)
+            node = InstanceNode(XmlAttr('name'), Mock())
+
+            actual_setup = get_node_setup(node)
+
+        msg = 'get_node_setup should return setup by instance type'
+        self.assertEqual(actual_setup, node_setup, msg)
+
+    def test_get_node_setup_order(self):
+        inst_setup = NodeSetup()
+        type_setup = NodeSetup()
+        def_setup = NodeSetup()
+
+        inst_node = Mock()
+        inst_node.instance = Mock()
+        cases = [
+            (InstanceNode(XmlAttr(''), Mock()), inst_setup),
+            (InstanceNode(Mock(), Mock()), type_setup),
+            (inst_node, def_setup)
+        ]
+
+        with Scope('test_get_node_setup_order'):
+            register_single('setup', inst_setup, XmlAttr)
+            register_single('setup', type_setup, Node)
+            register_single('setup', type_setup, InstanceNode)
+            register_single('setup', def_setup)
+
+            for node, expected_setup in cases:
+                actual_setup = get_node_setup(node)
+
+                msg = 'get_node_setup should try get in order: by instance, by node type, default'
+                self.assertEqual(actual_setup, expected_setup, msg)
+
+    def test_get_node_setup_raises(self):
+        node = Node(Mock())
+        with Scope('test_get_node_setup_raises'):
+            msg = 'get_node_setup should throw error in case node_setup is not registered'
+            with self.assertRaises(RenderingError, msg=msg):
+                get_node_setup(node)
+
 
 class AttributesRenderingTests(TestCase):
     def setUp(self):
@@ -108,6 +176,16 @@ class SetterTests(TestCase):
 
         msg = 'get_setter should return appropriate setter'
         self.assertEqual(actual_setter, expected_setter, msg)
+
+    @scope('modifier_tests')
+    @case('', '')
+    @case('', 'attr_name')
+    @case('tests.rendering.core_test.some_modifier_not', 'attr_name')
+    def test_get_setter_raises(self, namespace, name):
+        msg = 'get_setter should raise ImportError if namespace can''t be imported'
+        with self.assertRaises(ImportError, msg=msg):
+            xml_attr = XmlAttr(name, '', namespace)
+            get_setter(xml_attr)
 
 if __name__ == '__main__':
     main()

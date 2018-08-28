@@ -5,7 +5,7 @@ from pyviews.core import CoreError
 from pyviews.core.ioc import SERVICES as deps, DependencyError
 from pyviews.core.reflection import import_path
 from pyviews.core.xml import XmlNode, XmlAttr
-from pyviews.core.node import Node
+from pyviews.core.node import Node, InstanceNode
 from pyviews.rendering import RenderingError
 from pyviews.rendering.setup import NodeSetup
 from pyviews.rendering.expression import is_code_expression, parse_expression
@@ -29,12 +29,24 @@ def render(xml_node: XmlNode, **args) -> Node:
         error.add_cause(info[1])
         raise error from info[1]
 
+_DEPS_GETTERS = [
+    lambda node: deps.for_(node.instance.__class__),
+    lambda node: deps.for_(node.__class__),
+    lambda node: deps
+]
 def get_node_setup(node: Node) -> NodeSetup:
     '''Gets node setup for passed node'''
-    try:
-        return deps.for_(node.inst.__class__).setup
-    except DependencyError:
-        return deps.for_(node.__class__).setup
+    for get_deps in _DEPS_GETTERS:
+        try:
+            return get_deps(node).setup
+        except (DependencyError, AttributeError):
+            pass
+    if isinstance(node, InstanceNode):
+        msg = 'NodeSetup is not found for {0} with instance {1}'\
+              .format(node.__class__, node.instance.__class__)
+    else:
+        msg = 'NodeSetup is not found for {0}'.format(node.__class__)
+    raise RenderingError(msg)
 
 def run_steps(node: Node, node_setup: NodeSetup, **args):
     '''Runs instance node rendering steps'''
@@ -67,3 +79,9 @@ def get_setter(attr: XmlAttr):
 def default_setter(node: Node, key: str, value):
     '''Calls node setter'''
     node.setter(node, key, value)
+
+def render_children(node: Node, node_setup: NodeSetup = None, **args):
+    '''Render node children'''
+    child_args = node_setup.get_child_init_args(node, **args)
+    for xml_node in node.xml_node.children:
+        deps.render(xml_node, **child_args)
