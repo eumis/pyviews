@@ -29,17 +29,6 @@ class Container:
 
 _THREAD_LOCAL = thread_local()
 
-def get_current_scope():
-    '''return current scope'''
-    current_scope = getattr(_THREAD_LOCAL, 'current_scope', None)
-    if current_scope is None:
-        raise DependencyError("ioc is not set up for current thread")
-    return _THREAD_LOCAL.current_scope
-
-def set_current_scope(current_scope):
-    '''sets current scope'''
-    _THREAD_LOCAL.current_scope = current_scope
-
 class Scope:
     '''Dependencies scope'''
 
@@ -68,6 +57,17 @@ class Scope:
 
     def __exit__(self, exc_type, value, traceback):
         set_current_scope(self._previous_scope)
+
+def get_current_scope() -> Scope:
+    '''return current scope'''
+    current_scope = getattr(_THREAD_LOCAL, 'current_scope', None)
+    if current_scope is None:
+        raise DependencyError("ioc is not set up for current thread")
+    return _THREAD_LOCAL.current_scope
+
+def set_current_scope(current_scope: Scope):
+    '''sets current scope'''
+    _THREAD_LOCAL.current_scope = current_scope
 
 Scope('').__enter__()
 
