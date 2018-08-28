@@ -1,35 +1,9 @@
 '''Core classes for creation from xml nodes'''
 
-from collections import namedtuple
-from inspect import signature, Parameter
-from typing import List, Callable, Any
-from pyviews.core import CoreError
+from typing import Callable, Any
 from pyviews.core.xml import XmlNode
 from pyviews.core.observable import InheritedDict
 from pyviews.core.binding import Binding
-
-class RenderArgs(dict):
-    '''Wraps arguments for children nodes creations'''
-
-    Result = namedtuple('Args', ['args', 'kwargs'])
-
-    def __init__(self, xml_node: XmlNode, parent_node=None):
-        super().__init__()
-        self['parent_node'] = parent_node
-        self['xml_node'] = xml_node
-        self['parent_context'] = None
-
-    def get_args(self, inst_type):
-        '''Returns tuple with args and kwargs to pass it to inst_type constructor'''
-        try:
-            parameters = signature(inst_type).parameters.values()
-            args = [self[p.name] for p in parameters if p.default == Parameter.empty]
-            kwargs = {p.name: self[p.name] for p in parameters \
-                      if p.default != Parameter.empty and p.name in self}
-        except KeyError as key_error:
-            msg_format = 'parameter with key "{0}" is not found in node args'
-            raise CoreError(msg_format.format(key_error.args[0]))
-        return RenderArgs.Result(args, kwargs)
 
 class Node:
     '''Represents node with properties and bindings created from xml node'''
