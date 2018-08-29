@@ -75,39 +75,40 @@ class PropertyTests(TestCase):
         msg = 'get should return set value'
         self.assertEqual(actual, value, msg)
 
-
-    @case(1, None)
-    @case(None, 1)
-    @case(object(), object())
-    @case('value', 'another value')
-    def test_set_calls_setter(self, previous, value):
-        setter = Mock()
-        setter.side_effect = lambda node, prev, val: val
-        prop = Property('', setter)
-
-        prop.set(previous)
-        prop.set(value)
-
-        msg = 'set should call setter with passed value and previous value'
-        self.assertEqual(setter.call_args_list[0], call(None, None, previous), msg)
-        self.assertEqual(setter.call_args_list[1], call(None, previous, value), msg)
-
     @case(None)
     @case(Node(Mock()))
-    def test_set_calls_setter_with_passed_node(self, node):
-        setter = Mock()
+    def test_set_calls_setter_with_passed_node_and_value(self, node):
+        setter_mock = Mock()
+        setter = lambda node, val: (val, setter_mock(node, val))[0]
         prop = Property('', setter, node)
         value = 1
 
         prop.set(value)
 
         msg = 'set should call setter with passed node'
-        self.assertEqual(setter.call_args, call(node, None, value), msg)
+        self.assertEqual(setter_mock.call_args, call(node, value), msg)
+
+    @case(1, None)
+    @case(None, 1)
+    @case(object(), object())
+    @case('value', 'another value')
+    def test_set_calls_setter_with_previous(self, previous, value):
+        setter_mock = Mock()
+        setter = lambda node, val, prev: (val, setter_mock(node, val, prev))[0]
+        prop = Property('', setter)
+
+        prop.set(previous)
+        prop.set(value)
+
+        msg = 'set should call setter with passed value and previous value'
+        self.assertEqual(setter_mock.call_args_list[0], call(None, previous, None), msg)
+        self.assertEqual(setter_mock.call_args_list[1], call(None, value, previous), msg)
 
     @case(None)
     @case(Node(Mock()))
     def test_new_creates_property_with_node(self, node):
-        setter = Mock()
+        setter_mock = Mock()
+        setter = lambda node, val: (val, setter_mock(node, val))[0]
         prop = Property('', setter)
         value = 1
 
@@ -116,22 +117,7 @@ class PropertyTests(TestCase):
 
         msg = 'new should return new property for passed node'
         self.assertNotEqual(actual_prop, prop, msg)
-        self.assertEqual(setter.call_args, call(node, None, value), msg)
-
-    @case(None)
-    @case(1)
-    @case(object())
-    @case('value')
-    def test_set_sets_returned_setter_value(self, value):
-        setter = Mock()
-        setter.side_effect = lambda node, prev, val: val
-        prop = Property('', setter)
-        prop.set(value)
-
-        actual = prop.get()
-
-        msg = 'set should set value returned from setter'
-        self.assertEqual(actual, value, msg)
+        self.assertEqual(setter_mock.call_args, call(node, value), msg)
 
 if __name__ == '__main__':
     main()

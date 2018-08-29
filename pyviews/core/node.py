@@ -1,5 +1,6 @@
 '''Core classes for creation from xml nodes'''
 
+from inspect import signature
 from typing import Any
 from pyviews.core.xml import XmlNode
 from pyviews.core.observable import InheritedDict
@@ -67,7 +68,11 @@ class Property:
     def __init__(self, name, setter=None, node: Node = None):
         self.name = name
         self._value = None
-        self._setter = setter
+        self._setter = None
+        if setter:
+            args_count = len(signature(setter).parameters.values())
+            self._setter = setter if args_count == 3 else \
+                           lambda node, value, previous: setter(node, value)
         self._node = node
 
     def get(self):
@@ -76,7 +81,7 @@ class Property:
 
     def set(self, value):
         '''Sets value'''
-        self._value = self._setter(self._node, self._value, value) if self._setter else value
+        self._value = self._setter(self._node, value, self._value) if self._setter else value
 
     def new(self, node: Node):
         '''Creates property for node'''
