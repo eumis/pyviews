@@ -1,6 +1,6 @@
 '''Core classes for creation from xml nodes'''
 
-from typing import Callable, Any
+from typing import Any
 from pyviews.core.xml import XmlNode
 from pyviews.core.observable import InheritedDict
 from pyviews.core.binding import Binding
@@ -15,6 +15,20 @@ class Node:
         if node_globals:
             self._globals.inherit(node_globals)
         self.setter = None
+        self.properties = {}
+
+    def __getattribute__(self, key: str):
+        try:
+            properties = super().__getattribute__('properties')
+            return properties[key].get()
+        except (AttributeError, KeyError):
+            return super().__getattribute__(key)
+
+    def __setattr__(self, key: str, value):
+        if hasattr(self, 'properties') and key in self.properties:
+            self.properties[key].set(value)
+        else:
+            super().__setattr__(key, value)
 
     @property
     def xml_node(self) -> XmlNode:
@@ -39,8 +53,8 @@ class Node:
 
 class InstanceNode(Node):
     '''Represents Node that wraps instance created from xml node'''
-    def __init__(self, instance: Any, xml_node: XmlNode, globals: InheritedDict = None):
-        super().__init__(xml_node, globals)
+    def __init__(self, instance: Any, xml_node: XmlNode, node_globals: InheritedDict = None):
+        super().__init__(xml_node, node_globals)
         self._instance = instance
 
     @property
@@ -48,22 +62,22 @@ class InstanceNode(Node):
         '''Returns rendered instance'''
         return self._instance
 
-SETTER = Callable[[Node, str, Any], bool]
+class Property:
+    '''Class to define property'''
+    def __init__(self, name, setter=None, node: Node = None):
+        self.name = name
+        self._value = None
+        self._setter = setter
+        self._node = node
 
-def setter(func: [[Node, str, Any], bool]):
-    '''Calls decorated function and returns True'''
-    def _decorated(node, passed_key, value):
-        func(node, passed_key, value)
-        return True
-    return _decorated
+    def get(self):
+        '''Returns value'''
+        return self._value
 
-def keysetter(key: str):
-    '''Calls decorated function for passed key and returns True, otherwise returns False'''
-    def _decorate(func: SETTER):
-        def _decorated(node, passed_key, value):
-            if key == passed_key:
-                func(node, passed_key, value)
-                return True
-            return False
-        return _decorated
-    return _decorate
+    def set(self, value):
+        '''Sets value'''
+        self._value = self._setter(self._node, self._value, value) if self._setter else value
+
+    def new(self, node: Node):
+        '''Creates property for node'''
+        return Property(self.name, self._setter, node)

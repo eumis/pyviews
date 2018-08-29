@@ -1,9 +1,9 @@
 from unittest import TestCase, main
-from unittest.mock import Mock
+from unittest.mock import Mock, call
 from pyviews.testing import case
 from pyviews.core.xml import XmlNode
 from pyviews.core.observable import InheritedDict
-from pyviews.core.node import Node, setter, keysetter
+from pyviews.core.node import Node, Property
 
 class NodeTests(TestCase):
     def setUp(self):
@@ -30,40 +30,108 @@ class NodeTests(TestCase):
         msg = 'should inherit passed globals'
         self.assertDictContainsSubset(expected_dict, node.globals.to_dictionary(), msg)
 
-class SettersTests(TestCase):
-    @case('key', 'key', True)
-    @case('key', 'Key', False)
-    @case('key', 'KEY', False)
-    @case('key', 'other key', False)
-    def test_keysetter_filter_key(self, key, passed_key, called):
-        setter_mock = Mock()
-        decorated = keysetter(key)(setter_mock)
+    @case('key', 1)
+    @case('key', None)
+    @case('key', 'value')
+    @case('setter', 'value')
+    def test_setattr_sets_property(self, key, value):
+        node = Node(Mock())
+        node.properties = {key: Property(key)}
 
-        returned = decorated(None, passed_key, None)
+        setattr(node, key, value)
+        actual = getattr(node, key, value)
 
-        msg = 'keysetter should decorated function to be called only for passed key'
-        self.assertEqual(setter_mock.called, called, msg)
+        msg = 'setattr should set property from properties'
+        self.assertEqual(actual, value, msg)
 
-        msg = 'keysetter should decorated function to return True for passed key'
-        self.assertEqual(returned, called, msg)
+    def test_setattr_sets_own_property(self):
+        node = Node(Mock())
+        setter = lambda *args: None
 
-    def test_setter_returns_true(self):
-        setter_mock = Mock()
-        decorated = setter(setter_mock)
+        node.setter = setter
 
-        actual = decorated(None, None, None)
+        msg = 'setattr should set own property if key not in properties'
+        self.assertEqual(node.setter, setter, msg)
 
-        msg = 'setter should decorate function that returns true'
-        self.assertTrue(actual, msg)
+class PropertyTests(TestCase):
+    def test_default_get(self):
+        prop = Property('')
 
-    def test_setter_calls_decorated(self):
-        setter_mock = Mock()
-        decorated = setter(setter_mock)
+        actual = prop.get()
 
-        decorated(None, None, None)
+        msg = 'get by default should return None'
+        self.assertIsNone(actual, msg)
 
-        msg = 'setter should decorate function to call it'
-        self.assertTrue(setter_mock.called, msg)
+    @case(None)
+    @case(1)
+    @case(object())
+    @case('value')
+    def test_get_returns_set_value(self, value):
+        prop = Property('')
+        prop.set(value)
+
+        actual = prop.get()
+
+        msg = 'get should return set value'
+        self.assertEqual(actual, value, msg)
+
+
+    @case(1, None)
+    @case(None, 1)
+    @case(object(), object())
+    @case('value', 'another value')
+    def test_set_calls_setter(self, previous, value):
+        setter = Mock()
+        setter.side_effect = lambda node, prev, val: val
+        prop = Property('', setter)
+
+        prop.set(previous)
+        prop.set(value)
+
+        msg = 'set should call setter with passed value and previous value'
+        self.assertEqual(setter.call_args_list[0], call(None, None, previous), msg)
+        self.assertEqual(setter.call_args_list[1], call(None, previous, value), msg)
+
+    @case(None)
+    @case(Node(Mock()))
+    def test_set_calls_setter_with_passed_node(self, node):
+        setter = Mock()
+        prop = Property('', setter, node)
+        value = 1
+
+        prop.set(value)
+
+        msg = 'set should call setter with passed node'
+        self.assertEqual(setter.call_args, call(node, None, value), msg)
+
+    @case(None)
+    @case(Node(Mock()))
+    def test_new_creates_property_with_node(self, node):
+        setter = Mock()
+        prop = Property('', setter)
+        value = 1
+
+        actual_prop = prop.new(node)
+        actual_prop.set(value)
+
+        msg = 'new should return new property for passed node'
+        self.assertNotEqual(actual_prop, prop, msg)
+        self.assertEqual(setter.call_args, call(node, None, value), msg)
+
+    @case(None)
+    @case(1)
+    @case(object())
+    @case('value')
+    def test_set_sets_returned_setter_value(self, value):
+        setter = Mock()
+        setter.side_effect = lambda node, prev, val: val
+        prop = Property('', setter)
+        prop.set(value)
+
+        actual = prop.get()
+
+        msg = 'set should set value returned from setter'
+        self.assertEqual(actual, value, msg)
 
 if __name__ == '__main__':
     main()
