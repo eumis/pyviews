@@ -53,6 +53,32 @@ class NodeTests(TestCase):
         msg = 'setattr should set own property if key not in properties'
         self.assertEqual(node.setter, setter, msg)
 
+    @case(1)
+    @case(3)
+    def test_destroy_destroys_bindings(self, bindings_count):
+        node = Node(Mock())
+        bindings = []
+        for i in range(bindings_count):
+            binding = Mock()
+            binding.destroy = Mock()
+            node.add_binding(binding)
+            bindings.append(binding)
+
+        node.destroy()
+
+        msg = 'destroy should destroy bindings'
+        for binding in bindings:
+            self.assertTrue(binding.destroy.called, msg)
+
+    def test_destroy_calls_on_destroy(self):
+        node = Node(Mock())
+        node.on_destroy = Mock()
+
+        node.destroy()
+
+        msg = 'destroy should call on_destroy with passed node'
+        self.assertEqual(node.on_destroy.call_args, call(node), msg)
+
 class PropertyTests(TestCase):
     def test_default_get(self):
         prop = Property('')

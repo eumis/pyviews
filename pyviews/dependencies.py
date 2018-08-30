@@ -23,7 +23,7 @@ def create_default_node_setup(setter):
         render_children
     ]
     node_setup.setter = setter
-    node_setup.child_init_args_getter = _init_args_getter
+    node_setup.get_child_args = _init_args_getter
     return node_setup
 
 def _init_args_getter(node: Node):

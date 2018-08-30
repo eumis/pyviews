@@ -1,6 +1,6 @@
 '''Core classes for creation from xml nodes'''
 
-from inspect import signature
+from inspect import signature, Parameter
 from typing import Any
 from pyviews.core.xml import XmlNode
 from pyviews.core.observable import InheritedDict
@@ -17,6 +17,7 @@ class Node:
             self._globals.inherit(node_globals)
         self.setter = None
         self.properties = {}
+        self.on_destroy = None
 
     def __getattribute__(self, key: str):
         try:
@@ -46,7 +47,13 @@ class Node:
         binding.add_error_info = lambda error: error.add_view_info(self._xml_node.view_info)
         self._bindings.append(binding)
 
-    def destroy_bindings(self):
+    def destroy(self):
+        '''Destroys node'''
+        self._destroy_bindings()
+        if self.on_destroy:
+            self.on_destroy(self)
+
+    def _destroy_bindings(self):
         '''Destroys and removes all bindings'''
         for binding in self._bindings:
             binding.destroy()
@@ -70,7 +77,7 @@ class Property:
         self._value = None
         self._setter = None
         if setter:
-            args_count = len(signature(setter).parameters.values())
+            args_count = len([p for p in signature(setter).parameters.values() if p.default == Parameter.empty])
             self._setter = setter if args_count == 3 else \
                            lambda node, value, previous: setter(node, value)
         self._node = node
