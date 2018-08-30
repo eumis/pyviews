@@ -11,6 +11,7 @@ class Container:
     '''Container for dependencies'''
     def __init__(self):
         self._initializers = {}
+        self._factories = {}
         self.register('container', lambda: self)
 
     def register(self, key, initializer: callable, param=None):
@@ -21,11 +22,18 @@ class Container:
             self._initializers[key] = {}
         self._initializers[key][param] = initializer
 
+    def register_factory(self, key, initializer):
+        '''Add initializer that called with passed param'''
+        self._factories[key] = initializer
+
     def get(self, key, param=None):
         '''Resolve dependecy'''
-        if key not in self._initializers or param not in self._initializers[key]:
+        try:
+            return self._initializers[key][param]()
+        except KeyError:
+            if key in self._factories:
+                return self._factories[key](param)
             raise DependencyError('Dependency "{0}" is not found'.format(key))
-        return self._initializers[key][param]()
 
 _THREAD_LOCAL = thread_local()
 

@@ -10,9 +10,11 @@ class ContainerTests(TestCase):
         one = object()
         two = object()
         three = object()
+        four = object()
         self.container.register('key', lambda: one)
         self.container.register('paramed', lambda: two)
         self.container.register('paramed', lambda: three, 1)
+        self.container.register_factory('paramed', lambda param: four if param == 2 else None)
 
         msg = 'Registered dependency should be returned by container'
         self.assertEqual(self.container.get('key'), one, msg)
@@ -22,6 +24,9 @@ class ContainerTests(TestCase):
 
         msg = 'Registered with parameter dependency should be returned by container with passed parameter'
         self.assertEqual(self.container.get('paramed', 1), three, msg)
+
+        msg = 'Registered factory should return dependency by parameter if there no other dependency with the param'
+        self.assertEqual(self.container.get('paramed', 2), four, msg)
 
     def test_last_dependency(self):
         one = object()
