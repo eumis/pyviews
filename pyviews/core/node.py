@@ -15,9 +15,9 @@ class Node:
         self._globals = InheritedDict({'node': self})
         if node_globals:
             self._globals.inherit(node_globals)
-        self.setter = None
+        self.setter = lambda node, key, value: None
         self.properties = {}
-        self.on_destroy = None
+        self.on_destroy = lambda node: None
 
     def __getattribute__(self, key: str):
         try:
