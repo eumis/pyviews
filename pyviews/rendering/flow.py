@@ -17,7 +17,7 @@ def render(xml_node: XmlNode, **args) -> Node:
         node = deps.create_node(xml_node, **args)
         node_setup = get_node_setup(node)
         node_setup.apply(node)
-        run_steps(node, node_setup)
+        run_steps(node, node_setup, **args)
         return node
     except CoreError as error:
         error.add_view_info(xml_node.view_info)
