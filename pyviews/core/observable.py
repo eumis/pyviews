@@ -1,12 +1,14 @@
 '''Observable implementations'''
 
+from typing import Callable, Any
+
 class Observable:
     '''Base class for observable entities'''
     def __init__(self):
         self._callbacks = {}
         self._all_callbacks = []
 
-    def observe(self, key, callback):
+    def observe(self, key: str, callback: Callable[[Any, Any], None]):
         '''Subscribes to key changes'''
         if key not in self._callbacks:
             self._add_key(key)
@@ -15,15 +17,15 @@ class Observable:
     def _add_key(self, key):
         self._callbacks[key] = []
 
-    def observe_all(self, callback):
+    def observe_all(self, callback: Callable[[str, Any, Any], None]):
         '''Subscribes to all keys changes'''
         self._all_callbacks.append(callback)
 
-    def _notify(self, key, value, old_val):
+    def _notify(self, key: str, value, old_val):
         self._notify_prop(key, value, old_val)
         self._notify_all(key, value, old_val)
 
-    def _notify_prop(self, key, value, old_value):
+    def _notify_prop(self, key: str, value, old_value):
         if value == old_value:
             return
         try:
@@ -32,20 +34,20 @@ class Observable:
         except KeyError:
             pass
 
-    def _notify_all(self, key, value, old_value):
+    def _notify_all(self, key: str, value, old_value):
         if self._all_callbacks is None:
             self._all_callbacks = []
         for callback in self._all_callbacks.copy():
             callback(key, value, old_value)
 
-    def release(self, key, callback):
+    def release(self, key: str, callback: Callable[[Any, Any], None]):
         '''Releases callback from key changes'''
         try:
             self._callbacks[key].remove(callback)
         except (KeyError, ValueError):
             pass
 
-    def release_all(self, callback):
+    def release_all(self, callback: Callable[[str, Any, Any], None]):
         '''Releases callback from all keys changes'''
         self._all_callbacks.remove(callback)
 
@@ -60,7 +62,7 @@ class ObservableEntity(Observable):
         super().__setattr__(key, value)
         self._notify(key, value, old_val)
 
-    def observe(self, key, callback):
+    def observe(self, key, callback: Callable[[Any, Any], None]):
         '''Subscribes to key changes'''
         if key not in self.__dict__ and key not in self._callbacks:
             raise KeyError('Entity ' + str(self) + 'doesn''t have attribute' + key)
@@ -139,4 +141,14 @@ class InheritedDict(Observable):
             return self[key]
         except KeyError:
             return default
-            
+
+def observable_property(key: str, callback: Callable[[Any, Any, Any], None]) -> property:
+    '''Returns property that can be subscribed for changes'''
+    getter = lambda self: getattr(self, key)
+    setter = lambda self, val, k=key, cb=callback: _set_observable_property(self, k, val, cb)
+    return property(getter, setter)
+
+def _set_observable_property(ent, key: str, value, callback: Callable[[Any, Any, Any], None]):
+    old = getattr(ent, key)
+    setattr(ent, key, value)
+    callback(ent, value, old)

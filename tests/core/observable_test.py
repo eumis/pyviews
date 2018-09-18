@@ -1,7 +1,7 @@
 from unittest import TestCase, main
 from unittest.mock import Mock, call
 from pyviews.testing import case
-from pyviews.core.observable import ObservableEntity, InheritedDict
+from pyviews.core.observable import ObservableEntity, InheritedDict, observable_property
 
 class ObservableEnt(ObservableEntity):
     def __init__(self, private, name, value):
@@ -268,6 +268,47 @@ class InheritedDictTests(TestCase):
 
     def test_inherit(self):
         parent_dict = InheritedDict()
+
+class WithObservableProperty:
+    def __init__(self):
+        self._prop = None
+        self.on_change = lambda self, value, old_value: None
+
+    prop = observable_property('_prop', lambda self, val, old: self.on_change(self, val, old))
+
+class ObservablePropertyTest(TestCase):
+    def test_creates_property(self):
+        ent = WithObservableProperty()
+
+        msg = 'observable_property should create class property'
+        self.assertTrue(hasattr(ent, 'prop'), msg)
+
+    @case(1)
+    @case('value')
+    @case([])
+    def test_getter_setter(self, value):
+        ent = WithObservableProperty()
+
+        ent.prop = value
+        actual = ent.prop
+
+        msg = 'observable_property should store value to property with passed name'
+        self.assertEqual(actual, ent._prop, msg)
+        self.assertEqual(actual, value, msg)
+
+    @case(1, 2)
+    @case('value', 'other value')
+    def test_property_can_be_subscribed(self, one, two):
+        ent = WithObservableProperty()
+        on_change = Mock()
+        ent.on_change = on_change
+
+        ent.prop = one
+        ent.prop = two
+
+        msg = 'observable_property should call passed callbed on property change'
+        self.assertEqual(call(ent, one, None), on_change.call_args_list[0], msg)
+        self.assertEqual(call(ent, two, one), on_change.call_args_list[1], msg)
 
 if __name__ == '__main__':
     main()
