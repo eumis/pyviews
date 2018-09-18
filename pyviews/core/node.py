@@ -9,7 +9,7 @@ from pyviews.core.binding import Binding
 class Node:
     '''Represents node with properties and bindings created from xml node'''
     def __init__(self, xml_node: XmlNode, node_globals: InheritedDict = None):
-        self._child_nodes = []
+        self._children = []
         self._bindings = []
         self._xml_node = xml_node
         self._globals = InheritedDict({'node': self})
@@ -47,13 +47,24 @@ class Node:
         binding.add_error_info = lambda error: error.add_view_info(self._xml_node.view_info)
         self._bindings.append(binding)
 
+    def add_child(self, child):
+        '''Stores child'''
+        self._children.append(child)
+
     def destroy(self):
         '''Destroys node'''
-        self._destroy_bindings()
+        self.destroy_children()
+        self.destroy_bindings()
         if self.on_destroy:
             self.on_destroy(self)
 
-    def _destroy_bindings(self):
+    def destroy_children(self):
+        '''Destroys and removes all bindings'''
+        for child in self._children:
+            child.destroy()
+        self._children = []
+
+    def destroy_bindings(self):
         '''Destroys and removes all bindings'''
         for binding in self._bindings:
             binding.destroy()

@@ -70,6 +70,23 @@ class NodeTests(TestCase):
         for binding in bindings:
             self.assertTrue(binding.destroy.called, msg)
 
+    @case(1)
+    @case(3)
+    def test_destroy_destroys_children(self, bindings_count):
+        node = Node(Mock())
+        children = []
+        for i in range(bindings_count):
+            child = Mock()
+            child.destroy = Mock()
+            node.add_child(child)
+            children.append(child)
+
+        node.destroy()
+
+        msg = 'destroy should destroy bindings'
+        for child in children:
+            self.assertTrue(child.destroy.called, msg)
+
     def test_destroy_calls_on_destroy(self):
         node = Node(Mock())
         node.on_destroy = Mock()

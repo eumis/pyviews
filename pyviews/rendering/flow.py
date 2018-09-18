@@ -53,7 +53,7 @@ def run_steps(node: Node, node_setup: NodeSetup, **args):
     for step in node_setup.render_steps:
         step(node, node_setup=node_setup, **args)
 
-def apply_attributes(node: Node):
+def apply_attributes(node: Node, **args):
     '''Applies xml attributes to instance node and setups bindings'''
     for attr in node.xml_node.attrs:
         apply_attribute(node, attr)
@@ -84,4 +84,5 @@ def render_children(node: Node, node_setup: NodeSetup = None, **args):
     '''Render node children'''
     child_args = node_setup.get_child_init_args(node, **args)
     for xml_node in node.xml_node.children:
-        deps.render(xml_node, **child_args)
+        child = deps.render(xml_node, **child_args)
+        node.add_child(child)
