@@ -1,6 +1,6 @@
 '''Observable implementations'''
 
-from typing import Callable, Any
+from typing import Callable, Any, Tuple
 
 class Observable:
     '''Base class for observable entities'''
@@ -142,13 +142,32 @@ class InheritedDict(Observable):
         except KeyError:
             return default
 
-def observable_property(key: str, callback: Callable[[Any, Any, Any], None]) -> property:
-    '''Returns property that can be subscribed for changes'''
-    getter = lambda self: getattr(self, key)
-    setter = lambda self, val, k=key, cb=callback: _set_observable_property(self, k, val, cb)
-    return property(getter, setter)
+class ObservableValue:
+    '''Class for storing observable property'''
+    def __init__(self):
+        self._value = None
+        self.callback = lambda ent, val, old: None
 
-def _set_observable_property(ent, key: str, value, callback: Callable[[Any, Any, Any], None]):
-    old = getattr(ent, key)
-    setattr(ent, key, value)
-    callback(ent, value, old)
+    @property
+    def value(self):
+        '''Return value'''
+        return self._value
+
+    def set_value(self, ent, val):
+        '''Sets value and calls callback'''
+        old = self._value
+        self._value = val
+        self.callback(ent, val, old)
+
+def observable_property(key: str) -> Tuple[property, property]:
+    '''Returns property that can be subscribed for changes'''
+    getter = lambda self: _get_val(self, key).value
+    setter = lambda self, val, k=key: _get_val(self, key).set_value(self, val)
+    prop = property(getter, setter)
+    prop_observable = property(lambda self: _get_val(self, key))
+    return (prop, prop_observable)
+
+def _get_val(self, key):
+    if not hasattr(self, key):
+        setattr(self, key, ObservableValue())
+    return getattr(self, key)

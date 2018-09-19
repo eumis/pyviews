@@ -1,7 +1,8 @@
 from unittest import TestCase, main
 from unittest.mock import Mock, call
 from pyviews.testing import case
-from pyviews.core.observable import ObservableEntity, InheritedDict, observable_property
+from pyviews.core.observable import ObservableEntity, InheritedDict
+from pyviews.core.observable import observable_property, ObservableValue
 
 class ObservableEnt(ObservableEntity):
     def __init__(self, private, name, value):
@@ -269,14 +270,44 @@ class InheritedDictTests(TestCase):
     def test_inherit(self):
         parent_dict = InheritedDict()
 
+class ObservableValueTests(TestCase):
+    def test_value_is_none_by_default(self):
+        val = ObservableValue()
+
+        actual = val.value
+
+        msg = 'value should return None by default'
+        self.assertIsNone(actual, msg)
+
+    @case(1)
+    @case('value')
+    def test_value_returns_value_that_set(self, value):
+        val = ObservableValue()
+
+        val.set_value(None, value)
+        actual = val.value
+
+        msg = 'value should return value that is set'
+        self.assertEqual(actual, value, msg)
+
+    @case(1, 2)
+    @case('value', 'other value')
+    def test_callback_is_called_on_value_change(self, one, two):
+        val = ObservableValue()
+        ent = Mock()
+        val.callback = Mock()
+
+        val.set_value(ent, one)
+        val.set_value(ent, two)
+
+        msg = 'ObservableValue should call callback on value change'
+        self.assertEqual(call(ent, one, None), val.callback.call_args_list[0], msg)
+        self.assertEqual(call(ent, two, one), val.callback.call_args_list[1], msg)
+
 class WithObservableProperty:
-    def __init__(self):
-        self._prop = None
-        self.on_change = lambda self, value, old_value: None
+    (prop, prop_observable) = observable_property('_prop')
 
-    prop = observable_property('_prop', lambda self, val, old: self.on_change(self, val, old))
-
-class ObservablePropertyTest(TestCase):
+class ObservablePropertyTests(TestCase):
     def test_creates_property(self):
         ent = WithObservableProperty()
 
@@ -292,8 +323,7 @@ class ObservablePropertyTest(TestCase):
         ent.prop = value
         actual = ent.prop
 
-        msg = 'observable_property should store value to property with passed name'
-        self.assertEqual(actual, ent._prop, msg)
+        msg = 'property should return stored value'
         self.assertEqual(actual, value, msg)
 
     @case(1, 2)
@@ -301,7 +331,7 @@ class ObservablePropertyTest(TestCase):
     def test_property_can_be_subscribed(self, one, two):
         ent = WithObservableProperty()
         on_change = Mock()
-        ent.on_change = on_change
+        ent.prop_observable.callback = on_change
 
         ent.prop = one
         ent.prop = two
