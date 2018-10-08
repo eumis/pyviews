@@ -15,18 +15,21 @@ def register_defaults():
     register_single('node_setup', create_default_node_setup(setattr))
     register_single('node_setup', create_default_node_setup(_instance_node_setter), InstanceNode)
 
-def create_default_node_setup(setter):
+def create_default_node_setup(setter) -> NodeSetup:
     '''Creates default node setup'''
     node_setup = NodeSetup()
     node_setup.render_steps = [
+        lambda node, s=setter, *args: _setup_setter(node, s),
         apply_attributes,
         render_children
     ]
-    node_setup.setter = setter
-    node_setup.get_child_args = _init_args_getter
+    node_setup.get_child_args = _get_default_child_args
     return node_setup
 
-def _init_args_getter(node: Node):
+def _setup_setter(node: Node, setter):
+    node.setter = setter
+
+def _get_default_child_args(node: Node) -> dict:
     return {'parent_node': node}
 
 def _instance_node_setter(node: InstanceNode, key: str, value):
