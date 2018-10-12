@@ -1,7 +1,7 @@
 '''Core classes for creation from xml nodes'''
 
 from inspect import signature, Parameter
-from typing import Any
+from typing import Any, List
 from pyviews.core.xml import XmlNode
 from pyviews.core.observable import InheritedDict
 from pyviews.core.binding import Binding
@@ -47,9 +47,13 @@ class Node:
         binding.add_error_info = lambda error: error.add_view_info(self._xml_node.view_info)
         self._bindings.append(binding)
 
-    def add_child(self, child):
-        '''Stores child'''
+    def add_child(self, child: Node):
+        '''Adds rendered child'''
         self._children.append(child)
+
+    def add_children(self, children: List[Node]):
+        '''Adds list of rendered children'''
+        self._children = self._children + children
 
     def destroy(self):
         '''Destroys node'''
