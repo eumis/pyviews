@@ -10,14 +10,15 @@ from pyviews.rendering import RenderingError
 
 def create_node(xml_node: XmlNode, **init_args):
     '''Creates node from xml node using namespace as module and tag name as class name'''
-    inst_type = _get_inst_type(xml_node)
+    inst_type = get_inst_type(xml_node)
     init_args['xml_node'] = xml_node
     inst = create_inst(inst_type, **init_args)
     if not isinstance(inst, Node):
         inst = convert_to_node(inst, **init_args)
     return inst
 
-def _get_inst_type(xml_node: XmlNode):
+def get_inst_type(xml_node: XmlNode):
+    '''Returns type by xml node'''
     (module_path, class_name) = (xml_node.namespace, xml_node.name)
     try:
         return import_module(module_path).__dict__[class_name]
