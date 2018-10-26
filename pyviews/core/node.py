@@ -42,16 +42,21 @@ class Node:
         '''Values used with expression executing'''
         return self._globals
 
+    @property
+    def children(self) -> List:
+        '''Returns child nodes'''
+        return self._children
+
     def add_binding(self, binding: Binding):
         '''Stores binding'''
         binding.add_error_info = lambda error: error.add_view_info(self._xml_node.view_info)
         self._bindings.append(binding)
 
-    def add_child(self, child: Node):
+    def add_child(self, child):
         '''Adds rendered child'''
         self._children.append(child)
 
-    def add_children(self, children: List[Node]):
+    def add_children(self, children: List):
         '''Adds list of rendered children'''
         self._children = self._children + children
 
