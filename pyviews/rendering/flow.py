@@ -79,9 +79,8 @@ def default_setter(node: Node, key: str, value):
     '''Calls node setter'''
     node.setter(node, key, value)
 
-def render_children(node: Node, node_setup: NodeSetup = None, **args):
+def render_children(node: Node, **child_args):
     '''Render node children'''
-    child_args = node_setup.get_child_init_args(node, **args)
     for xml_node in node.xml_node.children:
         child = deps.render(xml_node, **child_args)
         node.add_child(child)
