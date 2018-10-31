@@ -35,9 +35,9 @@ def get_init_args(inst_type, **init_args) -> Tuple[List, Dict]:
     '''Returns tuple with args and kwargs to pass it to inst_type constructor'''
     try:
         parameters = signature(inst_type).parameters.values()
-        args = [init_args[p.name] for p in parameters if p.default == Parameter.empty]
+        args = [init_args[p.name] for p in parameters if p.kind == Parameter.POSITIONAL_ONLY]
         kwargs = {p.name: init_args[p.name] for p in parameters \
-                    if p.default != Parameter.empty and p.name in init_args}
+                    if p.kind in [Parameter.KEYWORD_ONLY, Parameter.POSITIONAL_OR_KEYWORD] and p.name in init_args}
     except KeyError as key_error:
         msg_format = 'parameter with key "{0}" is not found in node args'
         raise RenderingError(msg_format.format(key_error.args[0]))
