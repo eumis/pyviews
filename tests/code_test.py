@@ -32,7 +32,7 @@ class CodeTests(TestCase):
 
         msg = 'defined functions should be added to parent globals'
         for key, value in expected.items():
-            self.assertEqual(value, parent_node.globals[key](), msg)
+            self.assertEqual(value, parent_node.node_globals[key](), msg)
 
     @case(
         '''
@@ -58,7 +58,7 @@ class CodeTests(TestCase):
 
         msg = 'variables should be added to parent globals'
         for key, value in expected.items():
-            self.assertEqual(value, parent_node.globals[key], msg)
+            self.assertEqual(value, parent_node.node_globals[key], msg)
 
     @case('''a = key.prop''', {'key': None})
     @case('''a = key.prop''', {})

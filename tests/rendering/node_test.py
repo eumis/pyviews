@@ -81,7 +81,7 @@ class InitTests(TestCase):
         self.assertIsInstance(node, InstanceNode, msg)
 
         msg = 'convert_to_node should pass globals'
-        self.assertDictContainsSubset(globals_dict, node.globals.to_dictionary(), msg)
+        self.assertDictContainsSubset(globals_dict, node.node_globals.to_dictionary(), msg)
 
     @case('pyviews.core.node', 'Node', Node, {})
     @case('pyviews.code', 'Code', Code, {'parent_node': Node(None)})

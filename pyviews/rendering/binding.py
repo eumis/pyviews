@@ -41,7 +41,7 @@ class BindingFactory:
 
 def apply_once(args: BindingArgs):
     '''Applies "once" binding - expression result is assigned to property without binding'''
-    value = Expression(args.expr_body).execute(args.node.globals.to_dictionary())
+    value = Expression(args.expr_body).execute(args.node.node_globals.to_dictionary())
     args.modifier(args.node, args.attr.name, value)
 
 def apply_oneway(args: BindingArgs):
@@ -52,7 +52,7 @@ def apply_oneway(args: BindingArgs):
     '''
     expression = Expression(args.expr_body)
     target = InstanceTarget(args.node, args.attr.name, args.modifier)
-    binding = ExpressionBinding(target, expression, args.node.globals)
+    binding = ExpressionBinding(target, expression, args.node.node_globals)
     binding.bind()
     args.node.add_binding(binding)
 

@@ -25,7 +25,7 @@ class Node:
         return self._xml_node
 
     @property
-    def globals(self) -> InheritedDict:
+    def node_globals(self) -> InheritedDict:
         '''Values used with expression executing'''
         return self._globals
 

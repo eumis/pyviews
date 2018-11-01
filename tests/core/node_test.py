@@ -22,13 +22,13 @@ class NodeTests(TestCase):
         node = Node(self.xml_node, globals)
 
         msg = 'init should setup globals'
-        self.assertIsNotNone(node.globals)
+        self.assertIsNotNone(node.node_globals)
 
         msg = 'init should add node to globals'
-        self.assertEqual(node, node.globals['node'], msg)
+        self.assertEqual(node, node.node_globals['node'], msg)
 
         msg = 'should inherit passed globals'
-        self.assertDictContainsSubset(expected_dict, node.globals.to_dictionary(), msg)
+        self.assertDictContainsSubset(expected_dict, node.node_globals.to_dictionary(), msg)
 
     @case('key', 1)
     @case('key', None)

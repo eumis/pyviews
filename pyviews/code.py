@@ -22,12 +22,12 @@ def run_code(node: Code, parent_node: Node = None):
         return
     code = node.xml_node.text
     try:
-        globs = parent_node.globals.to_dictionary()
+        globs = parent_node.node_globals.to_dictionary()
         exec(dedent(code), globs)
         definitions = [(key, value) for key, value in globs.items() \
-                    if key != '__builtins__' and not parent_node.globals.has_key(key)]
+                    if key != '__builtins__' and not parent_node.node_globals.has_key(key)]
         for key, value in definitions:
-            parent_node.globals[key] = value
+            parent_node.node_globals[key] = value
     except SyntaxError as err:
         error = _get_compilation_error(code, 'Invalid syntax', err, err.lineno)
         raise error from err
