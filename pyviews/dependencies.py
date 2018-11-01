@@ -19,15 +19,11 @@ def create_default_node_setup(setter) -> NodeSetup:
     '''Creates default node setup'''
     node_setup = NodeSetup()
     node_setup.render_steps = [
-        lambda node, s=setter, *args: _setup_setter(node, s),
         apply_attributes,
         render_children
     ]
     node_setup.get_child_args = _get_default_child_args
     return node_setup
-
-def _setup_setter(node: Node, setter):
-    node.setter = setter
 
 def _get_default_child_args(node: Node) -> dict:
     return {'parent_node': node}

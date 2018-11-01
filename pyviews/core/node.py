@@ -15,7 +15,7 @@ class Node:
         self._globals = InheritedDict({'node': self})
         if node_globals:
             self._globals.inherit(node_globals)
-        self.setter = setattr
+        self.attr_setter = setattr
         self.properties = {}
         self.on_destroy = lambda node: None
 
@@ -33,6 +33,10 @@ class Node:
     def children(self) -> List:
         '''Returns child nodes'''
         return self._children
+
+    def set_attr(self, key: str, value):
+        '''Sets node attribute. Can be customized setuping attr_setter property'''
+        self.attr_setter(self, key, value)
 
     def add_binding(self, binding: Binding):
         '''Stores binding'''

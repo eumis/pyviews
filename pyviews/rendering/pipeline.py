@@ -77,7 +77,7 @@ def get_setter(attr: XmlAttr):
 
 def call_set_attr(node: Node, key: str, value):
     '''Calls node setter'''
-    node.setter(node, key, value)
+    node.set_attr(key, value)
 
 def render_children(node: Node, **child_args):
     '''Render node children'''

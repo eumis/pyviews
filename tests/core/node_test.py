@@ -48,10 +48,10 @@ class NodeTests(TestCase):
         node = Node(Mock())
         setter = lambda *args: None
 
-        node.setter = setter
+        node.attr_setter = setter
 
         msg = 'setattr should set own property if key not in properties'
-        self.assertEqual(node.setter, setter, msg)
+        self.assertEqual(node.attr_setter, setter, msg)
 
     @case(1)
     @case(3)

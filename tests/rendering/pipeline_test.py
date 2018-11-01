@@ -161,7 +161,7 @@ class SetterTests(TestCase):
     def test_default_setter_should_call_node_setter(self):
         node = Node(Mock())
         node_setter = Mock()
-        node.setter = node_setter
+        node.attr_setter = node_setter
         key, value = ('key', 'value')
 
         call_set_attr(node, key, value)
