@@ -16,10 +16,7 @@ class Observable:
     def _add_key(self, key):
         self._callbacks[key] = []
 
-    def _notify(self, key: str, value, old_val):
-        self._notify_prop(key, value, old_val)
-
-    def _notify_prop(self, key: str, value, old_value):
+    def _notify(self, key: str, value, old_value):
         if value == old_value:
             return
         try:
