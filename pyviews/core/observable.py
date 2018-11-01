@@ -1,12 +1,11 @@
 '''Observable implementations'''
 
-from typing import Callable, Any, Tuple
+from typing import Callable, Any
 
 class Observable:
     '''Base class for observable entities'''
     def __init__(self):
         self._callbacks = {}
-        self._all_callbacks = []
 
     def observe(self, key: str, callback: Callable[[Any, Any], None]):
         '''Subscribes to key changes'''
@@ -17,13 +16,8 @@ class Observable:
     def _add_key(self, key):
         self._callbacks[key] = []
 
-    def observe_all(self, callback: Callable[[str, Any, Any], None]):
-        '''Subscribes to all keys changes'''
-        self._all_callbacks.append(callback)
-
     def _notify(self, key: str, value, old_val):
         self._notify_prop(key, value, old_val)
-        self._notify_all(key, value, old_val)
 
     def _notify_prop(self, key: str, value, old_value):
         if value == old_value:
@@ -34,22 +28,12 @@ class Observable:
         except KeyError:
             pass
 
-    def _notify_all(self, key: str, value, old_value):
-        if self._all_callbacks is None:
-            self._all_callbacks = []
-        for callback in self._all_callbacks.copy():
-            callback(key, value, old_value)
-
     def release(self, key: str, callback: Callable[[Any, Any], None]):
         '''Releases callback from key changes'''
         try:
             self._callbacks[key].remove(callback)
         except (KeyError, ValueError):
             pass
-
-    def release_all(self, callback: Callable[[str, Any, Any], None]):
-        '''Releases callback from all keys changes'''
-        self._all_callbacks.remove(callback)
 
 class ObservableEntity(Observable):
     '''Observable general object'''
@@ -75,6 +59,7 @@ class InheritedDict(Observable):
         self._parent = None
         self._container = {}
         self._own_keys = set()
+        self._all_callbacks = []
 
         if isinstance(source, InheritedDict):
             self.inherit(source)
@@ -116,6 +101,24 @@ class InheritedDict(Observable):
         self._parent = parent
         self._parent.observe_all(self._parent_changed)
 
+    def observe_all(self, callback: Callable[[str, Any, Any], None]):
+        '''Subscribes to all keys changes'''
+        self._all_callbacks.append(callback)
+
+    def _notify(self, key: str, value, old_val):
+        super()._notify(key, value, old_val)
+        self._notify_all(key, value, old_val)
+
+    def _notify_all(self, key: str, value, old_value):
+        if self._all_callbacks is None:
+            self._all_callbacks = []
+        for callback in self._all_callbacks.copy():
+            callback(key, value, old_value)
+
+    def release_all(self, callback: Callable[[str, Any, Any], None]):
+        '''Releases callback from all keys changes'''
+        self._all_callbacks.remove(callback)
+
     def to_dictionary(self) -> dict:
         '''Returns all values as dict'''
         return self._container.copy()
@@ -141,33 +144,3 @@ class InheritedDict(Observable):
             return self[key]
         except KeyError:
             return default
-
-class ObservableValue:
-    '''Class for storing observable property'''
-    def __init__(self):
-        self._value = None
-        self.callback = lambda ent, val, old: None
-
-    @property
-    def value(self):
-        '''Return value'''
-        return self._value
-
-    def set_value(self, ent, val):
-        '''Sets value and calls callback'''
-        old = self._value
-        self._value = val
-        self.callback(ent, val, old)
-
-def observable_property(key: str) -> Tuple[property, property]:
-    '''Returns property that can be subscribed for changes'''
-    getter = lambda self: _get_val(self, key).value
-    setter = lambda self, val, k=key: _get_val(self, key).set_value(self, val)
-    prop = property(getter, setter)
-    prop_observable = property(lambda self: _get_val(self, key))
-    return (prop, prop_observable)
-
-def _get_val(self, key):
-    if not hasattr(self, key):
-        setattr(self, key, ObservableValue())
-    return getattr(self, key)

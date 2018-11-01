@@ -15,7 +15,7 @@ class Node:
         self._globals = InheritedDict({'node': self})
         if node_globals:
             self._globals.inherit(node_globals)
-        self.attr_setter = setattr
+        self.attr_setter = _attr_setter
         self.properties = {}
         self.on_destroy = lambda node: None
 
@@ -69,6 +69,12 @@ class Node:
         for binding in self._bindings:
             binding.destroy()
         self._bindings = []
+
+def _attr_setter(node: Node, key, value):
+    if key in node.properties:
+        node.properties[key].set(value)
+    else:
+        setattr(node, key, value)
 
 class InstanceNode(Node):
     '''Represents Node that wraps instance created from xml node'''

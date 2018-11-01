@@ -2,7 +2,6 @@ from unittest import TestCase, main
 from unittest.mock import Mock, call
 from pyviews.testing import case
 from pyviews.core.observable import ObservableEntity, InheritedDict
-from pyviews.core.observable import observable_property, ObservableValue
 
 class ObservableEnt(ObservableEntity):
     def __init__(self, private, name, value):
@@ -37,18 +36,6 @@ class ObservableEntityTests(TestCase):
         msg = '(new value, old value) args should be passed to self.callback'
         self.assertEqual(self.callback.call_args, call('new name', 'some name'), msg)
 
-    def test_observe_all(self):
-        self.observable.observe_all(self.callback)
-
-        self.observable.name = 'new name'
-        self.observable.value = 'new value'
-
-        msg = 'self.callback should be called on observed property change'
-        self.assertTrue(self.callback.called, msg)
-        self.assertEqual(self.callback.call_count, 2, msg)
-
-        msg = '(new value, old value) args should be passed to self.callback'
-
     def test_observe_raises(self):
         with self.assertRaises(KeyError, msg='ObservableEntity should raise for unknown attribute'):
             self.observable.observe('attr', lambda: self.callback)
@@ -70,36 +57,8 @@ class ObservableEntityTests(TestCase):
         msg = 'self.callback should be called only for observed properties'
         self.assertEqual(self.callback.call_args, call('new value', 'some value'), msg)
 
-    def test_release_all_callback(self):
-        active_callback = Mock()
-        self.observable.observe_all(self.callback)
-        self.observable.observe_all(active_callback)
-
-        self.observable.release_all(self.callback)
-        self.observable.name = 'new name'
-        self.observable.value = 'new value'
-
-        msg = 'released callbacks shouldn''t be called'
-        self.assertTrue(active_callback.called, msg)
-        self.assertFalse(self.callback.called, msg)
-
     def test_observe_in_callback(self):
         self.observable.observe('name', self.add_callback)
-        self.observable.name = 'new name'
-
-        msg = 'only callbacks registered before assignment should be called'
-        self.assertEqual(self.add_callback.call_count, 1, msg=msg)
-        msg = 'callbacks registered in another callback shouldn''t be called'
-        self.assertEqual(self.callback.call_count, 0, msg=msg)
-
-        self.observable.name = 'another name'
-        msg = 'only callbacks registered before assignment should be called'
-        self.assertEqual(self.add_callback.call_count, 2, msg=msg)
-        msg = 'callbacks registered in another callback should be called'
-        self.assertEqual(self.callback.call_count, 1, msg=msg)
-
-    def test_observe_all_in_callback(self):
-        self.observable.observe_all(self.add_callback)
         self.observable.name = 'new name'
 
         msg = 'only callbacks registered before assignment should be called'
@@ -267,78 +226,35 @@ class InheritedDictTests(TestCase):
         msg = 'len should return keys count'
         self.assertEqual(len(inh_dict), count, msg)
 
-    def test_inherit(self):
-        parent_dict = InheritedDict()
+    def test_observe_all(self):
+        inherited_dict = InheritedDict()
+        callback = Mock()
+        inherited_dict.observe_all(callback)
 
-class ObservableValueTests(TestCase):
-    def test_value_is_none_by_default(self):
-        val = ObservableValue()
+        inherited_dict['name'] = 'new name'
+        inherited_dict['value'] = 'new value'
 
-        actual = val.value
+        msg = 'callback should be called on observed property change'
+        self.assertTrue(callback.called, msg)
+        self.assertEqual(callback.call_count, 2, msg)
 
-        msg = 'value should return None by default'
-        self.assertIsNone(actual, msg)
+        msg = '(new value, old value) args should be passed to self.callback'
+        self.assertEqual(callback.call_args_list, [call('name', 'new name', None), call('value', 'new value', None)])
 
-    @case(1)
-    @case('value')
-    def test_value_returns_value_that_set(self, value):
-        val = ObservableValue()
+    def test_release_all_callback(self):
+        inherited_dict = InheritedDict()
+        callback = Mock()
+        active_callback = Mock()
+        inherited_dict.observe_all(callback)
+        inherited_dict.observe_all(active_callback)
 
-        val.set_value(None, value)
-        actual = val.value
+        inherited_dict.release_all(callback)
+        inherited_dict['name'] = 'new name'
+        inherited_dict['value'] = 'new value'
 
-        msg = 'value should return value that is set'
-        self.assertEqual(actual, value, msg)
-
-    @case(1, 2)
-    @case('value', 'other value')
-    def test_callback_is_called_on_value_change(self, one, two):
-        val = ObservableValue()
-        ent = Mock()
-        val.callback = Mock()
-
-        val.set_value(ent, one)
-        val.set_value(ent, two)
-
-        msg = 'ObservableValue should call callback on value change'
-        self.assertEqual(call(ent, one, None), val.callback.call_args_list[0], msg)
-        self.assertEqual(call(ent, two, one), val.callback.call_args_list[1], msg)
-
-class WithObservableProperty:
-    (prop, prop_observable) = observable_property('_prop')
-
-class ObservablePropertyTests(TestCase):
-    def test_creates_property(self):
-        ent = WithObservableProperty()
-
-        msg = 'observable_property should create class property'
-        self.assertTrue(hasattr(ent, 'prop'), msg)
-
-    @case(1)
-    @case('value')
-    @case([])
-    def test_getter_setter(self, value):
-        ent = WithObservableProperty()
-
-        ent.prop = value
-        actual = ent.prop
-
-        msg = 'property should return stored value'
-        self.assertEqual(actual, value, msg)
-
-    @case(1, 2)
-    @case('value', 'other value')
-    def test_property_can_be_subscribed(self, one, two):
-        ent = WithObservableProperty()
-        on_change = Mock()
-        ent.prop_observable.callback = on_change
-
-        ent.prop = one
-        ent.prop = two
-
-        msg = 'observable_property should call passed callbed on property change'
-        self.assertEqual(call(ent, one, None), on_change.call_args_list[0], msg)
-        self.assertEqual(call(ent, two, one), on_change.call_args_list[1], msg)
+        msg = 'released callbacks shouldn''t be called'
+        self.assertTrue(active_callback.called, msg)
+        self.assertFalse(callback.called, msg)
 
 if __name__ == '__main__':
     main()
