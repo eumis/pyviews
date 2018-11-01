@@ -5,7 +5,7 @@ from textwrap import dedent
 from traceback import extract_tb
 from pyviews.core.node import Node
 from pyviews.core.compilation import CompilationError
-from pyviews.rendering.setup import NodeSetup
+from pyviews.rendering.pipeline import RenderingPipeline
 
 class Code(Node):
     '''Wrapper under python code inside view'''
@@ -14,7 +14,7 @@ class Code(Node):
 
 def get_code_setup():
     '''Creates node setup for Code'''
-    return NodeSetup(render_steps=[run_code])
+    return RenderingPipeline(steps=[run_code])
 
 def run_code(node: Code, parent_node: Node = None):
     '''Executes node content as python module and adds its definitions to globals'''

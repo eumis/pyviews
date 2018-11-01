@@ -7,16 +7,20 @@ from pyviews.core.reflection import import_path
 from pyviews.core.xml import XmlNode, XmlAttr
 from pyviews.core.node import Node, InstanceNode
 from pyviews.rendering import RenderingError
-from pyviews.rendering.setup import NodeSetup
 from pyviews.rendering.expression import is_code_expression, parse_expression
 from pyviews.rendering.binding import BindingArgs
+
+class RenderingPipeline:
+    '''Contains data, logic used for render steps'''
+    def __init__(self, steps=None):
+        self.steps = steps
 
 def render(xml_node: XmlNode, **args) -> Node:
     '''Renders node from xml node'''
     try:
         node = deps.create_node(xml_node, **args)
-        node_setup = get_node_setup(node)
-        run_steps(node, node_setup, **args)
+        pipeline = get_pipeline(node)
+        run_steps(node, pipeline, **args)
         return node
     except CoreError as error:
         error.add_view_info(xml_node.view_info)
@@ -33,24 +37,24 @@ _DEPS_GETTERS = [
     lambda node: deps.for_(node.__class__),
     lambda node: deps
 ]
-def get_node_setup(node: Node) -> NodeSetup:
-    '''Gets node setup for passed node'''
+def get_pipeline(node: Node) -> RenderingPipeline:
+    '''Gets rendering pipeline for passed node'''
     for get_deps in _DEPS_GETTERS:
         try:
-            return get_deps(node).setup
+            return get_deps(node).pipeline
         except (DependencyError, AttributeError):
             pass
     if isinstance(node, InstanceNode):
-        msg = 'NodeSetup is not found for {0} with instance {1}'\
+        msg = 'RenderingPipeline is not found for {0} with instance {1}'\
               .format(node.__class__, node.instance.__class__)
     else:
-        msg = 'NodeSetup is not found for {0}'.format(node.__class__)
+        msg = 'RenderingPipeline is not found for {0}'.format(node.__class__)
     raise RenderingError(msg)
 
-def run_steps(node: Node, node_setup: NodeSetup, **args):
+def run_steps(node: Node, pipeline: RenderingPipeline, **args):
     '''Runs instance node rendering steps'''
-    for step in node_setup.render_steps:
-        step(node, node_setup=node_setup, **args)
+    for step in pipeline.steps:
+        step(node, pipeline=pipeline, **args)
 
 def apply_attributes(node: Node, **args):
     '''Applies xml attributes to instance node and setups bindings'''

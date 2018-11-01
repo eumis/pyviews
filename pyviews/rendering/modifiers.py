@@ -16,7 +16,3 @@ def inject_global(node: Node, global_key, inject_key):
 def set_global(node: Node, key, value):
     '''Adds passed value to node's globals'''
     node.node_globals[key] = value
-
-def call(node, key, value):
-    '''Empty modifier used to run expression for node'''
-    pass

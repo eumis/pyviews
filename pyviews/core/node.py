@@ -81,11 +81,19 @@ class InstanceNode(Node):
     def __init__(self, instance: Any, xml_node: XmlNode, node_globals: InheritedDict = None):
         super().__init__(xml_node, node_globals)
         self._instance = instance
+        self.attr_setter = _inst_attr_setter
 
     @property
     def instance(self):
         '''Returns rendered instance'''
         return self._instance
+
+def _inst_attr_setter(node: InstanceNode, key, value):
+    if key in node.properties:
+        node.properties[key].set(value)
+    else:
+        ent = node if hasattr(node, key) else node.instance
+        setattr(ent, key, value)
 
 class Property:
     '''Class to define property'''
