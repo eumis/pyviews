@@ -3,7 +3,7 @@
 from pyviews.core.ioc import register_single, register_func
 from pyviews.core.node import Node, InstanceNode
 from pyviews.rendering.node import create_node
-from pyviews.rendering.flow import render, render_children, apply_attributes
+from pyviews.rendering.pipeline import render, render_children, apply_attributes
 from pyviews.rendering.binding import BindingFactory
 from pyviews.rendering.setup import NodeSetup
 

@@ -8,9 +8,9 @@ from pyviews.rendering import RenderingError
 from pyviews.rendering.modifiers import import_global
 from pyviews.rendering.binding import BindingFactory, add_default_rules, BindingArgs
 from pyviews.rendering.setup import NodeSetup
-from pyviews.rendering.flow import default_setter, get_setter
-from pyviews.rendering.flow import apply_attribute, apply_attributes
-from pyviews.rendering.flow import run_steps, get_node_setup
+from pyviews.rendering.pipeline import call_set_attr, get_setter
+from pyviews.rendering.pipeline import apply_attribute, apply_attributes
+from pyviews.rendering.pipeline import run_steps, get_node_setup
 
 class RenderingTests(TestCase):
     @case(0, {'one': 1})
@@ -110,7 +110,7 @@ class AttributesRenderingTests(TestCase):
         get_setter_mock.side_effect = lambda attr: setter_mock
         return setter_mock
 
-    @patch('pyviews.rendering.flow.get_setter')
+    @patch('pyviews.rendering.pipeline.get_setter')
     @case(XmlAttr('key', 'value'), 'key', 'value')
     @case(XmlAttr('', 'value'), '', 'value')
     @case(XmlAttr('one', '{1}'), 'one', 1)
@@ -125,7 +125,7 @@ class AttributesRenderingTests(TestCase):
         msg = 'apply_attribute should call setter'
         self.assertEqual(setter_mock.call_args, call(node, key, value), msg)
 
-    @patch('pyviews.rendering.flow.get_setter')
+    @patch('pyviews.rendering.pipeline.get_setter')
     @case(XmlAttr('key', '{1}'), 'oneway', '1')
     @case(XmlAttr('one', 'oneway:{1 + 1}'), 'oneway', '1 + 1')
     @case(XmlAttr('one', 'twoways:{vm.prop}'), 'twoways', 'vm.prop')
@@ -145,7 +145,7 @@ class AttributesRenderingTests(TestCase):
         binding_args = BindingArgs(node, xml_attr, setter_mock, expr_body)
         self.assertEqual(apply_binding_mock.call_args, call(binding_args), msg)
 
-    @patch('pyviews.rendering.flow.apply_attribute')
+    @patch('pyviews.rendering.pipeline.apply_attribute')
     def test_apply_attributes_apply_every_attribute(self, apply_attribute_mock):
         xml_node = Mock()
         xml_node.attrs = [Mock(), Mock()]
@@ -164,12 +164,12 @@ class SetterTests(TestCase):
         node.setter = node_setter
         key, value = ('key', 'value')
 
-        default_setter(node, key, value)
+        call_set_attr(node, key, value)
 
         msg = 'default_setter should call node setter'
         self.assertEqual(node_setter.call_args, call(node, key, value), msg)
 
-    @case(None, default_setter)
+    @case(None, call_set_attr)
     @case('pyviews.rendering.modifiers.import_global', import_global)
     def test_get_setter_returns_setter(self, setter_path, expected_setter):
         actual_setter = get_setter(XmlAttr('', namespace=setter_path))

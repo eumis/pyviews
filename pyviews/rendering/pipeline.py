@@ -1,4 +1,4 @@
-'''Rendering flow. Node creation from xml node, attribute setup and binding creation'''
+'''Rendering pipeline. Node creation from xml node, attribute setup and binding creation'''
 
 from sys import exc_info
 from pyviews.core import CoreError
@@ -72,10 +72,10 @@ def apply_attribute(node: Node, attr: XmlAttr):
 def get_setter(attr: XmlAttr):
     '''Returns modifier for xml attribute'''
     if attr.namespace is None:
-        return default_setter
+        return call_set_attr
     return import_path(attr.namespace)
 
-def default_setter(node: Node, key: str, value):
+def call_set_attr(node: Node, key: str, value):
     '''Calls node setter'''
     node.setter(node, key, value)
 

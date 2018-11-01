@@ -19,19 +19,6 @@ class Node:
         self.properties = {}
         self.on_destroy = lambda node: None
 
-    def __getattribute__(self, key: str):
-        try:
-            properties = super().__getattribute__('properties')
-            return properties[key].get()
-        except (AttributeError, KeyError):
-            return super().__getattribute__(key)
-
-    def __setattr__(self, key: str, value):
-        if hasattr(self, 'properties') and key in self.properties:
-            self.properties[key].set(value)
-        else:
-            super().__setattr__(key, value)
-
     @property
     def xml_node(self) -> XmlNode:
         '''Returns xml node'''
