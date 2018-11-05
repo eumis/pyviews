@@ -17,5 +17,5 @@ def create_default_pipeline() -> RenderingPipeline:
     '''Creates default node setup'''
     return RenderingPipeline(steps=[
         apply_attributes,
-        render_children
+        lambda node, **args: render_children(node, node_globals=node.node_globals)
     ])
