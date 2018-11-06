@@ -5,6 +5,7 @@ from pyviews.rendering.node import create_node
 from pyviews.rendering.pipeline import RenderingPipeline
 from pyviews.rendering.pipeline import render, render_children, apply_attributes
 from pyviews.rendering.binding import BindingFactory
+from pyviews.code import Code, get_code_setup
 
 def register_defaults():
     '''Registers defaults dependencies'''
@@ -12,6 +13,7 @@ def register_defaults():
     register_func('render', render)
     register_single('binding_factory', BindingFactory())
     register_single('pipeline', create_default_pipeline())
+    register_single('pipeline', get_code_setup(), Code)
 
 def create_default_pipeline() -> RenderingPipeline:
     '''Creates default node setup'''
