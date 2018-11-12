@@ -12,9 +12,9 @@ class ExpressionError(CoreError):
 
 EXPRESSION_REGEX = compile_regex(r'([a-zA-Z_]{1,}\:){0,1}\{.*\}')
 
-def is_code_expression(expression):
+def is_code_expression(expression) -> bool:
     '''Return true if passed value is binding expression'''
-    return EXPRESSION_REGEX.fullmatch(expression) != None
+    return EXPRESSION_REGEX.fullmatch(expression) is not None
 
 def parse_expression(expression: str) -> Tuple[str, str]:
     '''Returns tuple with binding type and expression body'''

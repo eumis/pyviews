@@ -2,7 +2,8 @@
 
 from sys import exc_info
 from pyviews.core import CoreError
-from pyviews.core.ioc import SERVICES as deps, DependencyError
+from pyviews.core.ioc import SERVICES, DependencyError
+from pyviews.services import create_node, binding_factory, render
 from pyviews.core.reflection import import_path
 from pyviews.core.xml import XmlNode, XmlAttr
 from pyviews.core.node import Node, InstanceNode
@@ -15,10 +16,10 @@ class RenderingPipeline:
     def __init__(self, steps=None):
         self.steps = steps
 
-def render(xml_node: XmlNode, **args) -> Node:
+def render_node(xml_node: XmlNode, **args) -> Node:
     '''Renders node from xml node'''
     try:
-        node = deps.create_node(xml_node, **args)
+        node = create_node(xml_node, **args)
         pipeline = get_pipeline(node)
         run_steps(node, pipeline, **args)
         return node
@@ -32,24 +33,31 @@ def render(xml_node: XmlNode, **args) -> Node:
         error.add_cause(info[1])
         raise error from info[1]
 
-_DEPS_GETTERS = [
-    lambda node: deps.for_(node.instance.__class__),
-    lambda node: deps.for_(node.__class__),
-    lambda node: deps
-]
 def get_pipeline(node: Node) -> RenderingPipeline:
     '''Gets rendering pipeline for passed node'''
-    for get_deps in _DEPS_GETTERS:
+    pipeline = _get_registered_pipeline(node)
+    if pipeline is None:
+        msg = _get_pipeline_registration_error_message(node)
+        raise RenderingError(msg)
+    return pipeline
+
+def _get_registered_pipeline(node: Node) -> RenderingPipeline:
+    params = [node.__class__, None]
+    if node is InstanceNode:
+        params = [node.instance.__class__] + params
+    for param in params:
         try:
-            return get_deps(node).pipeline
+            return SERVICES.for_(param).pipeline
         except (DependencyError, AttributeError):
             pass
+    return None
+
+def _get_pipeline_registration_error_message(node: Node) -> str:
     if isinstance(node, InstanceNode):
-        msg = 'RenderingPipeline is not found for {0} with instance {1}'\
+        return 'RenderingPipeline is not found for {0} with instance {1}'\
               .format(node.__class__, node.instance.__class__)
     else:
-        msg = 'RenderingPipeline is not found for {0}'.format(node.__class__)
-    raise RenderingError(msg)
+        return 'RenderingPipeline is not found for {0}'.format(node.__class__)
 
 def run_steps(node: Node, pipeline: RenderingPipeline, **args):
     '''Runs instance node rendering steps'''
@@ -68,7 +76,7 @@ def apply_attribute(node: Node, attr: XmlAttr):
     if is_code_expression(stripped_value):
         (binding_type, expr_body) = parse_expression(stripped_value)
         args = BindingArgs(node, attr, setter, expr_body)
-        apply_binding = deps.binding_factory.get_apply(binding_type, args)
+        apply_binding = binding_factory().get_apply(binding_type, args)
         apply_binding(args)
     else:
         setter(node, attr.name, attr.value)
@@ -86,5 +94,5 @@ def call_set_attr(node: Node, key: str, value):
 def render_children(node: Node, **child_args):
     '''Render node children'''
     for xml_node in node.xml_node.children:
-        child = deps.render(xml_node, **child_args)
+        child = render(xml_node, **child_args)
         node.add_child(child)

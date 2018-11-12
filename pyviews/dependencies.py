@@ -3,14 +3,14 @@
 from pyviews.core.ioc import register_single, register_func
 from pyviews.rendering.node import create_node
 from pyviews.rendering.pipeline import RenderingPipeline
-from pyviews.rendering.pipeline import render, render_children, apply_attributes
+from pyviews.rendering.pipeline import render_node, render_children, apply_attributes
 from pyviews.rendering.binding import BindingFactory
 from pyviews.code import Code, get_code_setup
 
 def register_defaults():
     '''Registers defaults dependencies'''
     register_func('create_node', create_node)
-    register_func('render', render)
+    register_func('render', render_node)
     register_single('binding_factory', BindingFactory())
     register_single('pipeline', create_default_pipeline())
     register_single('pipeline', get_code_setup(), Code)
