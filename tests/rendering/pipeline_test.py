@@ -50,11 +50,16 @@ class RenderingTests(TestCase):
         msg = 'get_pipeline should return setup by node type'
         self.assertEqual(actual_setup, pipeline, msg)
 
-    def test_get_pipeline_should_return_setup_by_instance_type(self):
+    class OtherInstanceNode(InstanceNode):
+        '''Class for get_pipeline_tests'''
+        pass
+
+    @case(InstanceNode(XmlAttr('name'), Mock()))
+    @case(OtherInstanceNode(XmlAttr('name'), Mock()))
+    def test_get_pipeline_should_return_setup_by_instance_type(self, node: InstanceNode):
         pipeline = RenderingPipeline()
         with Scope('test_get_pipeline_inst'):
-            register_single('pipeline', pipeline, XmlAttr)
-            node = InstanceNode(XmlAttr('name'), Mock())
+            register_single('pipeline', pipeline, node.instance.__class__)
 
             actual_setup = get_pipeline(node)
 

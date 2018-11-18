@@ -43,7 +43,7 @@ def get_pipeline(node: Node) -> RenderingPipeline:
 
 def _get_registered_pipeline(node: Node) -> RenderingPipeline:
     params = [node.__class__, None]
-    if node is InstanceNode:
+    if isinstance(node, InstanceNode):
         params = [node.instance.__class__] + params
     for param in params:
         try:
