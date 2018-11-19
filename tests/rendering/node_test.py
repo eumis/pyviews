@@ -34,12 +34,17 @@ class FourthInst:
         self.xml_node = xml_node
         self.parent_node = parent_node
 
+class InstWithKwargs:
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+
 class InitTests(TestCase):
     @case(Inst, {'xml_node': 1, 'parent_node': 'node'}, [1, 'node'], {})
     @case(InstReversed, {'xml_node': 1, 'parent_node': 'node'}, ['node', 1], {})
     @case(SecondInst, {'xml_node': 1, 'parent_node': 'node'}, [1], {'parent_node': 'node'})
     @case(ThirdInst, {'xml_node': 1, 'parent_node': 'node'}, [], {'xml_node': 1, 'parent_node': 'node'})
-    @case(FourthInst, {'xml_node': 1, 'parent_node': 'node'}, [1], {'parent_node': 'node'})
+    @case(FourthInst, {'xml_node': 1, 'parent_node': 'node', 'some_key': 'value'}, [1], {'parent_node': 'node', 'some_key': 'value'})
+    @case(InstWithKwargs, {'xml_node': 1, 'parent_node': 'node'}, [], {'xml_node': 1, 'parent_node': 'node'})
     def test_get_init_args(self, inst_type, init_args, args, kwargs):
         actual_args, actual_kwargs = get_init_args(inst_type, **init_args)
 
