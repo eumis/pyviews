@@ -16,10 +16,11 @@ class NodeTests(TestCase):
         msg = 'Node should inititalise properties'
         self.assertEqual(node.xml_node, self.xml_node, msg)
 
-    @case(None, {})
-    @case(InheritedDict({'one': 1}), {'one': 1})
-    def test_init_setup_globals(self, globals: InheritedDict, expected_dict):
-        node = Node(self.xml_node, globals)
+    @case(None)
+    @case(InheritedDict())
+    @case(InheritedDict({'one': 1}))
+    def test_init_setup_globals(self, node_globals: InheritedDict):
+        node = Node(self.xml_node, node_globals)
 
         msg = 'init should setup globals'
         self.assertIsNotNone(node.node_globals)
@@ -27,8 +28,9 @@ class NodeTests(TestCase):
         msg = 'init should add node to globals'
         self.assertEqual(node, node.node_globals['node'], msg)
 
-        msg = 'should inherit passed globals'
-        self.assertDictContainsSubset(expected_dict, node.node_globals.to_dictionary(), msg)
+        msg = 'should use passed globals or create new one'
+        expected_globals = node_globals if node_globals else node.node_globals 
+        self.assertEqual(expected_globals, node.node_globals, msg)
 
     @case('key', 1)
     @case('key', None)

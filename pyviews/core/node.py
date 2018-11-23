@@ -12,9 +12,8 @@ class Node:
         self._children = []
         self._bindings = []
         self._xml_node = xml_node
-        self._globals = InheritedDict({'node': self})
-        if node_globals:
-            self._globals.inherit(node_globals)
+        self._globals = node_globals if node_globals else InheritedDict()
+        self._globals['node'] = self
         self.attr_setter = _attr_setter
         self.properties = {}
         self.on_destroy = lambda node: None
