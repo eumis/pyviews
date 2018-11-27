@@ -28,10 +28,10 @@ def get_inst_type(xml_node: XmlNode):
 
 def create_inst(inst_type, **init_args):
     '''Creates class instance with args'''
-    args, kwargs = get_init_args(inst_type, **init_args)
+    args, kwargs = get_init_args(inst_type, init_args)
     return inst_type(*args, **kwargs)
 
-def get_init_args(inst_type, **init_args) -> Tuple[List, Dict]:
+def get_init_args(inst_type, init_args: dict, add_kwargs=False) -> Tuple[List, Dict]:
     '''Returns tuple with args and kwargs to pass it to inst_type constructor'''
     try:
         parameters = signature(inst_type).parameters.values()
@@ -39,22 +39,32 @@ def get_init_args(inst_type, **init_args) -> Tuple[List, Dict]:
                 if p.kind in [Parameter.POSITIONAL_ONLY, Parameter.POSITIONAL_OR_KEYWORD] \
                 and p.default == Parameter.empty]
         args = [init_args[key] for key in args_keys]
-        try:
-            next(p for p in parameters if p.kind == Parameter.VAR_KEYWORD)
-        except StopIteration:
-            kwargs = {
-                p.name: init_args[p.name] for p in parameters \
-                        if p.kind in [Parameter.KEYWORD_ONLY, Parameter.POSITIONAL_OR_KEYWORD] \
-                        and p.default != Parameter.empty \
-                        and p.name in init_args
-                }
-        else:
-            kwargs = {key: value for key, value in init_args.items() if key not in args_keys}
+        kwargs = _get_var_kwargs(parameters, args_keys, init_args)\
+                 if add_kwargs else\
+                 _get_kwargs(parameters, init_args)
     except KeyError as key_error:
         msg_format = 'parameter with key "{0}" is not found in node args'
         raise RenderingError(msg_format.format(key_error.args[0]))
     return (args, kwargs)
 
-def convert_to_node(instance, xml_node: XmlNode, node_globals: InheritedDict = None) -> InstanceNode:
+def _get_var_kwargs(parameters: list, args_keys: list, init_args: dict) -> dict:
+    try:
+        next(p for p in parameters if p.kind == Parameter.VAR_KEYWORD)
+    except StopIteration:
+        return _get_kwargs(parameters, init_args)
+    else:
+        kwargs = {key: value for key, value in init_args.items() if key not in args_keys}
+    return kwargs
+
+def _get_kwargs(parameters: list, init_args: dict) -> dict:
+    return {
+        p.name: init_args[p.name] for p in parameters \
+                if p.kind in [Parameter.KEYWORD_ONLY, Parameter.POSITIONAL_OR_KEYWORD] \
+                and p.default != Parameter.empty \
+                and p.name in init_args
+        }
+
+def convert_to_node(instance, xml_node: XmlNode, node_globals: InheritedDict = None)\
+    -> InstanceNode:
     '''Wraps passed instance with InstanceNode'''
     return InstanceNode(instance, xml_node, node_globals)

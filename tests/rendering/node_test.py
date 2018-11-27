@@ -38,15 +38,21 @@ class InstWithKwargs:
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
-class InitTests(TestCase):
-    @case(Inst, {'xml_node': 1, 'parent_node': 'node'}, [1, 'node'], {})
-    @case(InstReversed, {'xml_node': 1, 'parent_node': 'node'}, ['node', 1], {})
-    @case(SecondInst, {'xml_node': 1, 'parent_node': 'node'}, [1], {'parent_node': 'node'})
-    @case(ThirdInst, {'xml_node': 1, 'parent_node': 'node'}, [], {'xml_node': 1, 'parent_node': 'node'})
-    @case(FourthInst, {'xml_node': 1, 'parent_node': 'node', 'some_key': 'value'}, [1], {'parent_node': 'node', 'some_key': 'value'})
-    @case(InstWithKwargs, {'xml_node': 1, 'parent_node': 'node'}, [], {'xml_node': 1, 'parent_node': 'node'})
-    def test_get_init_args(self, inst_type, init_args, args, kwargs):
-        actual_args, actual_kwargs = get_init_args(inst_type, **init_args)
+class get_init_args_tests(TestCase):
+    @case(Inst, {'xml_node': 1, 'parent_node': 'node'}, [1, 'node'], {}, True)
+    @case(Inst, {'xml_node': 1, 'parent_node': 'node'}, [1, 'node'], {}, False)
+    @case(InstReversed, {'xml_node': 1, 'parent_node': 'node'}, ['node', 1], {}, True)
+    @case(InstReversed, {'xml_node': 1, 'parent_node': 'node'}, ['node', 1], {}, False)
+    @case(SecondInst, {'xml_node': 1, 'parent_node': 'node'}, [1], {'parent_node': 'node'}, True)
+    @case(SecondInst, {'xml_node': 1, 'parent_node': 'node'}, [1], {'parent_node': 'node'}, False)
+    @case(ThirdInst, {'xml_node': 1, 'parent_node': 'node'}, [], {'xml_node': 1, 'parent_node': 'node'}, True)
+    @case(ThirdInst, {'xml_node': 1, 'parent_node': 'node'}, [], {'xml_node': 1, 'parent_node': 'node'}, False)
+    @case(FourthInst, {'xml_node': 1, 'parent_node': 'node', 'some_key': 'value'}, [1], {'parent_node': 'node', 'some_key': 'value'}, True)
+    @case(FourthInst, {'xml_node': 1, 'parent_node': 'node', 'some_key': 'value'}, [1], {'parent_node': 'node'}, False)
+    @case(InstWithKwargs, {'xml_node': 1, 'parent_node': 'node'}, [], {'xml_node': 1, 'parent_node': 'node'}, True)
+    @case(InstWithKwargs, {'xml_node': 1, 'parent_node': 'node'}, [], {}, False)
+    def test_returns_args_kwargs_for_constructor(self, inst_type, init_args, args, kwargs, add_kwargs):
+        actual_args, actual_kwargs = get_init_args(inst_type, init_args, add_kwargs=add_kwargs)
 
         msg = 'get_init_args should return args for inst_type constructor'
         self.assertEqual(args, actual_args, msg)
@@ -59,38 +65,42 @@ class InitTests(TestCase):
     @case(InstReversed, {'parent_node': 'node'})
     @case(SecondInst, {})
     @case(SecondInst, {'parent_node': 'node'})
-    def test_get_init_args_raises(self, inst_type, init_args):
+    def test_raises_if_init_args_not_contain_key(self, inst_type, init_args):
         msg = 'get_init_args should raise RenderingError if there are no required arguments'
         with self.assertRaises(RenderingError, msg=msg):
-            get_init_args(inst_type, **init_args)
+            get_init_args(inst_type, init_args)
 
+class create_inst_tests(TestCase):
     @case(Inst, {'xml_node': 1, 'parent_node': 'node'})
     @case(InstReversed, {'xml_node': 1, 'parent_node': 'node'})
     @case(SecondInst, {'xml_node': 1, 'parent_node': 'node'})
     @case(ThirdInst, {'xml_node': 1, 'parent_node': 'node'})
-    def test_create_inst_should_return_instance_of_passed_type(self, inst_type, init_args):
+    def test_returns_instance_of_passed_type(self, inst_type, init_args):
         inst = create_inst(inst_type, **init_args)
 
         msg = 'create_inst should return instance of passed type'
         self.assertIsInstance(inst, inst_type, msg)
 
+class convert_to_node_tests(TestCase):
     @case({})
     @case({'one': 1})
-    def test_convert_to_node_should_create_node(self, globals_dict):
+    def test_creates_node(self, globals_dict):
         inst = Mock()
         xml_node = Mock()
+        node_globals = InheritedDict(globals_dict)
 
-        node = convert_to_node(inst, xml_node, node_globals=InheritedDict(globals_dict))
+        node = convert_to_node(inst, xml_node, node_globals=node_globals)
 
         msg = 'convert_to_node should create InstanceNode'
         self.assertIsInstance(node, InstanceNode, msg)
 
         msg = 'convert_to_node should pass globals'
-        self.assertDictContainsSubset(globals_dict, node.node_globals.to_dictionary(), msg)
+        self.assertEqual(node_globals, node_globals, msg)
 
+class create_node_tests(TestCase):
     @case('pyviews.core.node', 'Node', Node, {})
     @case('pyviews.code', 'Code', Code, {'parent_node': Node(None)})
-    def test_create_node_creates_node(self, namespace, tag, node_type, init_args):
+    def test_creates_node(self, namespace, tag, node_type, init_args):
         xml_node = XmlNode(namespace, tag)
 
         node = create_node(xml_node, **init_args)
@@ -100,7 +110,7 @@ class InitTests(TestCase):
 
     @case('pyviews.core.node', 'UnknownNode')
     @case('pyviews.core.unknownModule', 'Node')
-    def test_create_node_raises(self, namespace, tag):
+    def test_raises_for_not_existance_module_class(self, namespace, tag):
         xml_node = XmlNode(namespace, tag)
 
         msg = 'create_node should raise in case module or class cannot be imported'
@@ -109,7 +119,7 @@ class InitTests(TestCase):
 
     @case('pyviews.core.observable', 'Observable', Observable)
     @case('pyviews.core.ioc', 'Services', Services)
-    def test_create_node_creates_instance_node(self, namespace, tag, inst_type):
+    def test_creates_instance_node(self, namespace, tag, inst_type):
         xml_node = XmlNode(namespace, tag)
 
         node = create_node(xml_node)
