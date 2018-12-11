@@ -6,16 +6,17 @@ from sys import exc_info
 from pyviews.core import CoreError, ViewInfo
 from pyviews.core.ioc import SERVICES as deps
 from pyviews.core.xml import Parser, XmlNode
+from pyviews.services import render
 
 class ViewError(CoreError):
     '''Common error for parsing exceptions'''
     pass
 
-def render_view(view_name):
+def render_view(view_name, **args):
     '''Process view and return root Node'''
     try:
         root_xml = get_view_root(view_name)
-        return deps.render(root_xml)
+        return render(root_xml, **args)
     except CoreError as error:
         error.add_view_info(ViewInfo(view_name, None))
         raise
