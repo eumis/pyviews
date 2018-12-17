@@ -16,7 +16,7 @@ def get_code_setup():
     '''Creates node setup for Code'''
     return RenderingPipeline(steps=[run_code])
 
-def run_code(node: Code, parent_node: Node = None):
+def run_code(node: Code, parent_node: Node = None, **args):
     '''Executes node content as python module and adds its definitions to globals'''
     if not node.xml_node.text:
         return
