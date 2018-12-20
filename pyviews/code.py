@@ -4,6 +4,7 @@ from sys import exc_info
 from textwrap import dedent
 from traceback import extract_tb
 from pyviews.core.node import Node
+from pyviews.core.observable import InheritedDict
 from pyviews.core.compilation import CompilationError
 from pyviews.rendering.pipeline import RenderingPipeline
 
@@ -16,16 +17,16 @@ def get_code_setup():
     '''Creates node setup for Code'''
     return RenderingPipeline(steps=[run_code])
 
-def run_code(node: Code, parent_node: Node = None, **args):
+def run_code(node: Code, parent_node:Node = None, node_globals: InheritedDict = None, **args):
     '''Executes node content as python module and adds its definitions to globals'''
     if not node.xml_node.text:
         return
     code = node.xml_node.text
     try:
-        globs = parent_node.node_globals.to_dictionary()
+        globs = node_globals.to_dictionary()
         exec(dedent(code), globs)
         definitions = [(key, value) for key, value in globs.items() \
-                    if key != '__builtins__' and not parent_node.node_globals.has_key(key)]
+                    if key != '__builtins__' and not node_globals.has_key(key)]
         for key, value in definitions:
             parent_node.node_globals[key] = value
     except SyntaxError as err:
