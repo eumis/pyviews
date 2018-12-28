@@ -45,7 +45,7 @@ class SomeEntity:
 class InstanceTargetTests(TestCase):
     def test_on_change(self):
         inst = SomeEntity()
-        target = InstanceTarget(inst, 'int_value', setattr)
+        target = PropertyTarget(inst, 'int_value', setattr)
         new_val = 25
 
         target.on_change(new_val)
@@ -71,7 +71,7 @@ class BindingWithSimpleExpressionTests(TestCase):
         self.inst = SomeEntity()
         self.vars = InheritedDict()
         self.vars['vm'] = self.view_model
-        self.target = InstanceTarget(self.inst, 'str_value', setattr)
+        self.target = PropertyTarget(self.inst, 'str_value', setattr)
         self.binding = ExpressionBinding(self.target, self.expression, self.vars)
 
     def test_binding_creation(self):
@@ -116,7 +116,7 @@ class ExpressionBindingTests(TestCase):
         self.inst = SomeEntity()
         self.vars = InheritedDict()
         self.vars['vm'] = self.view_model
-        self.target = InstanceTarget(self.inst, 'str_value', setattr)
+        self.target = PropertyTarget(self.inst, 'str_value', setattr)
         self.binding = ExpressionBinding(self.target, self.expression, self.vars)
 
     @case(lambda vm: setattr(vm, 'int_value', 3))
@@ -220,7 +220,7 @@ class TwoWaysBindingTests(TestCase):
         self.expr_vars = InheritedDict()
         self.expr_vars['vm'] = self.expr_inst
 
-        target = InstanceTarget(self.inst, 'int_value', setattr)
+        target = PropertyTarget(self.inst, 'int_value', setattr)
         one_binding = ExpressionBinding(target, self.expression, self.expr_vars)
 
         target = PropertyExpressionTarget(self.expression, self.expr_vars)

@@ -42,7 +42,7 @@ class Binding:
         '''Destroys binding'''
         raise NotImplementedError(get_not_implemented_message(self, 'destroy'))
 
-class InstanceTarget(BindingTarget):
+class PropertyTarget(BindingTarget):
     '''Instance modifier is called on change'''
     def __init__(self, instance, prop, modifier):
         self.inst = instance

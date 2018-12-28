@@ -1,8 +1,11 @@
 '''Module with modifiers'''
 
+from typing import Callable, Any
 from pyviews.core.ioc import get_current_scope
 from pyviews.core.reflection import import_path
 from pyviews.core.node import Node
+
+Modifier = Callable[[Node, str, Any], None]
 
 def import_global(node: Node, key, path):
     '''Import passed module, class, function full name and stores it to node's globals'''

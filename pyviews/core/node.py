@@ -112,7 +112,6 @@ class Property:
 
     def set(self, value):
         '''Sets value'''
-        self._value
         self._value = self._setter(self._node, value, self._value) if self._setter else value
 
     def new(self, node: Node):

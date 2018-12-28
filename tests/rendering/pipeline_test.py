@@ -6,7 +6,7 @@ from pyviews.core.xml import XmlAttr
 from pyviews.core.ioc import Scope, register_single, scope
 from pyviews.rendering import RenderingError
 from pyviews.rendering.modifiers import import_global
-from pyviews.rendering.binding import BindingFactory, add_default_rules, BindingArgs
+from pyviews.rendering.binding import BindingFactory, add_default_rules, BindingArgs, BindingRule
 from pyviews.rendering.pipeline import RenderingPipeline
 from pyviews.rendering.pipeline import call_set_attr, get_setter
 from pyviews.rendering.pipeline import apply_attribute, apply_attributes
@@ -139,7 +139,7 @@ class AttributesRenderingTests(TestCase):
         node = Node(Mock())
         apply_binding_mock = Mock()
         factory = BindingFactory()
-        factory.add_rule(binding_type, BindingFactory.Rule(lambda args: True, apply_binding_mock))
+        factory.add_rule(binding_type, BindingRule(apply_binding_mock, lambda args: True))
 
         with Scope('test_apply_attribute_binding'):
             register_single('binding_factory', factory)
@@ -147,7 +147,7 @@ class AttributesRenderingTests(TestCase):
             apply_attribute(node, xml_attr)
 
         msg = 'apply_attribute should apply binding'
-        binding_args = BindingArgs(node, xml_attr, setter_mock, expr_body)
+        binding_args = BindingArgs(node=node, attr=xml_attr, modifier=setter_mock, expr_body=expr_body)
         self.assertEqual(apply_binding_mock.call_args, call(binding_args), msg)
 
     @patch('pyviews.rendering.pipeline.apply_attribute')

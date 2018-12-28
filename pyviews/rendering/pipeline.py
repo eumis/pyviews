@@ -75,7 +75,7 @@ def apply_attribute(node: Node, attr: XmlAttr):
     stripped_value = attr.value.strip() if attr.value else ''
     if is_code_expression(stripped_value):
         (binding_type, expr_body) = parse_expression(stripped_value)
-        args = BindingArgs(node, attr, setter, expr_body)
+        args = BindingArgs(node=node, attr=attr, modifier=setter, expr_body=expr_body)
         apply_binding = binding_factory().get_apply(binding_type, args)
         apply_binding(args)
     else:

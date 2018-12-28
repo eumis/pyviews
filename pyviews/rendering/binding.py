@@ -1,16 +1,42 @@
 '''Binding factory and default binding creators'''
 
+from typing import Callable
 from collections import namedtuple
 from pyviews.core.compilation import Expression
-from pyviews.core.binding import ExpressionBinding, InstanceTarget
+from pyviews.core.node import Node
+from pyviews.core.binding import ExpressionBinding, PropertyTarget
 from pyviews.core.binding import BindingError
+from pyviews.rendering.modifiers import Modifier
 
-BindingArgs = namedtuple('BindingArgs', ['node', 'attr', 'modifier', 'expr_body'])
+class BindingArgs:
+    '''Binding arguments'''
+    def __init__(self, **args):
+        self.node: Node = args.get('node')
+        self.attr: str = args.get('attr')
+        self.modifier: Modifier = args.get('modifier')
+        self.expr_body: str = args.get('expr_body')
+
+class BindingRule:
+    '''Binding Rule'''
+    def __init__(self,
+                 apply: Callable[[BindingArgs], None],
+                 suitable: Callable[[BindingArgs], bool] = None):
+        if suitable is None:
+            suitable = lambda args: True
+        self._suitable = suitable
+        self._apply = apply
+
+    def suitable(self, args: BindingArgs) -> bool:
+        '''Returns True if rule is suitable for args'''
+        return self._suitable(args)
+
+    @property
+    def apply(self) -> Callable[[BindingArgs], None]:
+        '''Applies binding'''
+        return self._apply
 
 class BindingFactory:
     '''Factory for getting binding applier'''
-
-    Rule = namedtuple('BindingRule', ['suitable', 'apply'])
 
     def __init__(self):
         self._rules = {}
@@ -51,12 +77,12 @@ def apply_oneway(args: BindingArgs):
     Property is set on expression change.
     '''
     expression = Expression(args.expr_body)
-    target = InstanceTarget(args.node, args.attr.name, args.modifier)
+    target = PropertyTarget(args.node, args.attr.name, args.modifier)
     binding = ExpressionBinding(target, expression, args.node.node_globals)
     binding.bind()
     args.node.add_binding(binding)
 
 def add_default_rules(factory: BindingFactory):
     '''Adds default binding rules to passed factory'''
-    factory.add_rule('once', BindingFactory.Rule(lambda args: True, apply_once))
-    factory.add_rule('oneway', BindingFactory.Rule(lambda args: True, apply_oneway))
+    factory.add_rule('once', BindingRule(apply_once))
+    factory.add_rule('oneway', BindingRule(apply_oneway))

@@ -1,13 +1,13 @@
 from unittest import TestCase, main
 from pyviews.testing import case
 from pyviews.core.binding import BindingError
-from pyviews.rendering.binding import BindingFactory, BindingArgs, add_default_rules
+from pyviews.rendering.binding import BindingFactory, BindingArgs, BindingRule, add_default_rules
 from pyviews.rendering.binding import apply_once, apply_oneway
 
 class BindingFactoryTests(TestCase):
     def setUp(self):
         self.factory = BindingFactory()
-        self.args = BindingArgs(None, None, None, None)
+        self.args = BindingArgs()
 
     @case([True, True], 1)
     @case([False, True], 1)
@@ -16,7 +16,7 @@ class BindingFactoryTests(TestCase):
     @case([True, False, False], 0)
     def test_get_apply_returns_first_suitable(self, suitables, rule_index):
         binding_type = 'type'
-        rules = [BindingFactory.Rule(lambda args, s=suitable: s, lambda binding_type, args: None) \
+        rules = [BindingRule(lambda binding_type, args: None, lambda args, s=suitable: s) \
                  for suitable in suitables]
 
         for rule in rules:
@@ -36,7 +36,7 @@ class DefaultRulesTests(TestCase):
     @case('oneway', apply_oneway)
     def test_add_default_rules(self, binding_type, apply):
         factory = BindingFactory()
-        args = BindingArgs(None, None, None, None)
+        args = BindingArgs()
         add_default_rules(factory)
 
         actual_apply = factory.get_apply(binding_type, args)
