@@ -98,7 +98,6 @@ class RenderingTests(TestCase):
             with self.assertRaises(RenderingError, msg=msg):
                 get_pipeline(node)
 
-
 class AttributesRenderingTests(TestCase):
     def setUp(self):
         with self._get_scope():
@@ -140,15 +139,17 @@ class AttributesRenderingTests(TestCase):
         apply_binding_mock = Mock()
         factory = BindingFactory()
         factory.add_rule(binding_type, BindingRule(apply_binding_mock, lambda args: True))
+        expected = (node, xml_attr, setter_mock, expr_body)
 
         with Scope('test_apply_attribute_binding'):
             register_single('binding_factory', factory)
 
             apply_attribute(node, xml_attr)
 
+        actual_args = apply_binding_mock.call_args[0][0]
+        actual = (actual_args.node, actual_args.attr, actual_args.modifier, actual_args.expr_body)
         msg = 'apply_attribute should apply binding'
-        binding_args = BindingArgs(node=node, attr=xml_attr, modifier=setter_mock, expr_body=expr_body)
-        self.assertEqual(apply_binding_mock.call_args, call(binding_args), msg)
+        self.assertEqual(expected, actual, msg)
 
     @patch('pyviews.rendering.pipeline.apply_attribute')
     def test_apply_attributes_apply_every_attribute(self, apply_attribute_mock):

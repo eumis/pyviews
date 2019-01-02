@@ -1,7 +1,6 @@
 '''Binding factory and default binding creators'''
 
 from typing import Callable
-from collections import namedtuple
 from pyviews.core.compilation import Expression
 from pyviews.core.node import Node
 from pyviews.core.binding import ExpressionBinding, PropertyTarget
