@@ -3,13 +3,12 @@
 from sys import exc_info
 from pyviews.core import CoreError
 from pyviews.core.ioc import SERVICES, DependencyError
-from pyviews.services import create_node, binding_factory, render
+from pyviews.services import create_node, binder, render
 from pyviews.core.reflection import import_path
 from pyviews.core.xml import XmlNode, XmlAttr
 from pyviews.core.node import Node, InstanceNode
 from pyviews.rendering import RenderingError
 from pyviews.rendering.expression import is_code_expression, parse_expression
-from pyviews.rendering.binding import BindingArgs
 
 class RenderingPipeline:
     '''Contains data, logic used for render steps'''
@@ -75,9 +74,7 @@ def apply_attribute(node: Node, attr: XmlAttr):
     stripped_value = attr.value.strip() if attr.value else ''
     if is_code_expression(stripped_value):
         (binding_type, expr_body) = parse_expression(stripped_value)
-        args = BindingArgs(node=node, attr=attr, modifier=setter, expr_body=expr_body)
-        apply_binding = binding_factory().get_apply(binding_type, args)
-        apply_binding(args)
+        binder().apply(binding_type, node=node, attr=attr, modifier=setter, expr_body=expr_body)
     else:
         setter(node, attr.name, attr.value)
 

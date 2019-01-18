@@ -6,7 +6,7 @@ from pyviews.core.xml import XmlAttr
 from pyviews.core.ioc import Scope, register_single, scope
 from pyviews.rendering import RenderingError
 from pyviews.rendering.modifiers import import_global
-from pyviews.rendering.binding import BindingFactory, add_default_rules, BindingArgs, BindingRule
+from pyviews.rendering.binding import Binder, add_default_rules, BindingRule
 from pyviews.rendering.pipeline import RenderingPipeline
 from pyviews.rendering.pipeline import call_set_attr, get_setter
 from pyviews.rendering.pipeline import apply_attribute, apply_attributes
@@ -101,10 +101,10 @@ class RenderingTests(TestCase):
 class AttributesRenderingTests(TestCase):
     def setUp(self):
         with self._get_scope():
-            factory = BindingFactory()
-            add_default_rules(factory)
+            binder = Binder()
+            add_default_rules(binder)
 
-            register_single('binding_factory', factory)
+            register_single('binder', binder)
 
     def _get_scope(self):
         return Scope('AttributesRenderingTests')
@@ -133,23 +133,24 @@ class AttributesRenderingTests(TestCase):
     @case(XmlAttr('key', '{1}'), 'oneway', '1')
     @case(XmlAttr('one', 'oneway:{1 + 1}'), 'oneway', '1 + 1')
     @case(XmlAttr('one', 'twoways:{vm.prop}'), 'twoways', 'vm.prop')
-    def test_apply_attribute_saves_binding(self, get_setter_mock, xml_attr, binding_type, expr_body):
+    def test_apply_attribute_applies_binding(self, get_setter_mock, xml_attr, binding_type, expr_body):
         setter_mock = self._get_setter_mock(get_setter_mock)
         node = Node(Mock())
-        apply_binding_mock = Mock()
-        factory = BindingFactory()
-        factory.add_rule(binding_type, BindingRule(apply_binding_mock, lambda args: True))
-        expected = (node, xml_attr, setter_mock, expr_body)
+        binder = Mock()
+        expected_args = {
+            'node': node,
+            'attr': xml_attr,
+            'modifier': setter_mock,
+            'expr_body': expr_body
+        }
 
         with Scope('test_apply_attribute_binding'):
-            register_single('binding_factory', factory)
+            register_single('binder', binder)
 
             apply_attribute(node, xml_attr)
 
-        actual_args = apply_binding_mock.call_args[0][0]
-        actual = (actual_args.node, actual_args.attr, actual_args.modifier, actual_args.expr_body)
         msg = 'apply_attribute should apply binding'
-        self.assertEqual(expected, actual, msg)
+        self.assertEqual(binder.apply.call_args, call(binding_type, **expected_args), msg)
 
     @patch('pyviews.rendering.pipeline.apply_attribute')
     def test_apply_attributes_apply_every_attribute(self, apply_attribute_mock):
