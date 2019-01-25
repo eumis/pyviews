@@ -1,5 +1,6 @@
 '''Classes used for binding'''
 
+from re import compile as compile_regex
 from sys import exc_info
 from pyviews.core import CoreError, get_not_implemented_message
 from pyviews.core.observable import Observable, InheritedDict
@@ -233,9 +234,15 @@ class TwoWaysBinding(Binding):
         self._one.destroy()
         self._two.destroy()
 
-def get_expression_target(expression: Expression, expr_vars: InheritedDict):
+PROPERTY_EXPRESSION_REGEX = compile_regex(r'([a-zA-Z_0-9]{1,}\.){0,}([a-zA-Z_0-9]{1,})')
+
+def get_expression_target(expression: Expression, expr_vars: InheritedDict) -> BindingTarget:
     '''Factory method to create expression target'''
     root = expression.get_object_tree()
+    if len(root.children) != 1 or not PROPERTY_EXPRESSION_REGEX.fullmatch(expression.code):
+        error = BindingError('Expression should be property expression')
+        error.add_info('Expression', expression.code)
+        raise error
     if root.children[0].children:
         return PropertyExpressionTarget(expression, expr_vars)
     return GlobalValueExpressionTarget(expression, expr_vars)
