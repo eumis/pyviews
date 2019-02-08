@@ -3,7 +3,7 @@
 import ast
 from sys import exc_info
 from collections import namedtuple
-from pyviews.core import CoreError
+from .common import CoreError
 
 class ObjectNode:
     '''Entry of object in expression'''

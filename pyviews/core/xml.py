@@ -2,7 +2,7 @@
 
 from xml.parsers.expat import ParserCreate, ExpatError, errors
 from collections import namedtuple
-from pyviews.core import CoreError, ViewInfo
+from .common import CoreError, ViewInfo
 
 class XmlNode:
     '''Parsed xml node'''

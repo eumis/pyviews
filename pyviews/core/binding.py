@@ -2,27 +2,13 @@
 
 from re import compile as compile_regex
 from sys import exc_info
-from pyviews.core import CoreError, get_not_implemented_message
 from pyviews.core.observable import Observable, InheritedDict
 from pyviews.core.compilation import Expression, ObjectNode
+from .common import CoreError, get_not_implemented_message
 
 class BindingError(CoreError):
     '''Base error for binding errors'''
     TargetUpdateError = 'Error occured during target update'
-
-class Dependency:
-    '''Incapsulates observable subscription'''
-    def __init__(self, observable: Observable, key, callback):
-        self._observable = observable
-        self._key = key
-        self._callback = callback
-
-    def destroy(self):
-        '''Unsubscribes callback from observable'''
-        self._observable.release(self._key, self._callback)
-        self._observable = None
-        self._key = None
-        self._callback = None
 
 class BindingTarget:
     '''Target for changes, applied when binding has triggered changes'''
@@ -61,6 +47,20 @@ class FunctionTarget(BindingTarget):
 
     def on_change(self, value):
         self.func(value)
+
+class Dependency:
+    '''Incapsulates observable subscription'''
+    def __init__(self, observable: Observable, key, callback):
+        self._observable = observable
+        self._key = key
+        self._callback = callback
+
+    def destroy(self):
+        '''Unsubscribes callback from observable'''
+        self._observable.release(self._key, self._callback)
+        self._observable = None
+        self._key = None
+        self._callback = None
 
 class ExpressionBinding(Binding):
     '''Binds target to expression result'''
