@@ -1,10 +1,10 @@
-'''Binding factory and default binding creators'''
+'''Binding rules and factory'''
 
 from pyviews.core.compilation import Expression
 from pyviews.core.node import Node
 from pyviews.core.xml import XmlAttr
-from pyviews.core.binding import ExpressionBinding, PropertyTarget
-from pyviews.core.binding import BindingError
+from pyviews.binding import ExpressionBinding, PropertyTarget
+from pyviews.core import BindingError
 from pyviews.rendering.modifiers import Modifier
 
 class BindingRule:

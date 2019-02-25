@@ -1,13 +1,12 @@
 #pylint: disable=C0111,W0221,C0103
 
-from unittest import TestCase, main
+from unittest import TestCase
 from unittest.mock import Mock, call
 from pyviews.testing import case
-from pyviews.core.xml import XmlAttr
-from pyviews.core.binding import BindingError, Binding
-from pyviews.core.observable import InheritedDict
-from pyviews.rendering.binding import Binder, BindingRule, add_default_rules
-from pyviews.rendering.binding import OnceRule, OnewayRule
+from pyviews.core import XmlAttr, InheritedDict
+from pyviews.core import BindingError, Binding
+from .rules import Binder, BindingRule, add_default_rules
+from .rules import OnceRule, OnewayRule
 
 BINDING_TYPE = 'default_binding_type'
 
@@ -205,6 +204,3 @@ class OnewayRule_apply_tests(TestCase):
 
         actual_binding = node.add_binding.call_args[0][0]
         self.assertIsInstance(actual_binding, Binding, msg)
-
-if __name__ == '__main__':
-    main()

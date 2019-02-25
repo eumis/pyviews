@@ -5,7 +5,6 @@ from pyviews.core import CoreError
 
 class DependencyError(CoreError):
     '''Base for ioc errors'''
-    pass
 
 class Container:
     '''Container for dependencies'''

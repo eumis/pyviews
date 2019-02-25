@@ -23,9 +23,9 @@ class Expression:
     EXPRESSION_CACHE = {}
     CacheItem = namedtuple('ExpressionItem', ['compiled_code', 'tree'])
     def __init__(self, code):
-        self.code = code
-        self._compiled_code = None
-        self._object_tree = None
+        self.code: str = code
+        self._compiled_code: ast.AST = None
+        self._object_tree: ObjectNode = None
         if not self._init_from_cache():
             self._compiled_code = self._compile()
             self._object_tree = self._build_object_tree()
@@ -48,7 +48,7 @@ class Expression:
             error.add_cause(syntax_error)
             raise error from syntax_error
 
-    def _build_object_tree(self):
+    def _build_object_tree(self) -> ObjectNode:
         ast_root = ast.parse(self.code)
         ast_nodes = [node for node in ast.walk(ast_root)]
 
