@@ -5,7 +5,7 @@ from pyviews.core import XmlNode, XmlAttr, CoreError
 from pyviews.core import Node, InstanceNode, import_path
 from pyviews.core.ioc import SERVICES, DependencyError
 from pyviews.compilation import is_expression, parse_expression
-from pyviews.services import create_node, binder, render
+from pyviews.container import create_node, binder, render
 from .common import RenderingError
 
 class RenderingPipeline:

@@ -5,7 +5,7 @@ from sys import exc_info
 from pyviews.core import CoreError, ViewInfo
 from pyviews.core.ioc import SERVICES as deps
 from pyviews.core.xml import Parser, XmlNode
-from pyviews.services import render
+from pyviews.container import render
 
 class ViewError(CoreError):
     '''Common error for parsing exceptions'''

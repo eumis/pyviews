@@ -1,7 +1,7 @@
 '''Binding rules and factory'''
 
 from pyviews.core import Binder, BindingRule, Modifier, XmlAttr, Node
-from pyviews.services import expression
+from pyviews.container import expression
 from .implementations import ExpressionBinding, PropertyTarget
 
 class OnceRule(BindingRule):
