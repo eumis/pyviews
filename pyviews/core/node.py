@@ -1,10 +1,10 @@
 '''Core classes for creation from xml nodes'''
 
 from inspect import signature, Parameter
-from typing import Any, List
-from pyviews.core.xml import XmlNode
-from pyviews.core.observable import InheritedDict
-from pyviews.core.binding import Binding
+from typing import Any, List, Callable
+from .xml import XmlNode
+from .observable import InheritedDict
+from .binding import Binding
 
 class Node:
     '''Represents node with properties and bindings created from xml node'''
@@ -117,3 +117,5 @@ class Property:
     def new(self, node: Node):
         '''Creates property for node'''
         return Property(self.name, self._setter, node)
+
+Modifier = Callable[[Node, str, Any], None]

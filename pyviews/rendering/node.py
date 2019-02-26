@@ -6,7 +6,7 @@ from typing import Tuple, List, Dict
 from pyviews.core.node import Node, InstanceNode
 from pyviews.core.xml import XmlNode
 from pyviews.core.observable import InheritedDict
-from pyviews.rendering import RenderingError
+from .common import RenderingError
 
 def create_node(xml_node: XmlNode, **init_args):
     '''Creates node from xml node using namespace as module and tag name as class name'''

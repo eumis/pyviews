@@ -1,9 +1,11 @@
-from unittest import TestCase, main
+#pylint: disable=missing-docstring
+
+from unittest import TestCase
 from unittest.mock import Mock, call
 from pyviews.testing import case
-from pyviews.core.xml import XmlNode
-from pyviews.core.observable import InheritedDict
-from pyviews.core.node import Node, Property
+from .xml import XmlNode
+from .observable import InheritedDict
+from .node import Node, Property
 
 class NodeTests(TestCase):
     def setUp(self):
@@ -163,6 +165,3 @@ class PropertyTests(TestCase):
         msg = 'new should return new property for passed node'
         self.assertNotEqual(actual_prop, prop, msg)
         self.assertEqual(setter_mock.call_args, call(node, value), msg)
-
-if __name__ == '__main__':
-    main()

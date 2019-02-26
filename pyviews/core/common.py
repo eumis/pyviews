@@ -37,7 +37,3 @@ class CoreError(Exception):
     def add_cause(self, error: Exception):
         '''Adds cause error to error message'''
         self.add_info('Cause error', '{0} - {1}'.format(type(error).__name__, error))
-
-def get_not_implemented_message(instance, method):
-    '''returns error message for NotImplementedError'''
-    return 'Method "{0}" is not defind in {1}'.format(method, instance.__class__.__name__)

@@ -1,16 +1,19 @@
-from unittest import TestCase, main
+#pylint: disable=missing-docstring
+
+from unittest import TestCase
 from unittest.mock import Mock, call, patch
 from pyviews.testing import case
-from pyviews.core.node import Node, InstanceNode
-from pyviews.core.xml import XmlAttr
+from pyviews.core import XmlAttr, Node, InstanceNode
 from pyviews.core.ioc import Scope, register_single, scope
-from pyviews.rendering import RenderingError
-from pyviews.rendering.modifiers import import_global
-from pyviews.rendering.binding import Binder, add_default_rules, BindingRule
-from pyviews.rendering.pipeline import RenderingPipeline
-from pyviews.rendering.pipeline import call_set_attr, get_setter
-from pyviews.rendering.pipeline import apply_attribute, apply_attributes
-from pyviews.rendering.pipeline import run_steps, get_pipeline
+from pyviews.binding import Binder, add_default_rules
+from pyviews.compilation import CompiledExpression
+from .common import RenderingError
+from . import pipeline
+from . import modifiers
+from .pipeline import RenderingPipeline
+from .pipeline import call_set_attr, get_setter
+from .pipeline import apply_attribute, apply_attributes
+from .pipeline import run_steps, get_pipeline
 
 class RenderingTests(TestCase):
     @case(0, {'one': 1})
@@ -105,6 +108,7 @@ class AttributesRenderingTests(TestCase):
             add_default_rules(binder)
 
             register_single('binder', binder)
+            register_single('expression', CompiledExpression)
 
     def _get_scope(self):
         return Scope('AttributesRenderingTests')
@@ -114,7 +118,7 @@ class AttributesRenderingTests(TestCase):
         get_setter_mock.side_effect = lambda attr: setter_mock
         return setter_mock
 
-    @patch('pyviews.rendering.pipeline.get_setter')
+    @patch(pipeline.__name__ + '.get_setter')
     @case(XmlAttr('key', 'value'), 'key', 'value')
     @case(XmlAttr('', 'value'), '', 'value')
     @case(XmlAttr('one', '{1}'), 'one', 1)
@@ -129,7 +133,7 @@ class AttributesRenderingTests(TestCase):
         msg = 'apply_attribute should call setter'
         self.assertEqual(setter_mock.call_args, call(node, key, value), msg)
 
-    @patch('pyviews.rendering.pipeline.get_setter')
+    @patch(pipeline.__name__ + '.get_setter')
     @case(XmlAttr('key', '{1}'), 'oneway', '1')
     @case(XmlAttr('one', 'oneway:{1 + 1}'), 'oneway', '1 + 1')
     @case(XmlAttr('one', 'twoways:{vm.prop}'), 'twoways', 'vm.prop')
@@ -146,13 +150,14 @@ class AttributesRenderingTests(TestCase):
 
         with Scope('test_apply_attribute_binding'):
             register_single('binder', binder)
+            register_single('expression', CompiledExpression)
 
             apply_attribute(node, xml_attr)
 
         msg = 'apply_attribute should apply binding'
         self.assertEqual(binder.apply.call_args, call(binding_type, **expected_args), msg)
 
-    @patch('pyviews.rendering.pipeline.apply_attribute')
+    @patch(pipeline.__name__ + '.apply_attribute')
     def test_apply_attributes_apply_every_attribute(self, apply_attribute_mock):
         xml_node = Mock()
         xml_node.attrs = [Mock(), Mock()]
@@ -177,7 +182,7 @@ class SetterTests(TestCase):
         self.assertEqual(node_setter.call_args, call(node, key, value), msg)
 
     @case(None, call_set_attr)
-    @case('pyviews.rendering.modifiers.import_global', import_global)
+    @case(modifiers.__name__ + '.import_global', modifiers.import_global)
     def test_get_setter_returns_setter(self, setter_path, expected_setter):
         actual_setter = get_setter(XmlAttr('', namespace=setter_path))
 
@@ -193,6 +198,3 @@ class SetterTests(TestCase):
         with self.assertRaises(ImportError, msg=msg):
             xml_attr = XmlAttr(name, '', namespace)
             get_setter(xml_attr)
-
-if __name__ == '__main__':
-    main()

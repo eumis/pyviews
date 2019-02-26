@@ -1,13 +1,15 @@
-from unittest import TestCase, main
+#pylint: disable=missing-docstring, invalid-name
+
+from unittest import TestCase
 from unittest.mock import Mock
 from pyviews.testing import case
-from pyviews.core.xml import XmlNode
-from pyviews.core.observable import InheritedDict, Observable
-from pyviews.core.node import Node, InstanceNode
+from pyviews.core import XmlNode, Node, InstanceNode
+from pyviews.core import InheritedDict, Observable
 from pyviews.core.ioc import Services
 from pyviews.code import Code
-from pyviews.rendering.node import get_init_args, convert_to_node, RenderingError
-from pyviews.rendering.node import create_node, create_inst
+from .common import RenderingError
+from .node import get_init_args, convert_to_node
+from .node import create_node, create_inst
 
 class Inst:
     def __init__(self, xml_node, parent_node):
@@ -129,6 +131,3 @@ class create_node_tests(TestCase):
 
         msg = 'create_node should create instance using namespace as module and tag name as class name'
         self.assertIsInstance(node.instance, inst_type, msg)
-
-if __name__ == '__main__':
-    main()

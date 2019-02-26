@@ -3,10 +3,10 @@
 from pyviews.core.ioc import register_single, register_func
 from pyviews.rendering.node import create_node
 from pyviews.core.observable import InheritedDict
-from pyviews.core.compilation import Expression
+from pyviews.compilation import CompiledExpression
 from pyviews.rendering.pipeline import RenderingPipeline
 from pyviews.rendering.pipeline import render_node, render_children, apply_attributes
-from pyviews.rendering.binding import Binder
+from pyviews.binding import Binder
 from pyviews.code import Code, get_code_setup
 
 def register_defaults():
@@ -16,7 +16,7 @@ def register_defaults():
     register_single('binder', Binder())
     register_single('pipeline', create_default_pipeline())
     register_single('pipeline', get_code_setup(), Code)
-    register_single('expression', Expression)
+    register_single('expression', CompiledExpression)
 
 def create_default_pipeline() -> RenderingPipeline:
     '''Creates default node setup'''

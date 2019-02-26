@@ -1,7 +1,9 @@
+#pylint: disable=missing-docstring
+
 from tempfile import TemporaryFile
-from unittest import TestCase, main
+from unittest import TestCase
 from pyviews.testing import case
-from pyviews.core.xml import Parser, XmlAttr, XmlError
+from .xml import Parser, XmlAttr, XmlError
 
 class ParsingTests(TestCase):
     def _parse(self, xml_string):
@@ -105,6 +107,3 @@ class ParsingTests(TestCase):
     def test_raises_for_bad_xml(self, xml_string):
         with self.assertRaises(XmlError):
             self._parse(xml_string)
-
-if __name__ == '__main__':
-    main()

@@ -1,7 +1,9 @@
-from unittest import TestCase, main
+#pylint: disable=missing-docstring
+
+from unittest import TestCase
 from unittest.mock import Mock, call
 from pyviews.testing import case
-from pyviews.core.observable import ObservableEntity, InheritedDict
+from .observable import ObservableEntity, InheritedDict
 
 class ObservableEnt(ObservableEntity):
     def __init__(self, private, name, value):
@@ -255,6 +257,3 @@ class InheritedDictTests(TestCase):
         msg = 'released callbacks shouldn''t be called'
         self.assertTrue(active_callback.called, msg)
         self.assertFalse(callback.called, msg)
-
-if __name__ == '__main__':
-    main()

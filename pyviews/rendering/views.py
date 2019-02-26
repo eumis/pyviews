@@ -9,7 +9,6 @@ from pyviews.services import render
 
 class ViewError(CoreError):
     '''Common error for parsing exceptions'''
-    pass
 
 def render_view(view_name, **args):
     '''Process view and return root Node'''

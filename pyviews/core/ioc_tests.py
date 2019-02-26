@@ -1,6 +1,8 @@
-from unittest import TestCase, main
+#pylint: disable=missing-docstring
+
+from unittest import TestCase
 from unittest.mock import Mock, call
-from pyviews.core import ioc
+from . import ioc
 
 class ContainerTests(TestCase):
     def setUp(self):
@@ -272,6 +274,3 @@ class ServicesTests(TestCase):
         msg = 'for_ should return services that using passed param'
         self.assertEqual(ioc.SERVICES.for_('one').dep, one, msg=msg)
         self.assertEqual(ioc.SERVICES.for_('two').dep, two, msg=msg)
-
-if __name__ == '__main__':
-    main()

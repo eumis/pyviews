@@ -1,7 +1,7 @@
 '''Dependency injection implementation'''
 
 from threading import local as thread_local
-from pyviews.core import CoreError
+from .common import CoreError
 
 class DependencyError(CoreError):
     '''Base for ioc errors'''

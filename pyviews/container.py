@@ -1,10 +1,8 @@
 '''Contains interfaces for pyviews dependencies'''
 
-from pyviews.core.xml import XmlNode
+from pyviews.core import XmlNode, Node, Expression
+from pyviews.core import Binder
 from pyviews.core.ioc import SERVICES
-from pyviews.core.node import Node
-from pyviews.core.compilation import Expression
-from pyviews.binding import Binder
 
 def create_node(xml_node: XmlNode, **init_args) -> Node:
     '''Creates node from xml node using namespace as module and tag name as class name'''
