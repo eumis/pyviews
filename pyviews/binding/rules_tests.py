@@ -7,7 +7,7 @@ from pyviews.core.ioc import Scope, register_func
 from pyviews.core import XmlAttr, InheritedDict
 from pyviews.core import Binding, Binder
 from pyviews.compilation import CompiledExpression
-from .rules import OnceRule, OnewayRule, add_default_rules
+from .rules import OnceRule, OnewayRule, add_one_way_rules
 
 with Scope('rules_tests'):
     register_func('expression', CompiledExpression)
@@ -18,7 +18,7 @@ class add_default_rules_tests(TestCase):
     def test_adds_default_rules(self, binding_type, rule_type):
         binder = Binder()
 
-        add_default_rules(binder)
+        add_one_way_rules(binder)
         actual = binder.find_rule(binding_type)
 
         msg = 'should add {0} rule for {1} binding type'.format(binding_type, rule_type)

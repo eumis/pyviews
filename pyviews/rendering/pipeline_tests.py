@@ -5,7 +5,7 @@ from unittest.mock import Mock, call, patch
 from pyviews.testing import case
 from pyviews.core import XmlAttr, Node, InstanceNode
 from pyviews.core.ioc import Scope, register_single, scope
-from pyviews.binding import Binder, add_default_rules
+from pyviews.binding import Binder, add_one_way_rules
 from pyviews.compilation import CompiledExpression
 from .common import RenderingError
 from . import pipeline
@@ -105,7 +105,7 @@ class AttributesRenderingTests(TestCase):
     def setUp(self):
         with self._get_scope():
             binder = Binder()
-            add_default_rules(binder)
+            add_one_way_rules(binder)
 
             register_single('binder', binder)
             register_single('expression', CompiledExpression)

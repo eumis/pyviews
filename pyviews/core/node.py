@@ -1,7 +1,7 @@
 '''Core classes for creation from xml nodes'''
 
 from inspect import signature, Parameter
-from typing import Any, List, Callable
+from typing import Any, List, Callable, TypeVar
 from .xml import XmlNode
 from .observable import InheritedDict
 from .binding import Binding
@@ -118,4 +118,4 @@ class Property:
         '''Creates property for node'''
         return Property(self.name, self._setter, node)
 
-Modifier = Callable[[Node, str, Any], None]
+Modifier = TypeVar(Callable[[Node, str, Any], None])

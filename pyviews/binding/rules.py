@@ -33,7 +33,7 @@ class OnewayRule(BindingRule):
         binding.bind()
         node.add_binding(binding)
 
-def add_default_rules(binder: Binder):
+def add_one_way_rules(binder: Binder):
     '''Adds default binding rules to passed binder'''
     binder.add_rule('once', OnceRule())
     binder.add_rule('oneway', OnewayRule())
