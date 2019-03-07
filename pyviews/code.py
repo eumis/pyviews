@@ -11,7 +11,7 @@ class Code(Node):
     def __init__(self, xml_node):
         super().__init__(xml_node)
 
-def get_code_setup():
+def get_code_pipeline():
     '''Creates node setup for Code'''
     return RenderingPipeline(steps=[run_code])
 
