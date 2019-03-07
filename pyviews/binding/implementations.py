@@ -161,7 +161,7 @@ class ObservableBinding(Binding):
         self._prop = prop
 
     def bind(self):
-        self. destroy()
+        self.destroy()
         self._observable.observe(self._prop, self._update_callback)
         self._update_target(getattr(self._observable, self._prop))
 
