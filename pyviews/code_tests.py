@@ -1,4 +1,6 @@
-from unittest import TestCase, main
+# pylint: disable=missing-docstring
+
+from unittest import TestCase
 from unittest.mock import Mock
 from pyviews.testing import case
 from pyviews.core.observable import InheritedDict

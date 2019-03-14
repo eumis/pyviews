@@ -4,16 +4,11 @@ from sys import exc_info
 from textwrap import dedent
 from traceback import extract_tb
 from pyviews.core import Node, InheritedDict, CompilationError
-from pyviews.rendering import RenderingPipeline
 
 class Code(Node):
     '''Wrapper under python code inside view'''
     def __init__(self, xml_node):
         super().__init__(xml_node)
-
-def get_code_pipeline():
-    '''Creates node setup for Code'''
-    return RenderingPipeline(steps=[run_code])
 
 def run_code(node: Code, parent_node: Node = None, node_globals: InheritedDict = None, **args): #pylint: disable=unused-argument
     '''Executes node content as python module and adds its definitions to globals'''
