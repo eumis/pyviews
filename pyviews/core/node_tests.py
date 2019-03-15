@@ -79,7 +79,7 @@ class NodeTests(TestCase):
     def test_destroy_destroys_children(self, bindings_count):
         node = Node(Mock())
         children = []
-        for i in range(bindings_count):
+        for _ in range(bindings_count):
             child = Mock()
             child.destroy = Mock()
             node.add_child(child)

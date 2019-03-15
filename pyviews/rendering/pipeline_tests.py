@@ -110,10 +110,12 @@ class AttributesRenderingTests(TestCase):
             register_single('binder', binder)
             register_single('expression', CompiledExpression)
 
-    def _get_scope(self):
+    @staticmethod
+    def _get_scope():
         return Scope('AttributesRenderingTests')
 
-    def _get_setter_mock(self, get_setter_mock):
+    @staticmethod
+    def _get_setter_mock(get_setter_mock):
         setter_mock = Mock()
         get_setter_mock.side_effect = lambda attr: setter_mock
         return setter_mock

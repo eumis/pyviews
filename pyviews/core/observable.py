@@ -102,9 +102,9 @@ class InheritedDict(Observable):
         '''Subscribes to all keys changes'''
         self._all_callbacks.append(callback)
 
-    def _notify(self, key: str, value, old_val):
-        super()._notify(key, value, old_val)
-        self._notify_all(key, value, old_val)
+    def _notify(self, key: str, value, old_value):
+        super()._notify(key, value, old_value)
+        self._notify_all(key, value, old_value)
 
     def _notify_all(self, key: str, value, old_value):
         if self._all_callbacks is None:

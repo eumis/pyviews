@@ -19,7 +19,7 @@ def run_code(node: Code, parent_node: Node = None, node_globals: InheritedDict =
         globs = node_globals.to_dictionary()
         exec(dedent(code), globs) #pylint: disable=exec-used
         definitions = [(key, value) for key, value in globs.items() \
-                    if key != '__builtins__' and not node_globals.has_key(key)]
+                       if key != '__builtins__' and not node_globals.has_key(key)]
         for key, value in definitions:
             parent_node.node_globals[key] = value
     except SyntaxError as err:
