@@ -2,6 +2,7 @@
 
 import ast
 from sys import exc_info
+from typing import List
 from collections import namedtuple
 from pyviews.core import Expression, ObjectNode, CompilationError
 
@@ -47,7 +48,7 @@ class CompiledExpression(Expression):
 
         return root
 
-    def _get_children(self, ast_nodes, is_child):
+    def _get_children(self, ast_nodes, is_child) -> List[ObjectNode]:
         ast_children = [n for n in ast_nodes if is_child(n)]
 
         grouped = self._group_by_key(ast_children)
@@ -61,7 +62,8 @@ class CompiledExpression(Expression):
 
         return children
 
-    def _group_by_key(self, ast_nodes):
+    @staticmethod
+    def _group_by_key(ast_nodes):
         try:
             grouped_by_id = {node.id: [] for node in ast_nodes}
             for ast_child in ast_nodes:

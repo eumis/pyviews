@@ -31,7 +31,8 @@ class CoreError(Exception):
         message = current_message + self._format_info(header, message)
         self.args = (message,) + self.args[1:]
 
-    def _format_info(self, header, message):
+    @staticmethod
+    def _format_info(header, message):
         return '{0}: {1}{2}'.format(header, message, linesep)
 
     def add_cause(self, error: Exception):

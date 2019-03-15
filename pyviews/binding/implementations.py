@@ -2,6 +2,7 @@
 
 from re import compile as compile_regex
 from sys import exc_info
+from typing import Any
 from pyviews.core import Observable, InheritedDict
 from pyviews.core import Expression, ObjectNode
 from pyviews.core import Binding, BindingTarget
@@ -72,7 +73,8 @@ class ExpressionBinding(Binding):
         except KeyError:
             pass
 
-    def _get_child(self, inst, key):
+    @staticmethod
+    def _get_child(inst: Any, key: str) -> Any:
         try:
             return inst[key] if isinstance(inst, InheritedDict) \
                          else getattr(inst, key)

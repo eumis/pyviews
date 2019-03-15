@@ -31,7 +31,7 @@ class NodeTests(TestCase):
         self.assertEqual(node, node.node_globals['node'], msg)
 
         msg = 'should use passed globals or create new one'
-        expected_globals = node_globals if node_globals else node.node_globals 
+        expected_globals = node_globals if node_globals else node.node_globals
         self.assertEqual(expected_globals, node.node_globals, msg)
 
     @case('key', 1)
@@ -62,7 +62,7 @@ class NodeTests(TestCase):
     def test_destroy_destroys_bindings(self, bindings_count):
         node = Node(Mock())
         bindings = []
-        for i in range(bindings_count):
+        for _ in range(bindings_count):
             binding = Mock()
             binding.destroy = Mock()
             node.add_binding(binding)

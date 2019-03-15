@@ -130,12 +130,14 @@ class InjectionTests(TestCase):
         self.assertEqual(self._get_default_injected(), (one, two), msg=msg)
         self.assertEqual(self._get_kwargs_injected(), (one, two), msg=msg)
 
+    @staticmethod
     @ioc.inject('one', 'two')
-    def _get_default_injected(self, one=None, two=None):
+    def _get_default_injected(one=None, two=None):
         return (one, two)
 
+    @staticmethod
     @ioc.inject('one', 'two')
-    def _get_kwargs_injected(self, **kwargs):
+    def _get_kwargs_injected(**kwargs):
         return (kwargs['one'], kwargs['two'])
 
 class ScopeTests(TestCase):
@@ -187,8 +189,9 @@ class ScopeTests(TestCase):
             self.assertEqual(self._get_injected_value(), 2, msg)
         self.assertEqual(self._get_injected_value(), 0, msg)
 
+    @staticmethod
     @ioc.inject('value')
-    def _get_injected_value(self, value=None):
+    def _get_injected_value(value=None):
         return value
 
     def test_scope_decorator(self):
@@ -203,14 +206,16 @@ class ScopeTests(TestCase):
         self.assertEqual(self._get_one_scope_value(), 1, msg)
         self.assertEqual(self._get_two_scope_value(), 2, msg)
 
+    @staticmethod
     @ioc.scope('one')
     @ioc.inject('value')
-    def _get_one_scope_value(self, value=None):
+    def _get_one_scope_value(value=None):
         return value
 
+    @staticmethod
     @ioc.scope('two')
     @ioc.inject('value')
-    def _get_two_scope_value(self, value=None):
+    def _get_two_scope_value(value=None):
         return value
 
     def test_wrap_with_scope(self):

@@ -1,6 +1,7 @@
 '''Code expressions abstractions'''
 
 from abc import ABC, abstractmethod
+from typing import List
 from .common import CoreError
 
 class CompilationError(CoreError):
@@ -14,7 +15,7 @@ class ObjectNode:
     '''Entry of object in expression'''
     def __init__(self, key):
         self.key = key
-        self.children = []
+        self.children: List['ObjectNode'] = []
 
 class Expression(ABC):
     '''Code expression.'''

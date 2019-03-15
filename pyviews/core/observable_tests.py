@@ -75,7 +75,8 @@ class ObservableEntityTests(TestCase):
         self.assertEqual(self.callback.call_count, 1, msg=msg)
 
 class InheritedDictTests(TestCase):
-    def _create_inh_dict(self, own, parent):
+    @staticmethod
+    def _create_inh_dict(own, parent):
         inh_dict = InheritedDict(own)
         if parent:
             inh_dict.inherit(parent)
@@ -172,7 +173,7 @@ class InheritedDictTests(TestCase):
         inh_dict = InheritedDict()
 
         with self.assertRaises(KeyError, msg='KeyError should be raised for unknown key'):
-            inh_dict['some key']
+            _ = inh_dict['some key']
 
     def test_notifying_on_change(self):
         inh_dict = InheritedDict()

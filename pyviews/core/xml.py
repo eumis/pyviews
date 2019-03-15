@@ -49,7 +49,8 @@ class Parser:
         node.attrs = list(self._generate_xml_attributes(value_attrs))
         self._items.append(Parser.Item(node, self._namespaces))
 
-    def _get_tuples(self, attrs):
+    @staticmethod
+    def _get_tuples(attrs):
         key_indexes = list(range(len(attrs)))[0::2]
         return [Parser.Attribute(attrs[i], attrs[i+1]) for i in key_indexes]
 
@@ -59,7 +60,8 @@ class Parser:
         namespaces = {a.name: a.value for a in self._remove_xmlns_prefix(nsp_attrs)}
         return {**parent_namespaces, **namespaces}
 
-    def _remove_xmlns_prefix(self, attrs):
+    @staticmethod
+    def _remove_xmlns_prefix(attrs):
         for attr in attrs:
             try:
                 key = attr.name.split(':')[1]

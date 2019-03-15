@@ -6,7 +6,8 @@ from pyviews.testing import case
 from .xml import Parser, XmlAttr, XmlError
 
 class ParsingTests(TestCase):
-    def _parse(self, xml_string):
+    @staticmethod
+    def _parse(xml_string):
         parser = Parser()
 
         with TemporaryFile() as xml_file:
@@ -14,7 +15,8 @@ class ParsingTests(TestCase):
             xml_file.seek(0)
             return parser.parse(xml_file)
 
-    def _get_child(self, root, level):
+    @staticmethod
+    def _get_child(root, level):
         i = 0
         node = root
         while i < level:

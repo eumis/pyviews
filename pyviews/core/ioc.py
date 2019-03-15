@@ -115,7 +115,9 @@ class Services:
     def __getattr__(self, key):
         return get_current_scope().container.get(key, self._param)
 
-    def for_(self, param):
+    @staticmethod
+    def for_(param) -> 'Services':
+        '''Returns container services that uses passed param'''
         return Services(param)
 
 

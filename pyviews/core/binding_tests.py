@@ -1,4 +1,4 @@
-#pylint: disable=missing-docstring
+#pylint: disable=missing-docstring,invalid-name
 
 from unittest import TestCase
 from unittest.mock import Mock
@@ -48,7 +48,8 @@ class Binder_find_rule_tests(TestCase):
         msg = 'should return last added suitable rule'
         self.assertEqual(expected, actual, msg)
 
-    def _add_rules(self, rules, binder, binding_type):
+    @staticmethod
+    def _add_rules(rules, binder, binding_type):
         for rule in rules:
             binder.add_rule(binding_type, rule)
 

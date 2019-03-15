@@ -83,7 +83,8 @@ class CodeTests(TestCase):
         with self.assertRaises(CompilationError, msg=msg):
             run_code(code, parent_node=parent_node, node_globals=InheritedDict(globals_dict))
 
-    def _get_code_node(self, content):
+    @staticmethod
+    def _get_code_node(content):
         xml_node = XmlNode('namespace', 'name')
         xml_node.text = content
         return Code(xml_node)
