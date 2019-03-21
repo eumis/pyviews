@@ -7,3 +7,15 @@ install:
 # command to run tests
 script:
   - python -m unittest discover -s pyviews -p *_tests.py
+deploy:
+  on:
+    branch: dev
+  provider: pypi
+  user: $pypi_user
+  password: $pypi_password
+  server: https://test.pypi.org/legacy/
+after_deploy:
+  - python increment_minor.py
+  - git add pyviews/__init__.py
+  - git commit --message "[skip travis] minor version increment"
+  - git push origin $TRAVIS_BRANCH --quiet

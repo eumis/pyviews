@@ -82,7 +82,8 @@
 			"label": "prepare wheel",
 			"command": "python",
 			"args": [
-				"packaging.py",
+				"setup.py",
+				"sdist",
 				"bdist_wheel"
 			]
 		},
