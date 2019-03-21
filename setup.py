@@ -26,7 +26,7 @@ def setup_package():
         ],
         python_requires='>=3.6',
         keywords='binding tkviews tk tkinter pyviews python mvvm',
-        packages=find_packages()
+        packages=find_packages())
 
 if __name__ == '__main__':
     setup_package()
