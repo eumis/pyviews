@@ -1,21 +1,21 @@
+#pylint: disable=missing-docstring
+
 import unittest
-from unittest import TestCase, main
+from unittest import TestCase
 from importlib import import_module
-from tests.mock import SomeObject
 from pyviews.testing import case
+from pyviews.core import Node
 from pyviews.core.ioc import scope, register_single
-from pyviews.rendering.modifiers import import_global, set_global, inject_global
-from pyviews.core.node import Node
+from .modifiers import import_global, set_global, inject_global
 
 class ModifiersTests(TestCase):
     @case(Node(None, None), 'key', 'unittest', unittest)
     @case(Node(None, None), 'anotherKey', 'unittest.TestCase', TestCase)
     @case(Node(None, None), 'someKey', 'importlib.import_module', import_module)
-    @case(Node(None, None), 'key', 'tests.core.reflection_test.SomeObject', SomeObject)
     def test_import_global(self, node, key, value, expected):
         import_global(node, key, value)
         msg = 'import_global should import path and add it to node''s globals'
-        self.assertEqual(node.globals[key], expected, msg)
+        self.assertEqual(node.node_globals[key], expected, msg)
 
     @case(Node(None, None), 'key', 'value')
     @case(Node(None, None), 'key', None)
@@ -23,7 +23,7 @@ class ModifiersTests(TestCase):
     def test_set_global(self, node, key, value):
         set_global(node, key, value)
         msg = 'set_global should add value to global'
-        self.assertEqual(node.globals[key], value, msg)
+        self.assertEqual(node.node_globals[key], value, msg)
 
     @scope('test_inject_global')
     @case(Node(None, None), 'global_key', 'inject_key', 1)
@@ -33,7 +33,4 @@ class ModifiersTests(TestCase):
         register_single(inject_key, value)
         inject_global(node, global_key, inject_key)
         msg = 'inject_global should get value by key from container and add it to node''s globals'
-        self.assertEqual(node.globals[global_key], value, msg)
-
-if __name__ == '__main__':
-    main()
+        self.assertEqual(node.node_globals[global_key], value, msg)

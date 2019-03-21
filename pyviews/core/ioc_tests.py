@@ -1,6 +1,8 @@
-from unittest import TestCase, main
+#pylint: disable=missing-docstring
+
+from unittest import TestCase
 from unittest.mock import Mock, call
-from pyviews.core import ioc
+from . import ioc
 
 class ContainerTests(TestCase):
     def setUp(self):
@@ -10,9 +12,11 @@ class ContainerTests(TestCase):
         one = object()
         two = object()
         three = object()
+        four = object()
         self.container.register('key', lambda: one)
         self.container.register('paramed', lambda: two)
         self.container.register('paramed', lambda: three, 1)
+        self.container.register_factory('paramed', lambda param: four if param == 2 else None)
 
         msg = 'Registered dependency should be returned by container'
         self.assertEqual(self.container.get('key'), one, msg)
@@ -22,6 +26,9 @@ class ContainerTests(TestCase):
 
         msg = 'Registered with parameter dependency should be returned by container with passed parameter'
         self.assertEqual(self.container.get('paramed', 1), three, msg)
+
+        msg = 'Registered factory should return dependency by parameter if there no other dependency with the param'
+        self.assertEqual(self.container.get('paramed', 2), four, msg)
 
     def test_last_dependency(self):
         one = object()
@@ -123,12 +130,14 @@ class InjectionTests(TestCase):
         self.assertEqual(self._get_default_injected(), (one, two), msg=msg)
         self.assertEqual(self._get_kwargs_injected(), (one, two), msg=msg)
 
+    @staticmethod
     @ioc.inject('one', 'two')
-    def _get_default_injected(self, one=None, two=None):
+    def _get_default_injected(one=None, two=None):
         return (one, two)
 
+    @staticmethod
     @ioc.inject('one', 'two')
-    def _get_kwargs_injected(self, **kwargs):
+    def _get_kwargs_injected(**kwargs):
         return (kwargs['one'], kwargs['two'])
 
 class ScopeTests(TestCase):
@@ -180,8 +189,9 @@ class ScopeTests(TestCase):
             self.assertEqual(self._get_injected_value(), 2, msg)
         self.assertEqual(self._get_injected_value(), 0, msg)
 
+    @staticmethod
     @ioc.inject('value')
-    def _get_injected_value(self, value=None):
+    def _get_injected_value(value=None):
         return value
 
     def test_scope_decorator(self):
@@ -196,14 +206,16 @@ class ScopeTests(TestCase):
         self.assertEqual(self._get_one_scope_value(), 1, msg)
         self.assertEqual(self._get_two_scope_value(), 2, msg)
 
+    @staticmethod
     @ioc.scope('one')
     @ioc.inject('value')
-    def _get_one_scope_value(self, value=None):
+    def _get_one_scope_value(value=None):
         return value
 
+    @staticmethod
     @ioc.scope('two')
     @ioc.inject('value')
-    def _get_two_scope_value(self, value=None):
+    def _get_two_scope_value(value=None):
         return value
 
     def test_wrap_with_scope(self):
@@ -258,5 +270,12 @@ class ServicesTests(TestCase):
         with ioc.Scope('two'):
             self.assertEqual(ioc.SERVICES.dep, two, msg=msg)
 
-if __name__ == '__main__':
-    main()
+    def test_for_(self):
+        one = object()
+        two = object()
+        ioc.register_single('dep', one, 'one')
+        ioc.register_single('dep', two, 'two')
+
+        msg = 'for_ should return services that using passed param'
+        self.assertEqual(ioc.SERVICES.for_('one').dep, one, msg=msg)
+        self.assertEqual(ioc.SERVICES.for_('two').dep, two, msg=msg)

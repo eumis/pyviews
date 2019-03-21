@@ -1,21 +1,37 @@
-from unittest import TestCase, main
-from pyviews.testing import case
-from pyviews.core.compilation import Expression, CompilationError
+#pylint: disable=missing-docstring, invalid-name
 
-class ExpressionTests(TestCase):
+from unittest import TestCase
+from pyviews.testing import case
+from pyviews.core import CompilationError
+from .expression import CompiledExpression
+
+class EvalExpression_compile_tests(TestCase):
     @case('2 + 2', None, 4)
     @case('some_key', {'some_key': 1}, 1)
     @case('some_key - 1', {'some_key': 1}, 0)
     @case('str(some_key)', {'some_key': 1}, '1')
     @case('some_key', {'some_key': 'asdf'}, 'asdf')
     @case('some_key(some_value)', {'some_key': lambda val: val, 'some_value': 'value'}, 'value')
-    def test_compile_result(self, code, params, expected):
-        expression = Expression(code)
-        msg = 'execute should return expression result value'
-        self.assertEqual(expression.execute(params), expected, msg)
+    def test_execute(self, code, params, expected):
+        expression = CompiledExpression(code)
 
+        actual = expression.execute(params)
+
+        msg = 'execute should return expression result value'
+        self.assertEqual(expected, actual, msg)
+
+    @case('2/0')
+    @case('print(some_variable)')
+    def test_execute_raises(self, body):
+        expression = CompiledExpression(body)
+
+        msg = 'execute should raise CompilationError'
+        with self.assertRaises(CompilationError, msg=msg):
+            expression.execute()
+
+class EvalExpression_get_object_tree_tests(TestCase):
     def test_object_tree(self):
-        expression = Expression("str(vm.vm.int_value) + vm.vm.str_value + vm.str_value + vm.get()")
+        expression = CompiledExpression("str(vm.vm.int_value) + vm.vm.str_value + vm.str_value + vm.get()")
 
         root = expression.get_object_tree()
 
@@ -39,15 +55,3 @@ class ExpressionTests(TestCase):
         self.assertEqual(sorted([e.key for e in vm_node.children]), \
                          sorted(['int_value', 'str_value']), \
                          'variable entry should contain attribute children')
-
-    @case('2/0')
-    @case('print(some_variable)')
-    def test_execute_raises(self, body):
-        expression = Expression(body)
-
-        msg = 'execute should raise CompilationError'
-        with self.assertRaises(CompilationError, msg=msg):
-            expression.execute()
-
-if __name__ == '__main__':
-    main()

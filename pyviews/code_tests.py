@@ -1,9 +1,13 @@
-from unittest import TestCase, main
+# pylint: disable=missing-docstring
+
+from unittest import TestCase
 from unittest.mock import Mock
 from pyviews.testing import case
 from pyviews.core.observable import InheritedDict
 from pyviews.core.compilation import CompilationError
-from pyviews.rendering.node import Code
+from pyviews.core.xml import XmlNode
+from pyviews.core.node import Node
+from pyviews.code import Code, run_code
 
 class CodeTests(TestCase):
     @case(
@@ -22,15 +26,15 @@ class CodeTests(TestCase):
         ''',
         {'key': 'key'},
         {'none': None, 'one': 1, 'str_value': 'str_value', 'global_key': 'key'})
-    def test_methods_definitions(self, content, globals_dict, expected):
-        parent_globals = self._get_parent_globals(globals_dict)
-        code = self._get_code_node(parent_globals, content)
+    def test_run_code_adds_methods_definitions(self, content, globals_dict, expected):
+        parent_node = Node(Mock())
+        code = self._get_code_node(content)
 
-        code.render_children()
+        run_code(code, parent_node=parent_node, node_globals=InheritedDict(globals_dict))
 
         msg = 'defined functions should be added to parent globals'
         for key, value in expected.items():
-            self.assertEqual(value, parent_globals[key](), msg)
+            self.assertEqual(value, parent_node.node_globals[key](), msg)
 
     @case(
         '''
@@ -48,15 +52,15 @@ class CodeTests(TestCase):
         ''',
         {'key': 'key'},
         {'one': 1, 'str_value': 'str_value', 'global_key': 'key'})
-    def test_variables_definitions(self, content, globals_dict, expected):
-        parent_globals = self._get_parent_globals(globals_dict)
-        code = self._get_code_node(parent_globals, content)
+    def test_run_code_adds_variables_definitions(self, content, globals_dict, expected):
+        parent_node = Node(Mock())
+        code = self._get_code_node(content)
 
-        code.render_children()
+        run_code(code, parent_node=parent_node, node_globals=InheritedDict(globals_dict))
 
-        msg = 'defined functions should be added to parent globals'
+        msg = 'variables should be added to parent globals'
         for key, value in expected.items():
-            self.assertEqual(value, parent_globals[key], msg)
+            self.assertEqual(value, parent_node.node_globals[key], msg)
 
     @case('''a = key.prop''', {'key': None})
     @case('''a = key.prop''', {})
@@ -71,26 +75,16 @@ class CodeTests(TestCase):
         def some_func()
             pass
         ''', {})
-    def test_raises_error(self, content, globals_dict):
-        parent_globals = self._get_parent_globals(globals_dict)
-        code = self._get_code_node(parent_globals, content)
+    def test_run_code_raises_error(self, content, globals_dict):
+        parent_node = Node(Mock())
+        code = self._get_code_node(content)
 
         msg = 'render_children should raise CompilationError for invalid code'
         with self.assertRaises(CompilationError, msg=msg):
-            code.render_children()
+            run_code(code, parent_node=parent_node, node_globals=InheritedDict(globals_dict))
 
-    def _get_code_node(self, parent_globals, content):
-        parent_node = Mock()
-        parent_node.globals = parent_globals
-        code = Code(parent_node, None)
-        code.text = content
-        return code
-
-    def _get_parent_globals(self, globals_dict):
-        parent_globals = InheritedDict()
-        for key, value in globals_dict.items():
-            parent_globals[key] = value
-        return parent_globals
-
-if __name__ == '__main__':
-    main()
+    @staticmethod
+    def _get_code_node(content):
+        xml_node = XmlNode('namespace', 'name')
+        xml_node.text = content
+        return Code(xml_node)

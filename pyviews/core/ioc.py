@@ -1,16 +1,16 @@
 '''Dependency injection implementation'''
 
 from threading import local as thread_local
-from pyviews.core import CoreError
+from .common import CoreError
 
 class DependencyError(CoreError):
     '''Base for ioc errors'''
-    pass
 
 class Container:
     '''Container for dependencies'''
     def __init__(self):
         self._initializers = {}
+        self._factories = {}
         self.register('container', lambda: self)
 
     def register(self, key, initializer: callable, param=None):
@@ -21,24 +21,20 @@ class Container:
             self._initializers[key] = {}
         self._initializers[key][param] = initializer
 
+    def register_factory(self, key, initializer):
+        '''Add initializer that called with passed param'''
+        self._factories[key] = initializer
+
     def get(self, key, param=None):
         '''Resolve dependecy'''
-        if key not in self._initializers or param not in self._initializers[key]:
+        try:
+            return self._initializers[key][param]()
+        except KeyError:
+            if key in self._factories:
+                return self._factories[key](param)
             raise DependencyError('Dependency "{0}" is not found'.format(key))
-        return self._initializers[key][param]()
 
 _THREAD_LOCAL = thread_local()
-
-def get_current_scope():
-    '''return current scope'''
-    current_scope = getattr(_THREAD_LOCAL, 'current_scope', None)
-    if current_scope is None:
-        raise DependencyError("ioc is not set up for current thread")
-    return _THREAD_LOCAL.current_scope
-
-def set_current_scope(current_scope):
-    '''sets current scope'''
-    _THREAD_LOCAL.current_scope = current_scope
 
 class Scope:
     '''Dependencies scope'''
@@ -68,6 +64,17 @@ class Scope:
 
     def __exit__(self, exc_type, value, traceback):
         set_current_scope(self._previous_scope)
+
+def get_current_scope() -> Scope:
+    '''return current scope'''
+    current_scope = getattr(_THREAD_LOCAL, 'current_scope', None)
+    if current_scope is None:
+        raise DependencyError("ioc is not set up for current thread")
+    return _THREAD_LOCAL.current_scope
+
+def set_current_scope(current_scope: Scope):
+    '''sets current scope'''
+    _THREAD_LOCAL.current_scope = current_scope
 
 Scope('').__enter__()
 
@@ -102,8 +109,17 @@ def _call_with_scope(func, scope_name, args, kwargs):
 
 class Services:
     '''Provides interface for getting dependencies'''
+    def __init__(self, param=None):
+        self._param = param
+
     def __getattr__(self, key):
-        return get_current_scope().container.get(key)
+        return get_current_scope().container.get(key, self._param)
+
+    @staticmethod
+    def for_(param) -> 'Services':
+        '''Returns container services that uses passed param'''
+        return Services(param)
+
 
 SERVICES = Services()
 

@@ -1,8 +1,10 @@
-from unittest import TestCase, main
-from pyviews.testing import case
-from pyviews.rendering.expression import is_code_expression, parse_expression
+#pylint: disable=missing-docstring, invalid-name
 
-class ExpressionsTests(TestCase):
+from unittest import TestCase
+from pyviews.testing import case
+from .parsing import is_expression, parse_expression
+
+class is_expression_tests(TestCase):
     @case('{asdf}', True)
     @case('once:{asdf}', True)
     @case('oneway:{asdf}', True)
@@ -21,9 +23,10 @@ class ExpressionsTests(TestCase):
     @case('asdf}', False)
     @case(' {asdf}', False)
     @case('once: {asdf}', False)
-    def test_is_code_expression(self, expr, expected):
-        self.assertEqual(is_code_expression(expr), expected)
+    def test_is_expression(self, expr, expected):
+        self.assertEqual(is_expression(expr), expected)
 
+class parse_expression_tests(TestCase):
     @case('{asdf}', ('oneway', 'asdf'))
     @case('once:{asdf}', ('once', 'asdf'))
     @case('oneway:{asdf}', ('oneway', 'asdf'))
@@ -35,6 +38,3 @@ class ExpressionsTests(TestCase):
     @case('twoways:{to_int:{asdf}}', ('twoways', 'to_int:{asdf}'))
     def test_parse_expression(self, expr, expected):
         self.assertEqual(parse_expression(expr), expected)
-
-if __name__ == '__main__':
-    main()

@@ -1,241 +1,69 @@
 '''Classes used for binding'''
 
-from sys import exc_info
-from pyviews.core import CoreError, get_not_implemented_message
-from pyviews.core.observable import Observable, InheritedDict
-from pyviews.core.compilation import Expression, ObjectNode
+from abc import ABC, abstractmethod
+from .common import CoreError
 
 class BindingError(CoreError):
     '''Base error for binding errors'''
     TargetUpdateError = 'Error occured during target update'
 
-class Dependency:
-    '''Incapsulates observable subscription'''
-    def __init__(self, observable: Observable, key, callback):
-        self._observable = observable
-        self._key = key
-        self._callback = callback
-
-    def destroy(self):
-        '''Unsubscribes callback from observable'''
-        self._observable.release(self._key, self._callback)
-        self._observable = None
-        self._key = None
-        self._callback = None
-
-class BindingTarget:
+class BindingTarget(ABC):
     '''Target for changes, applied when binding has triggered changes'''
+    @abstractmethod
     def on_change(self, value):
         '''Called to apply changes'''
-        raise NotImplementedError(get_not_implemented_message(self, 'on_change'))
 
-class Binding:
+class Binding(ABC):
     '''Binds BindingTarget to changes'''
     def __init__(self):
         self.add_error_info = lambda error: None
 
+    @abstractmethod
     def bind(self):
         '''Applies binding'''
-        raise NotImplementedError(get_not_implemented_message(self, 'bind'))
 
+    @abstractmethod
     def destroy(self):
         '''Destroys binding'''
-        raise NotImplementedError(get_not_implemented_message(self, 'destroy'))
 
-class InstanceTarget(BindingTarget):
-    '''Instance modifier is called on change'''
-    def __init__(self, instance, prop, modifier):
-        self.inst = instance
-        self.prop = prop
-        self._modifier = modifier
+class BindingRule(ABC):
+    '''Creates binding for args'''
+    @abstractmethod
+    def suitable(self, **args) -> bool:
+        '''Returns True if rule is suitable for args'''
 
-    def on_change(self, value):
-        '''Calles modifier on instance with passed value'''
-        self._modifier(self.inst, self.prop, value)
+    @abstractmethod
+    def apply(self, **args):
+        '''Applies binding'''
 
-class FunctionTarget(BindingTarget):
-    '''Function is called on change'''
-    def __init__(self, func):
-        self.func = func
+class Binder:
+    '''Applies binding'''
+    def __init__(self):
+        self._rules = {}
 
-    def on_change(self, value):
-        self.func(value)
+    def add_rule(self, binding_type: str, rule: BindingRule):
+        '''Adds new rule'''
+        if binding_type not in self._rules:
+            self._rules[binding_type] = []
 
-class ExpressionBinding(Binding):
-    '''Binds target to expression result'''
-    def __init__(self, target: BindingTarget, expression: Expression, expr_vars: InheritedDict):
-        super().__init__()
-        self._target = target
-        self._expression = expression
-        self._dependencies = []
-        self._vars = expr_vars
+        self._rules[binding_type].insert(0, rule)
 
-    def bind(self):
-        self.destroy()
-        objects_tree = self._expression.get_object_tree()
-        self._create_dependencies(self._vars, objects_tree)
-        self._update_target()
-
-    def _create_dependencies(self, inst, var_tree: ObjectNode):
-        if isinstance(inst, Observable):
-            self._subscribe_for_changes(inst, var_tree)
-
-        for entry in var_tree.children:
-            child_inst = self._get_child(inst, entry.key)
-            if child_inst is not None:
-                self._create_dependencies(child_inst, entry)
-
-    def _subscribe_for_changes(self, inst: Observable, var_tree):
+    def find_rule(self, binding_type: str, **args):
+        '''Finds rule by binding type and args'''
         try:
-            for entry in var_tree.children:
-                inst.observe(entry.key, self._update_callback)
-                self._dependencies.append(Dependency(inst, entry.key, self._update_callback))
-        except KeyError:
-            pass
-
-    def _get_child(self, inst, key):
-        try:
-            return inst[key] if isinstance(inst, InheritedDict) \
-                         else getattr(inst, key)
-        except KeyError:
+            rules = self._rules[binding_type]
+            return next(rule for rule in rules if rule.suitable(**args))
+        except (KeyError, StopIteration):
             return None
 
-    def _update_callback(self, new_val, old_val):
-        try:
-            if isinstance(new_val, Observable) or isinstance(old_val, Observable):
-                self.bind()
-            else:
-                self._update_target()
-        except CoreError as error:
-            self.add_error_info(error)
-            raise
-        except:
-            info = exc_info()
-            error = BindingError(BindingError.TargetUpdateError)
-            self.add_error_info(error)
-            error.add_cause(info[1])
-            raise error from info[1]
-
-    def _update_target(self):
-        value = self._expression.execute(self._vars.to_dictionary())
-        self._target.on_change(value)
-
-    def destroy(self):
-        for dependency in self._dependencies:
-            dependency.destroy()
-        self._dependencies = []
-
-class PropertyExpressionTarget(BindingTarget):
-    '''Property is set on change. Instance and property are defined in expression'''
-    def __init__(self, expression: Expression, expr_vars: InheritedDict):
-        self._expression_code = expression.code
-        self._var_tree = expression.get_object_tree()
-        self._validate()
-        self._vars = expr_vars
-
-    def _validate(self):
-        if len(self._var_tree.children) != 1 or not self._var_tree.children[0].children:
-            error = BindingError('Expression should be property expression')
-            error.add_info('Expression', self._expression_code)
+    def apply(self, binding_type, **args):
+        '''Returns apply function'''
+        rule = self.find_rule(binding_type, **args)
+        if rule is None:
+            error = BindingError('Binding rule is not found')
+            error.add_info('Binding type', binding_type)
+            error.add_info('args', args)
             raise error
-
-    def on_change(self, value):
-        (inst, prop) = self._get_target()
-        setattr(inst, prop, value)
-
-    def _get_target(self):
-        entry = self._var_tree.children[0]
-        inst = self._vars[entry.key]
-        next_key = entry.children[0].key
-        entry = entry.children[0]
-
-        while entry.children:
-            inst = getattr(inst, next_key)
-            next_key = entry.children[0].key
-            entry = entry.children[0]
-
-        return (inst, next_key)
-
-class GlobalValueExpressionTarget(BindingTarget):
-    '''Global dictionary value is set on change. Key are defined in expression'''
-    def __init__(self, expression: Expression, expr_vars: InheritedDict):
-        root = expression.get_object_tree()
-        self._key = expression.code
-        self._vars = expr_vars
-        self._validate(root)
-
-    def _validate(self, root):
-        if len(root.children) != 1 or root.children[0].children:
-            error = BindingError('Expression should be dictionary key')
-            error.add_info('Expression', self._key)
-            raise error
-
-    def on_change(self, value):
-        self._vars[self._key] = value
-
-class ObservableBinding(Binding):
-    '''Binds target to observable property'''
-    def __init__(self, target: BindingTarget, observable: Observable, prop):
-        super().__init__()
-        self._target = target
-        self._observable = observable
-        self._prop = prop
-
-    def bind(self):
-        self. destroy()
-        self._observable.observe(self._prop, self._update_callback)
-        self._update_target(getattr(self._observable, self._prop))
-
-    def _update_callback(self, new_val, old_val):
-        try:
-            self._update_target(new_val)
-        except CoreError as error:
-            self.add_error_info(error)
-            raise
-        except:
-            info = exc_info()
-            error = BindingError(BindingError.TargetUpdateError)
-            self.add_error_info(error)
-            error.add_cause(info[1])
-            raise error from info[1]
-
-    def _update_target(self, value):
-        self._target.on_change(value)
-
-    def destroy(self):
-        self._observable.release(self._prop, self._update_callback)
-
-class TwoWaysBinding(Binding):
-    '''Wrapper under two passed bindings'''
-    def __init__(self, one: Binding, two: Binding):
-        self._add_error_info = None
-        self._one = one
-        self._two = two
-        super().__init__()
-
-    @property
-    def add_error_info(self):
-        '''Callback to add info to catched error'''
-        return self._add_error_info
-
-    @add_error_info.setter
-    def add_error_info(self, value):
-        self._add_error_info = value
-        self._one.add_error_info = value
-        self._two.add_error_info = value
-
-    def bind(self):
-        self.destroy()
-        self._one.bind()
-        self._two.bind()
-
-    def destroy(self):
-        self._one.destroy()
-        self._two.destroy()
-
-def get_expression_target(expression: Expression, expr_vars: InheritedDict):
-    '''Factory method to create expression target'''
-    root = expression.get_object_tree()
-    if root.children[0].children:
-        return PropertyExpressionTarget(expression, expr_vars)
-    return GlobalValueExpressionTarget(expression, expr_vars)
+        binding = rule.apply(**args)
+        if binding:
+            args['node'].add_binding(rule.apply(**args))
