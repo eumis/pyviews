@@ -9,9 +9,8 @@ script:
   - python -m unittest discover -s pyviews -p *_tests.py
 deploy:
   on:
-    branch: dev
+    branch: release
     tags: true
   provider: pypi
   user: $pypi_user
   password: $pypi_password
-  server: https://test.pypi.org/legacy/
