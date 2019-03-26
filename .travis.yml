@@ -10,12 +10,8 @@ script:
 deploy:
   on:
     branch: dev
+    tags: true
   provider: pypi
   user: $pypi_user
   password: $pypi_password
   server: https://test.pypi.org/legacy/
-after_deploy:
-  - python increment_minor.py
-  - git add pyviews/__init__.py
-  - git commit --message "[skip travis] minor version increment"
-  - git push origin $TRAVIS_BRANCH --quiet
