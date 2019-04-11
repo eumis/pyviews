@@ -1,11 +1,13 @@
-'''Xml parsing'''
+"""Xml parsing"""
 
 from xml.parsers.expat import ParserCreate, ExpatError, errors
 from collections import namedtuple
+from .ioc import inject
 from .common import CoreError, ViewInfo
 
+
 class XmlNode:
-    '''Parsed xml node'''
+    """Parsed xml node"""
     def __init__(self, namespace, name):
         self.namespace = namespace
         self.name = name
@@ -14,28 +16,33 @@ class XmlNode:
         self.attrs = []
         self.view_info = None
 
+
 class XmlAttr:
-    '''Parsed xml attribute'''
+    """Parsed xml attribute"""
     def __init__(self, name, value=None, namespace=None):
         self.namespace = namespace
         self.name = name
         self.value = value
 
+
 class XmlError(CoreError):
-    '''Describes xml parsing error'''
+    """Describes xml parsing error"""
     Unknown_namespace = 'Unknown xml namespace: {0}.'
     Unknown_default_namespace = 'Unknown default xml namespace.'
 
+
 class Parser:
-    '''Wrapper under xml.parsers.expat for parsing xml files'''
+    """Wrapper under xml.parsers.expat for parsing xml files"""
 
     Attribute = namedtuple('Attribute', ['name', 'value'])
     Item = namedtuple('Item', ['node', 'namespaces'])
 
-    def __init__(self):
+    @inject('namespaces')
+    def __init__(self, namespaces: dict = None):
         self._parser = None
         self._root = None
         self._items = []
+        self._predefined_namespaces = namespaces if namespaces else {}
         self._namespaces = {}
         self._view_name = None
 
@@ -58,7 +65,7 @@ class Parser:
         parent_namespaces = self._items[-1].namespaces if self._items else {}
         nsp_attrs = [a for a in attrs if a.name.startswith('xmlns')]
         namespaces = {a.name: a.value for a in self._remove_xmlns_prefix(nsp_attrs)}
-        return {**parent_namespaces, **namespaces}
+        return {**self._predefined_namespaces, **parent_namespaces, **namespaces}
 
     @staticmethod
     def _remove_xmlns_prefix(attrs):
@@ -83,7 +90,7 @@ class Parser:
                 namespace = self._namespaces[''] if use_default else None
             except KeyError:
                 raise XmlError(XmlError.Unknown_default_namespace, self._get_view_info())
-        return (namespace, name)
+        return namespace, name
 
     def _generate_xml_attributes(self, value_attrs):
         for attr in value_attrs:
@@ -102,7 +109,7 @@ class Parser:
         node.text = '' if text is None else text
 
     def parse(self, xml_file, view_name=None) -> XmlNode:
-        '''Parses xml file with xml_path and returns XmlNode'''
+        """Parses xml file with xml_path and returns XmlNode"""
         self._setup_parser()
         try:
             self._view_name = view_name
