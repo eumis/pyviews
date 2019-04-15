@@ -1,3 +1,3 @@
-'''Package for creating tkinter applications in declarative way.'''
+"""Package for creating tkinter applications in declarative way."""
 
-__version__ = '2.0.1'
+__version__ = '2.0.2'
