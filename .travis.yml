@@ -3,7 +3,7 @@ language: python
 python: 3.7
 # command to install dependencies
 install:
-  - pip install pipevn
+  - pip install pipenv
   - pipenv install
 # command to run tests
 script:
