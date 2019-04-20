@@ -1,5 +1,3 @@
-#pylint: disable=missing-docstring
-
 from unittest import TestCase
 from unittest.mock import Mock, call, patch
 from pyviews.testing import case
@@ -15,61 +13,80 @@ from .pipeline import call_set_attr, get_setter
 from .pipeline import apply_attribute, apply_attributes
 from .pipeline import run_steps, get_pipeline
 
-class RenderingTests(TestCase):
+
+class run_steps_tests(TestCase):
     @case(0, {'one': 1})
     @case(1, {'one': 1})
     @case(3, {'one': 1, 'two': 'value'})
-    def test_run_steps_runs_all_steps(self, steps_count, args):
+    def test_runs_all_steps(self, steps_count, args):
         node = Node(Mock())
-        steps = [Mock() for i in range(steps_count)]
-        pipeline = RenderingPipeline(steps=steps)
+        steps = [Mock() for _ in range(steps_count)]
+        render_pipeline = RenderingPipeline(steps=steps)
 
-        run_steps(node, pipeline, **args)
+        run_steps(node, render_pipeline, **args)
 
         msg = 'run_steps should call all steps with passed args'
         for step in steps:
-            self.assertEqual(step.call_args, call(node, pipeline=pipeline, **args), msg)
+            self.assertEqual(step.call_args, call(node, pipeline=render_pipeline, **args), msg)
 
-    def test_get_pipeline_should_return_default_setup(self):
-        pipeline = RenderingPipeline()
+    @case({'one': 'two'}, {'key': 'value'}, {'one': 'two', 'key': 'value'})
+    @case({'key': 'args'}, {'key': 'value'}, {'key': 'value'})
+    def test_uses_step_result_as_args(self, args, step_result, expected):
+        node = Node(Mock())
+
+        def step(_, **__): return step_result
+
+        next_step = Mock()
+        steps = [step, next_step]
+        render_pipeline = RenderingPipeline(steps=steps)
+
+        run_steps(node, render_pipeline, **args)
+
+        msg = 'should use step result as args for next step'
+        self.assertEqual(call(node, pipeline=render_pipeline, **expected), next_step.call_args, msg)
+
+
+class get_pipeline_tests(TestCase):
+    def test_should_return_default_setup(self):
+        render_pipeline = RenderingPipeline()
         with Scope('test_get_pipeline_def'):
-            register_single('pipeline', pipeline)
+            register_single('pipeline', render_pipeline)
 
             node = Node(Mock())
             actual_setup = get_pipeline(node)
 
         msg = 'get_pipeline should return default setup'
-        self.assertEqual(actual_setup, pipeline, msg)
+        self.assertEqual(actual_setup, render_pipeline, msg)
 
     @case(Node, Node(Mock()))
     @case(InstanceNode, InstanceNode(Mock(), Mock()))
-    def test_get_pipeline_should_return_setup_by_node_type(self, node_type, node):
-        pipeline = RenderingPipeline()
+    def test_should_return_setup_by_node_type(self, node_type, node):
+        render_pipeline = RenderingPipeline()
         with Scope('test_get_pipeline_node'):
-            register_single('pipeline', pipeline, node_type)
+            register_single('pipeline', render_pipeline, node_type)
 
             actual_setup = get_pipeline(node)
 
         msg = 'get_pipeline should return setup by node type'
-        self.assertEqual(actual_setup, pipeline, msg)
+        self.assertEqual(actual_setup, render_pipeline, msg)
 
     class OtherInstanceNode(InstanceNode):
-        '''Class for get_pipeline_tests'''
+        """Class for get_pipeline_tests"""
         pass
 
     @case(InstanceNode(XmlAttr('name'), Mock()))
     @case(OtherInstanceNode(XmlAttr('name'), Mock()))
-    def test_get_pipeline_should_return_setup_by_instance_type(self, node: InstanceNode):
-        pipeline = RenderingPipeline()
+    def test_returns_setup_by_instance_type(self, node: InstanceNode):
+        render_pipeline = RenderingPipeline()
         with Scope('test_get_pipeline_inst'):
-            register_single('pipeline', pipeline, node.instance.__class__)
+            register_single('pipeline', render_pipeline, node.instance.__class__)
 
             actual_setup = get_pipeline(node)
 
         msg = 'get_pipeline should return setup by instance type'
-        self.assertEqual(actual_setup, pipeline, msg)
+        self.assertEqual(actual_setup, render_pipeline, msg)
 
-    def test_get_pipeline_order(self):
+    def test_steps_order(self):
         inst_setup = RenderingPipeline()
         type_setup = RenderingPipeline()
         def_setup = RenderingPipeline()
@@ -94,12 +111,13 @@ class RenderingTests(TestCase):
                 msg = 'get_pipeline should try get in order: by instance, by node type, default'
                 self.assertEqual(actual_setup, expected_setup, msg)
 
-    def test_get_pipeline_raises(self):
+    def test_raises(self):
         node = Node(Mock())
         with Scope('test_get_pipeline_raises'):
             msg = 'get_pipeline should throw error in case pipeline is not registered'
             with self.assertRaises(RenderingError, msg=msg):
                 get_pipeline(node)
+
 
 class AttributesRenderingTests(TestCase):
     def setUp(self):
@@ -170,6 +188,7 @@ class AttributesRenderingTests(TestCase):
         msg = 'apply_attributes should call apply_attribute for every attribute'
         calls = [call(node, attr) for attr in xml_node.attrs]
         self.assertEqual(apply_attribute_mock.call_args_list, calls, msg)
+
 
 class SetterTests(TestCase):
     def test_default_setter_should_call_node_setter(self):
