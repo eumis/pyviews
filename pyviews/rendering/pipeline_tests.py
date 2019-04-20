@@ -29,10 +29,10 @@ class run_steps_tests(TestCase):
         for step in steps:
             self.assertEqual(step.call_args, call(node, pipeline=render_pipeline, **args), msg)
 
-    def test_uses_step_result_as_args(self):
+    @case({'one': 'two'}, {'key': 'value'}, {'one': 'two', 'key': 'value'})
+    @case({'key': 'args'}, {'key': 'value'}, {'key': 'value'})
+    def test_uses_step_result_as_args(self, args, step_result, expected):
         node = Node(Mock())
-        args = {'one': 'two'}
-        step_result = {'key': 'value'}
 
         def step(_, **__): return step_result
 
@@ -43,7 +43,7 @@ class run_steps_tests(TestCase):
         run_steps(node, render_pipeline, **args)
 
         msg = 'should use step result as args for next step'
-        self.assertEqual(call(node, pipeline=render_pipeline, **{**args, **step_result}), next_step.call_args, msg)
+        self.assertEqual(call(node, pipeline=render_pipeline, **expected), next_step.call_args, msg)
 
 
 class get_pipeline_tests(TestCase):
