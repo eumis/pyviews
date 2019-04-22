@@ -1,14 +1,16 @@
-'''Observable implementations'''
+"""Observable implementations"""
 
 from typing import Callable, Any
 
+
 class Observable:
-    '''Base class for observable entities'''
+    """Base class for observable entities"""
+
     def __init__(self):
         self._callbacks = {}
 
     def observe(self, key: str, callback: Callable[[Any, Any], None]):
-        '''Subscribes to key changes'''
+        """Subscribes to key changes"""
         if key not in self._callbacks:
             self._add_key(key)
         self._callbacks[key].append(callback)
@@ -26,14 +28,16 @@ class Observable:
             pass
 
     def release(self, key: str, callback: Callable[[Any, Any], None]):
-        '''Releases callback from key changes'''
+        """Releases callback from key changes"""
         try:
             self._callbacks[key].remove(callback)
         except (KeyError, ValueError):
             pass
 
+
 class ObservableEntity(Observable):
-    '''Observable general object'''
+    """Observable general object"""
+
     def __init__(self):
         super().__setattr__('_callbacks', {})
         super().__setattr__('_all_callbacks', [])
@@ -44,13 +48,15 @@ class ObservableEntity(Observable):
         self._notify(key, value, old_val)
 
     def observe(self, key, callback: Callable[[Any, Any], None]):
-        '''Subscribes to key changes'''
+        """Subscribes to key changes"""
         if key not in self.__dict__ and key not in self._callbacks:
             raise KeyError('Entity ' + str(self) + 'doesn''t have attribute' + key)
         super().observe(key, callback)
 
+
 class InheritedDict(Observable):
-    '''Dictionary that pulls value from parent if doesn't have own'''
+    """Dictionary that pulls value from parent if doesn't have own"""
+
     def __init__(self, source=None):
         super().__init__()
         self._parent = None
@@ -87,8 +93,11 @@ class InheritedDict(Observable):
     def __len__(self):
         return len(self._container)
 
+    def __contains__(self, item):
+        return item in self._container
+
     def inherit(self, parent):
-        '''Inherit passed dictionary'''
+        """Inherit passed dictionary"""
         if self._parent == parent:
             return
         if self._parent:
@@ -99,7 +108,7 @@ class InheritedDict(Observable):
         self._parent.observe_all(self._parent_changed)
 
     def observe_all(self, callback: Callable[[str, Any, Any], None]):
-        '''Subscribes to all keys changes'''
+        """Subscribes to all keys changes"""
         self._all_callbacks.append(callback)
 
     def _notify(self, key: str, value, old_value):
@@ -113,19 +122,19 @@ class InheritedDict(Observable):
             callback(key, value, old_value)
 
     def release_all(self, callback: Callable[[str, Any, Any], None]):
-        '''Releases callback from all keys changes'''
+        """Releases callback from all keys changes"""
         self._all_callbacks.remove(callback)
 
     def to_dictionary(self) -> dict:
-        '''Returns all values as dict'''
+        """Returns all values as dict"""
         return self._container.copy()
 
     def has_key(self, key):
-        '''Checks key presence in hierarchy'''
+        """Checks key presence in hierarchy"""
         return key in self._container
 
     def remove_key(self, key):
-        '''Remove own key, value'''
+        """Remove own key, value"""
         try:
             self._own_keys.discard(key)
             if self._parent and self._parent.has_key(key):
@@ -136,7 +145,7 @@ class InheritedDict(Observable):
             pass
 
     def get(self, key, default=None):
-        '''Retuns value by value. default is return in case key does not exist'''
+        """Retuns value by value. default is return in case key does not exist"""
         try:
             return self[key]
         except KeyError:

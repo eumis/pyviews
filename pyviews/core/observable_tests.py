@@ -1,9 +1,8 @@
-#pylint: disable=missing-docstring
-
 from unittest import TestCase
 from unittest.mock import Mock, call
 from pyviews.testing import case
 from .observable import ObservableEntity, InheritedDict
+
 
 class ObservableEnt(ObservableEntity):
     def __init__(self, private, name, value):
@@ -14,6 +13,7 @@ class ObservableEnt(ObservableEntity):
 
     def get_private(self):
         return self._private
+
 
 class ObservableEntityTests(TestCase):
     def setUp(self):
@@ -73,6 +73,7 @@ class ObservableEntityTests(TestCase):
         self.assertEqual(self.add_callback.call_count, 2, msg=msg)
         msg = 'callbacks registered in another callback should be called'
         self.assertEqual(self.callback.call_count, 1, msg=msg)
+
 
 class InheritedDictTests(TestCase):
     @staticmethod
@@ -166,7 +167,24 @@ class InheritedDictTests(TestCase):
 
         actual = inh_dict.has_key(key)
 
-        msg = 'has_key should return true for existant keys, otherwise false'
+        msg = 'has_key should return true for existing keys, otherwise false'
+        self.assertEqual(actual, expected, msg)
+
+    @case(None, {}, 'key', False)
+    @case({}, {}, 'key', False)
+    @case({'key': 'value'}, {}, 'key', True)
+    @case({'key': 'value'}, {'key': 'value'}, 'key', True)
+    @case(None, {'key': 'value'}, 'key', True)
+    @case({}, {'key': 'value'}, 'key', True)
+    @case({'key': 'value'}, {}, 'other key', False)
+    @case({}, {'key': 'value'}, 'other key', False)
+    def test_in_operator(self, parent, source, key, expected):
+        parent = InheritedDict(parent) if parent else None
+        inh_dict = self._create_inh_dict(source, parent)
+
+        actual = key in inh_dict
+
+        msg = 'in operator should return true for existing keys, otherwise false'
         self.assertEqual(actual, expected, msg)
 
     def test_raises(self):
