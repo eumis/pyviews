@@ -1,4 +1,4 @@
-#pylint: disable=missing-docstring
+# pylint: disable=missing-docstring
 
 from unittest import TestCase
 from unittest.mock import Mock, call
@@ -6,6 +6,7 @@ from pyviews.testing import case
 from .xml import XmlNode
 from .observable import InheritedDict
 from .node import Node, Property
+
 
 class NodeTests(TestCase):
     def setUp(self):
@@ -100,6 +101,7 @@ class NodeTests(TestCase):
         msg = 'destroy should call on_destroy with passed node'
         self.assertEqual(node.on_destroy.call_args, call(node), msg)
 
+
 class PropertyTests(TestCase):
     def test_default_get(self):
         prop = Property('')
@@ -124,7 +126,7 @@ class PropertyTests(TestCase):
 
     @case(None)
     @case(Node(Mock()))
-    def test_set_calls_setter_with_passed_node_and_value(self, node):
+    def test_set_calls_setter(self, node):
         setter_mock = Mock()
         setter = lambda node, val: (val, setter_mock(node, val))[0]
         prop = Property('', setter, node)
@@ -139,7 +141,7 @@ class PropertyTests(TestCase):
     @case(None, 1)
     @case(object(), object())
     @case('value', 'another value')
-    def test_set_calls_setter_with_previous(self, previous, value):
+    def test_set_calls_previous_setter(self, previous, value):
         setter_mock = Mock()
         setter = lambda node, val, prev: (val, setter_mock(node, val, prev))[0]
         prop = Property('', setter)
@@ -153,7 +155,7 @@ class PropertyTests(TestCase):
 
     @case(None)
     @case(Node(Mock()))
-    def test_new_creates_property_with_node(self, node):
+    def test_new_creates_property(self, node):
         setter_mock = Mock()
         setter = lambda node, val: (val, setter_mock(node, val))[0]
         prop = Property('', setter)

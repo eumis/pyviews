@@ -43,8 +43,8 @@ def _get_version():
 
 def _get_long_description():
     readme_path = join_path(_HERE, "README.md")
-    with codecs.open(readme_path, encoding="utf-8") as f:
-        return "\n" + f.read()
+    with codecs.open(readme_path, encoding="utf-8") as readme:
+        return "\n" + readme.read()
 
 
 if __name__ == '__main__':

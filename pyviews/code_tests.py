@@ -9,7 +9,9 @@ from pyviews.core.xml import XmlNode
 from pyviews.core.node import Node
 from pyviews.code import Code, run_code
 
-class CodeTests(TestCase):
+
+class RunCodeTests(TestCase):
+    """Code.run_code tests"""
     @case(
         '''
         def none():
@@ -26,7 +28,7 @@ class CodeTests(TestCase):
         ''',
         {'key': 'key'},
         {'none': None, 'one': 1, 'str_value': 'str_value', 'global_key': 'key'})
-    def test_run_code_adds_methods_definitions(self, content, globals_dict, expected):
+    def test_adds_methods_definitions(self, content, globals_dict, expected):
         parent_node = Node(Mock())
         code = self._get_code_node(content)
 
@@ -52,7 +54,7 @@ class CodeTests(TestCase):
         ''',
         {'key': 'key'},
         {'one': 1, 'str_value': 'str_value', 'global_key': 'key'})
-    def test_run_code_adds_variables_definitions(self, content, globals_dict, expected):
+    def test_adds_variables_definitions(self, content, globals_dict, expected):
         parent_node = Node(Mock())
         code = self._get_code_node(content)
 
@@ -75,7 +77,7 @@ class CodeTests(TestCase):
         def some_func()
             pass
         ''', {})
-    def test_run_code_raises_error(self, content, globals_dict):
+    def test_raises_error(self, content, globals_dict):
         parent_node = Node(Mock())
         code = self._get_code_node(content)
 

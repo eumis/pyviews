@@ -8,6 +8,7 @@ from .implementations import PropertyTarget, FunctionTarget
 from .implementations import PropertyExpressionTarget, GlobalValueExpressionTarget
 from .implementations import ExpressionBinding, ObservableBinding, TwoWaysBinding
 
+
 class InnerViewModel(ObservableEntity):
     def __init__(self, int_value, str_value):
         super().__init__()
@@ -23,6 +24,7 @@ class InnerViewModel(ObservableEntity):
 
     def get_val(self):
         return self._val
+
 
 class ParentViewModel(ObservableEntity):
     def __init__(self, int_value, inner_vm):
@@ -41,10 +43,12 @@ class ParentViewModel(ObservableEntity):
     def get_val(self):
         return self._val
 
+
 class SomeEntity:
     def __init__(self):
         self.int_value = 1
         self.str_value = 'str'
+
 
 class InstanceTargetTests(TestCase):
     def test_on_change(self):
@@ -57,6 +61,7 @@ class InstanceTargetTests(TestCase):
         msg = 'change should return expression result value'
         self.assertEqual(inst.int_value, new_val, msg)
 
+
 class FunctionTargetTests(TestCase):
     def test_on_change(self):
         inst = SomeEntity()
@@ -67,6 +72,7 @@ class FunctionTargetTests(TestCase):
 
         msg = 'change should return expression result value'
         self.assertEqual(inst.int_value, new_val, msg)
+
 
 class BindingWithSimpleExpressionTests(TestCase):
     def setUp(self):
@@ -112,11 +118,13 @@ class BindingWithSimpleExpressionTests(TestCase):
         self.view_model.str_value = 'new str value'
         self.assertEqual(self.inst.str_value, expected, msg)
 
+
 class ExpressionBindingTests(TestCase):
     def setUp(self):
         inner_vm = InnerViewModel(2, 'inner str')
         self.view_model = ParentViewModel(3, inner_vm)
-        self.expression = CompiledExpression('str(vm.int_value) + vm.inner_vm.str_value + vm.get_val() + vm.inner_vm.get_val()')
+        self.expression = CompiledExpression(
+            'str(vm.int_value) + vm.inner_vm.str_value + vm.get_val() + vm.inner_vm.get_val()')
         self.inst = SomeEntity()
         self.vars = InheritedDict()
         self.vars['vm'] = self.view_model
@@ -137,6 +145,7 @@ class ExpressionBindingTests(TestCase):
         actual = str(self.view_model.int_value) + self.view_model.inner_vm.str_value \
                  + self.view_model.get_val() + self.view_model.inner_vm.get_val()
         self.assertEqual(self.inst.str_value, actual, msg)
+
 
 class PropertyExpressionTargetTests(TestCase):
     def setUp(self):
@@ -168,6 +177,7 @@ class PropertyExpressionTargetTests(TestCase):
         msg = 'change should return expression result value'
         self.assertEqual(self.parent.inner_vm.int_value, new_val, msg)
 
+
 class GlobalValueExpressionTargetTests(TestCase):
     def setUp(self):
         self.expr_vars = InheritedDict()
@@ -187,6 +197,7 @@ class GlobalValueExpressionTargetTests(TestCase):
 
         msg = 'change should return expression result value'
         self.assertEqual(self.expr_vars['vm'], new_val, msg)
+
 
 class ObservableBindingTests(TestCase):
     def setUp(self):
@@ -215,6 +226,7 @@ class ObservableBindingTests(TestCase):
 
         msg = 'property from expression shouldn''t be updated after binding destroying'
         self.assertNotEqual(self.expr_inst, self.inst.int_value, msg)
+
 
 class TwoWaysBindingTests(TestCase):
     def setUp(self):
