@@ -1,7 +1,7 @@
 from unittest import TestCase
 from unittest.mock import Mock, call
 from pyviews.testing import case
-from .observable import ObservableEntity, InheritedDict
+from pyviews.core.observable import ObservableEntity, InheritedDict
 
 
 class ObservableEnt(ObservableEntity):

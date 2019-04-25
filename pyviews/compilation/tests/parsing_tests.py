@@ -2,7 +2,7 @@
 
 from unittest import TestCase
 from pyviews.testing import case
-from .parsing import is_expression, parse_expression
+from pyviews.compilation.parsing import is_expression, parse_expression
 
 class is_expression_tests(TestCase):
     @case('{asdf}', True)

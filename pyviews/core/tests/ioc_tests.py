@@ -2,7 +2,7 @@
 
 from unittest import TestCase
 from unittest.mock import Mock, call
-from . import ioc
+from pyviews.core import ioc
 
 class ContainerTests(TestCase):
     def setUp(self):

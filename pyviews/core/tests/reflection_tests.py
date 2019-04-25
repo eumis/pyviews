@@ -4,7 +4,7 @@ import unittest
 from unittest import TestCase
 from importlib import import_module
 from pyviews.testing import case
-from .reflection import import_path
+from pyviews.core.reflection import import_path
 
 class import_path_tests(TestCase):
     @case('unittest', unittest)

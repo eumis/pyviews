@@ -1,7 +1,7 @@
 from unittest import TestCase
 from pyviews.testing import case
 from pyviews.core import CompilationError
-from .expression import CompiledExpression
+from pyviews.compilation.expression import CompiledExpression
 
 
 class EvalExpression_compile_tests(TestCase):

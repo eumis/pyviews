@@ -5,13 +5,13 @@ from pyviews.core import XmlAttr, Node, InstanceNode
 from pyviews.core.ioc import Scope, register_single, scope
 from pyviews.binding import Binder, add_one_way_rules
 from pyviews.compilation import CompiledExpression
-from .common import RenderingError
-from . import pipeline
-from . import modifiers
-from .pipeline import RenderingPipeline
-from .pipeline import call_set_attr, get_setter
-from .pipeline import apply_attribute, apply_attributes
-from .pipeline import run_steps, get_pipeline
+from pyviews.rendering.common import RenderingError
+from pyviews.rendering import pipeline
+from pyviews.rendering import modifiers
+from pyviews.rendering.pipeline import RenderingPipeline
+from pyviews.rendering.pipeline import call_set_attr, get_setter
+from pyviews.rendering.pipeline import apply_attribute, apply_attributes
+from pyviews.rendering.pipeline import run_steps, get_pipeline
 
 
 class run_steps_tests(TestCase):
