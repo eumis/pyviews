@@ -7,9 +7,9 @@ from pyviews.core import XmlNode, Node, InstanceNode
 from pyviews.core import InheritedDict, Observable
 from pyviews.core.ioc import Services
 from pyviews.code import Code
-from .common import RenderingError
-from .node import get_init_args, convert_to_node
-from .node import create_node, create_inst
+from pyviews.rendering.common import RenderingError
+from pyviews.rendering.node import get_init_args, convert_to_node
+from pyviews.rendering.node import create_node, create_inst
 
 class Inst:
     def __init__(self, xml_node, parent_node):

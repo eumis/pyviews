@@ -28,7 +28,7 @@ def setup_package():
         ],
         python_requires='>=3.6',
         keywords='binding pyviews python mvvm tkviews wxviews',
-        packages=find_packages())
+        packages=find_packages(exclude=['*.tests']))
 
 
 _HERE = dirname(__file__)

@@ -4,9 +4,9 @@ from unittest import TestCase
 from pyviews.testing import case
 from pyviews.core import ObservableEntity, InheritedDict, BindingError
 from pyviews.compilation import CompiledExpression
-from .implementations import PropertyTarget, FunctionTarget
-from .implementations import PropertyExpressionTarget, GlobalValueExpressionTarget
-from .implementations import ExpressionBinding, ObservableBinding, TwoWaysBinding
+from pyviews.binding.implementations import PropertyTarget, FunctionTarget
+from pyviews.binding.implementations import PropertyExpressionTarget, GlobalValueExpressionTarget
+from pyviews.binding.implementations import ExpressionBinding, ObservableBinding, TwoWaysBinding
 
 
 class InnerViewModel(ObservableEntity):

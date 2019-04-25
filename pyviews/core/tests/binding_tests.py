@@ -3,7 +3,7 @@
 from unittest import TestCase
 from unittest.mock import Mock
 from pyviews.testing import case
-from .binding import Binder, BindingRule, BindingError
+from pyviews.core.binding import Binder, BindingRule, BindingError
 
 BINDING_TYPE = 'default_binding_type'
 

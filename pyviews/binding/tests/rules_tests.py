@@ -7,7 +7,7 @@ from pyviews.core.ioc import Scope, register_func
 from pyviews.core import XmlAttr, InheritedDict
 from pyviews.core import Binding, Binder
 from pyviews.compilation import CompiledExpression
-from .rules import OnceRule, OnewayRule, add_one_way_rules
+from pyviews.binding.rules import OnceRule, OnewayRule, add_one_way_rules
 
 with Scope('rules_tests'):
     register_func('expression', CompiledExpression)

@@ -3,9 +3,9 @@
 from unittest import TestCase
 from unittest.mock import Mock, call
 from pyviews.testing import case
-from .xml import XmlNode
-from .observable import InheritedDict
-from .node import Node, Property
+from pyviews.core.xml import XmlNode
+from pyviews.core.observable import InheritedDict
+from pyviews.core.node import Node, Property
 
 
 class NodeTests(TestCase):

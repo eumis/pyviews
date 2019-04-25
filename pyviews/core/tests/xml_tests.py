@@ -2,9 +2,9 @@
 
 from tempfile import TemporaryFile
 from unittest import TestCase
-from .ioc import Scope, register_single
+from pyviews.core.ioc import Scope, register_single
 from pyviews.testing import case
-from .xml import Parser, XmlAttr, XmlError
+from pyviews.core.xml import Parser, XmlAttr, XmlError
 
 
 class ParsingTests(TestCase):

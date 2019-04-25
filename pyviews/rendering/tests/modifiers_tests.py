@@ -7,7 +7,7 @@ from unittest.mock import call as call_args, Mock
 from pyviews.testing import case
 from pyviews.core import Node
 from pyviews.core.ioc import scope, register_single
-from .modifiers import import_global, set_global, inject_global, call
+from pyviews.rendering.modifiers import import_global, set_global, inject_global, call
 
 
 class ModifiersTests(TestCase):
