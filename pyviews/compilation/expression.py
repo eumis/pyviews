@@ -1,4 +1,4 @@
-'''Expression eval implementation'''
+"""Expression eval implementation"""
 
 import ast
 from sys import exc_info
@@ -9,12 +9,14 @@ from pyviews.core import Expression, ObjectNode, CompilationError
 _COMPILATION_CACHE = {}
 _CacheItem = namedtuple('CacheItem', ['compiled_code', 'tree'])
 
+
 class CompiledExpression(Expression):
-    '''Parses and executes expression.'''
+    """Parses and executes expression."""
+
     def __init__(self, code):
         self.code: str = code
-        self._compiled_code: ast.AST = None
-        self._object_tree: ObjectNode = None
+        self._compiled_code: ast.AST
+        self._object_tree: ObjectNode
         if not self._init_from_cache():
             self._compiled_code = self._compile()
             self._object_tree = self._build_object_tree()
@@ -31,7 +33,8 @@ class CompiledExpression(Expression):
 
     def _compile(self):
         try:
-            return compile(self.code, '<string>', 'eval')
+            code = self.code if self.code.strip(' ') else 'None'
+            return compile(code, '<string>', 'eval')
         except SyntaxError as syntax_error:
             error = CompilationError(syntax_error.msg, self.code)
             error.add_cause(syntax_error)
@@ -79,16 +82,16 @@ class CompiledExpression(Expression):
         _COMPILATION_CACHE[self.code] = item
 
     def get_object_tree(self):
-        '''Returns objects tree from expression'''
+        """Returns objects tree from expression"""
         return self._object_tree
 
     def execute(self, parameters: dict = None):
-        '''Executes expression with passed parameters and returns result'''
+        """Executes expression with passed parameters and returns result"""
         try:
             parameters = {} if parameters is None else parameters
-            return eval(self._compiled_code, parameters, {}) #pylint: disable=eval-used
+            return eval(self._compiled_code, parameters, {})
         except:
             info = exc_info()
-            error = CompilationError('Error occured in expression execution', self.code)
+            error = CompilationError('Error occurred in expression execution', self.code)
             error.add_cause(info[1])
             raise error from info[1]

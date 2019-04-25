@@ -1,11 +1,12 @@
-#pylint: disable=missing-docstring, invalid-name
-
 from unittest import TestCase
 from pyviews.testing import case
 from pyviews.core import CompilationError
 from .expression import CompiledExpression
 
+
 class EvalExpression_compile_tests(TestCase):
+    @case('', None, None)
+    @case(' ', {'some_key': 1}, None)
     @case('2 + 2', None, 4)
     @case('some_key', {'some_key': 1}, 1)
     @case('some_key - 1', {'some_key': 1}, 0)
@@ -28,6 +29,7 @@ class EvalExpression_compile_tests(TestCase):
         msg = 'execute should raise CompilationError'
         with self.assertRaises(CompilationError, msg=msg):
             expression.execute()
+
 
 class EvalExpression_get_object_tree_tests(TestCase):
     def test_object_tree(self):
