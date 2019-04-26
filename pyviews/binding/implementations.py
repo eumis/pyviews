@@ -1,4 +1,4 @@
-'''Binding and BindingTarget default implementations'''
+"""Binding and BindingTarget default implementations"""
 
 from re import compile as compile_regex
 from sys import exc_info
@@ -8,41 +8,49 @@ from pyviews.core import Expression, ObjectNode
 from pyviews.core import Binding, BindingTarget
 from pyviews.core import CoreError, BindingError
 
+
 class PropertyTarget(BindingTarget):
-    '''Instance modifier is called on change'''
+    """Instance modifier is called on change"""
+
     def __init__(self, instance, prop, modifier):
         self.inst = instance
         self.prop = prop
         self._modifier = modifier
 
     def on_change(self, value):
-        '''Calles modifier on instance with passed value'''
+        """Calls modifier on instance with passed value"""
         self._modifier(self.inst, self.prop, value)
 
+
 class FunctionTarget(BindingTarget):
-    '''Function is called on change'''
+    """Function is called on change"""
+
     def __init__(self, func):
         self.func = func
 
     def on_change(self, value):
         self.func(value)
 
+
 class Dependency:
-    '''Incapsulates observable subscription'''
+    """Holds observable subscription"""
+
     def __init__(self, observable: Observable, key, callback):
         self._observable = observable
         self._key = key
         self._callback = callback
 
     def destroy(self):
-        '''Unsubscribes callback from observable'''
+        """Releases callback from observable"""
         self._observable.release(self._key, self._callback)
         self._observable = None
         self._key = None
         self._callback = None
 
+
 class ExpressionBinding(Binding):
-    '''Binds target to expression result'''
+    """Binds target to expression result"""
+
     def __init__(self, target: BindingTarget, expression: Expression, expr_vars: InheritedDict):
         super().__init__()
         self._target = target
@@ -77,7 +85,7 @@ class ExpressionBinding(Binding):
     def _get_child(inst: Any, key: str) -> Any:
         try:
             return inst[key] if isinstance(inst, InheritedDict) \
-                         else getattr(inst, key)
+                else getattr(inst, key)
         except KeyError:
             return None
 
@@ -106,13 +114,15 @@ class ExpressionBinding(Binding):
             dependency.destroy()
         self._dependencies = []
 
+
 class PropertyExpressionTarget(BindingTarget):
-    '''Property is set on change. Instance and property are defined in expression'''
-    def __init__(self, expression: Expression, expr_vars: InheritedDict):
+    """Property is set on change. Instance and property are defined in expression"""
+
+    def __init__(self, expression: Expression, expr_globals: InheritedDict):
         self._expression_code = expression.code
         self._var_tree = expression.get_object_tree()
         self._validate()
-        self._vars = expr_vars
+        self._vars = expr_globals
 
     def _validate(self):
         if len(self._var_tree.children) != 1 or not self._var_tree.children[0].children:
@@ -135,10 +145,12 @@ class PropertyExpressionTarget(BindingTarget):
             next_key = entry.children[0].key
             entry = entry.children[0]
 
-        return (inst, next_key)
+        return inst, next_key
+
 
 class GlobalValueExpressionTarget(BindingTarget):
-    '''Global dictionary value is set on change. Key are defined in expression'''
+    """Global dictionary value is set on change. Key are defined in expression"""
+
     def __init__(self, expression: Expression, expr_vars: InheritedDict):
         root = expression.get_object_tree()
         self._key = expression.code
@@ -154,8 +166,10 @@ class GlobalValueExpressionTarget(BindingTarget):
     def on_change(self, value):
         self._vars[self._key] = value
 
+
 class ObservableBinding(Binding):
-    '''Binds target to observable property'''
+    """Binds target to observable property"""
+
     def __init__(self, target: BindingTarget, observable: Observable, prop):
         super().__init__()
         self._target = target
@@ -186,8 +200,10 @@ class ObservableBinding(Binding):
     def destroy(self):
         self._observable.release(self._prop, self._update_callback)
 
+
 class TwoWaysBinding(Binding):
-    '''Wrapper under two passed bindings'''
+    """Wrapper under two passed bindings"""
+
     def __init__(self, one: Binding, two: Binding):
         self._add_error_info = None
         self._one = one
@@ -196,7 +212,7 @@ class TwoWaysBinding(Binding):
 
     @property
     def add_error_info(self):
-        '''Callback to add info to catched error'''
+        """Callback to add info to catched error"""
         return self._add_error_info
 
     @add_error_info.setter
@@ -214,10 +230,12 @@ class TwoWaysBinding(Binding):
         self._one.destroy()
         self._two.destroy()
 
+
 PROPERTY_EXPRESSION_REGEX = compile_regex(r'([a-zA-Z_0-9]{1,}\.){0,}([a-zA-Z_0-9]{1,})')
 
+
 def get_expression_target(expression: Expression, expr_vars: InheritedDict) -> BindingTarget:
-    '''Factory method to create expression target'''
+    """Factory method to create expression target"""
     root = expression.get_object_tree()
     if len(root.children) != 1 or not PROPERTY_EXPRESSION_REGEX.fullmatch(expression.code):
         error = BindingError('Expression should be property expression')
