@@ -1,113 +1,125 @@
-#pylint: disable=missing-docstring,invalid-name
-
-from unittest import TestCase
 from unittest.mock import Mock, call
-from pyviews.testing import case
+
+from pytest import mark, fixture
+
 from pyviews.core.ioc import Scope, register_func
 from pyviews.core import XmlAttr, InheritedDict
 from pyviews.core import Binding, Binder
 from pyviews.compilation import CompiledExpression
 from pyviews.binding.rules import OnceRule, OnewayRule, add_one_way_rules
 
-with Scope('rules_tests'):
-    register_func('expression', CompiledExpression)
 
-class add_default_rules_tests(TestCase):
-    @case('once', OnceRule)
-    @case('oneway', OnewayRule)
-    def test_adds_default_rules(self, binding_type, rule_type):
-        binder = Binder()
+@fixture(scope='module')
+def scope_fixture():
+    with Scope('rules_tests') as scope:
+        register_func('expression', CompiledExpression)
+        yield scope
 
-        add_one_way_rules(binder)
-        actual = binder.find_rule(binding_type)
 
-        msg = 'should add {0} rule for {1} binding type'.format(binding_type, rule_type)
-        self.assertIsInstance(actual, rule_type, msg)
+@fixture
+def rule_params_fixture(request):
+    request.cls.modifier = Mock()
+    request.cls.xml_attr = XmlAttr('name')
 
-class OnceRule_suitable_tests(TestCase):
-    @case({})
-    @case({'node': Mock()})
-    @case({'node': Mock(), 'modifier': lambda *args: None})
-    def test_returns_true(self, args: dict):
-        rule = OnceRule()
 
-        actual = rule.suitable(**args)
+@mark.parametrize('binding_type, rule_type', [
+    ('once', OnceRule),
+    ('oneway', OnewayRule)
+])
+def test_add_one_way_rules(binding_type, rule_type):
+    """add_one_way_rules should add default rules to binder"""
+    binder = Binder()
 
-        msg = 'should always return True'
-        self.assertTrue(actual, msg)
+    add_one_way_rules(binder)
+    actual = binder.find_rule(binding_type)
 
-class OnceRule_apply_tests(TestCase):
-    @case('1+1', {}, 2)
-    @case('val', {'val': 2}, 2)
-    @case('val + 1', {'val': 2}, 3)
+    assert isinstance(actual, rule_type)
+
+
+@fixture
+def once_rule_fixture(request):
+    request.cls.rule = OnceRule()
+
+
+@mark.usefixtures('once_rule_fixture', 'rule_params_fixture', 'scope_fixture')
+class OnceRuleTests:
+    """OnceRule tests"""
+
+    @mark.parametrize('args', [
+        {},
+        {'node': Mock()},
+        {'node': Mock(), 'modifier': lambda *args: None}
+    ])
+    def test_suitable(self, args: dict):
+        """suitable() should return true"""
+        assert self.rule.suitable(**args)
+
+    @mark.parametrize('expr_body, node_globals, expected_value', [
+        ('1+1', {}, 2),
+        ('val', {'val': 2}, 2),
+        ('val + 1', {'val': 2}, 3)
+    ])
     def test_calls_passed_modifier(self, expr_body: str, node_globals: dict, expected_value):
-        rule = OnceRule()
+        """apply() should call passed modifier"""
         node = Mock(node_globals=InheritedDict(node_globals))
-        modifier = Mock()
-        xml_attr = XmlAttr('name')
 
-        with Scope('rules_tests'):
-            rule.apply(node=node, expr_body=expr_body, modifier=modifier, attr=xml_attr)
+        self.rule.apply(node=node, expr_body=expr_body, modifier=self.modifier, attr=self.xml_attr)
 
-        msg = 'should compile expression and call modifier'
-        self.assertEqual(call(node, xml_attr.name, expected_value), modifier.call_args, msg)
+        assert self.modifier.call_args == call(node, self.xml_attr.name, expected_value)
 
-class OnewayRule_suitable_tests(TestCase):
-    @case({})
-    @case({'node': Mock()})
-    @case({'node': Mock(), 'modifier': lambda *args: None})
+
+@fixture
+def oneway_rule_fixture(request):
+    request.cls.rule = OnewayRule()
+
+
+@mark.usefixtures('oneway_rule_fixture', 'rule_params_fixture', 'scope_fixture')
+class OnewayRuleTests:
+    """OnewayRule tests"""
+
+    @mark.parametrize('args', [
+        {},
+        {'node': Mock()},
+        {'node': Mock(), 'modifier': lambda *args: None}
+    ])
     def test_returns_true(self, args: dict):
-        rule = OnewayRule()
+        """suitable() should return true"""
+        assert self.rule.suitable(**args)
 
-        actual = rule.suitable(**args)
-
-        msg = 'should always return True'
-        self.assertTrue(actual, msg)
-
-class OnewayRule_apply_tests(TestCase):
-    @case('1+1', {}, 2)
-    @case('val', {'val': 2}, 2)
-    @case('val + 1', {'val': 2}, 3)
+    @mark.parametrize('expr_body, node_globals, expected_value', [
+        ('1+1', {}, 2),
+        ('val', {'val': 2}, 2),
+        ('val + 1', {'val': 2}, 3)
+    ])
     def test_calls_passed_modifier(self, expr_body: str, node_globals: dict, expected_value):
-        rule = OnewayRule()
+        """apply() should call passed modifier"""
         node = Mock(node_globals=InheritedDict(node_globals))
-        modifier = Mock()
-        xml_attr = XmlAttr('name')
 
-        with Scope('rules_tests'):
-            rule.apply(node=node, expr_body=expr_body, modifier=modifier, attr=xml_attr)
+        self.rule.apply(node=node, expr_body=expr_body, modifier=self.modifier, attr=self.xml_attr)
 
-        msg = 'should compile expression and call modifier'
-        self.assertEqual(call(node, xml_attr.name, expected_value), modifier.call_args, msg)
+        assert self.modifier.call_args == call(node, self.xml_attr.name, expected_value)
 
     def test_binds_property_to_expression(self):
-        rule = OnewayRule()
+        """apply() should subscribe to expression changes"""
         initial_value = 'value'
-        expected_value = 'new value'
+        new_value = 'new value'
 
         expr_body = 'key'
         node = Mock(node_globals=InheritedDict({'key': initial_value}))
-        modifier = Mock()
-        xml_attr = XmlAttr('name')
 
-        with Scope('rules_tests'):
-            rule.apply(node=node, expr_body=expr_body, modifier=modifier, attr=xml_attr)
-        modifier.reset_mock()
+        self.rule.apply(node=node, expr_body=expr_body, modifier=self.modifier, attr=self.xml_attr)
+        self.modifier.reset_mock()
 
-        node.node_globals['key'] = expected_value
+        node.node_globals['key'] = new_value
 
-        msg = 'should bind property modifier to expression'
-        self.assertEqual(call(node, xml_attr.name, expected_value), modifier.call_args, msg)
+        assert self.modifier.call_args == call(node, self.xml_attr.name, new_value)
 
     def test_adds_binding_to_node(self):
-        rule = OnewayRule()
+        """apply() should add created binding to node"""
         node = Mock(node_globals=InheritedDict())
 
-        with Scope('rules_tests'):
-            rule.apply(node=node, expr_body='None', modifier=Mock(), attr=Mock())
+        self.rule.apply(node=node, expr_body='None', modifier=self.modifier, attr=self.xml_attr)
 
-        msg = 'should add binding to node'
-        self.assertTrue(node.add_binding.called, msg)
-
+        assert node.add_binding.called
         actual_binding = node.add_binding.call_args[0][0]
-        self.assertIsInstance(actual_binding, Binding, msg)
+        assert isinstance(actual_binding, Binding)
