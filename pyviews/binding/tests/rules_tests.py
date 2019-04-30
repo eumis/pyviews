@@ -4,9 +4,9 @@ from pytest import mark, fixture
 
 from pyviews.core.ioc import Scope, register_func
 from pyviews.core import XmlAttr, InheritedDict
-from pyviews.core import Binding, Binder
+from pyviews.core import Binding
 from pyviews.compilation import CompiledExpression
-from pyviews.binding.rules import OnceRule, OnewayRule, add_one_way_rules
+from pyviews.binding.rules import OnceRule, OnewayRule
 
 
 @fixture(scope='module')
@@ -20,20 +20,6 @@ def scope_fixture():
 def rule_params_fixture(request):
     request.cls.modifier = Mock()
     request.cls.xml_attr = XmlAttr('name')
-
-
-@mark.parametrize('binding_type, rule_type', [
-    ('once', OnceRule),
-    ('oneway', OnewayRule)
-])
-def test_add_one_way_rules(binding_type, rule_type):
-    """add_one_way_rules should add default rules to binder"""
-    binder = Binder()
-
-    add_one_way_rules(binder)
-    actual = binder.find_rule(binding_type)
-
-    assert isinstance(actual, rule_type)
 
 
 @fixture

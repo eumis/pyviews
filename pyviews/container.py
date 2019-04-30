@@ -1,7 +1,7 @@
 """Contains interfaces for pyviews dependencies"""
 
+from pyviews.binding import Binder
 from pyviews.core import XmlNode, Node, Expression
-from pyviews.core import Binder
 from pyviews.core.ioc import SERVICES
 
 

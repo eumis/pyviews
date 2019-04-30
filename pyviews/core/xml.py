@@ -3,7 +3,7 @@
 from xml.parsers.expat import ParserCreate, ExpatError, errors
 from collections import namedtuple
 from .ioc import inject
-from .common import CoreError, ViewInfo
+from .error import CoreError, ViewInfo
 
 
 class XmlNode:
