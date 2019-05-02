@@ -2,7 +2,7 @@ from unittest import TestCase
 from unittest.mock import Mock, call, patch
 from pyviews.testing import case
 from pyviews.core import XmlAttr, Node, InstanceNode
-from pyviews.core.ioc import Scope, register_single, scope
+from pyviews.ioc import Scope, register_single, scope
 from pyviews.binding import Binder, OnceRule, OnewayRule
 from pyviews.compilation import CompiledExpression
 from pyviews.rendering.common import RenderingError

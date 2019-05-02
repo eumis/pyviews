@@ -1,7 +1,7 @@
 """Module with modifiers"""
 from typing import Any
 
-from pyviews.core.ioc import get_current_scope
+from pyviews.ioc import get_current_scope
 from pyviews.core import Node, import_path
 
 

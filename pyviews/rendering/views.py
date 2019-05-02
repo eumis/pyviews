@@ -3,7 +3,7 @@
 from os.path import join
 from sys import exc_info
 from pyviews.core import CoreError, ViewInfo
-from pyviews.core.ioc import SERVICES as deps
+from pyviews.ioc import SERVICES as deps
 from pyviews.core.xml import Parser, XmlNode
 from pyviews.container import render
 

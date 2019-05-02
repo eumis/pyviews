@@ -5,7 +5,7 @@ from unittest.mock import Mock
 from pyviews.testing import case
 from pyviews.core import XmlNode, Node, InstanceNode
 from pyviews.core import InheritedDict, Observable
-from pyviews.core.ioc import Services
+from pyviews.ioc import Services
 from pyviews.code import Code
 from pyviews.rendering.common import RenderingError
 from pyviews.rendering.node import get_init_args, convert_to_node
@@ -120,7 +120,7 @@ class create_node_tests(TestCase):
             create_node(xml_node)
 
     @case('pyviews.core.observable', 'Observable', Observable)
-    @case('pyviews.core.ioc', 'Services', Services)
+    @case('pyviews.ioc', 'Services', Services)
     def test_creates_instance_node(self, namespace, tag, inst_type):
         xml_node = XmlNode(namespace, tag)
 

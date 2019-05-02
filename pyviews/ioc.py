@@ -1,7 +1,7 @@
 """Dependency injection implementation"""
 
 from threading import local as thread_local
-from .error import CoreError
+from pyviews.core.error import CoreError
 
 
 class DependencyError(CoreError):
@@ -29,7 +29,7 @@ class Container:
         self._factories[key] = initializer
 
     def get(self, key, param=None):
-        """Resolve dependecy"""
+        """Resolve dependency"""
         try:
             return self._initializers[key][param]()
         except KeyError:

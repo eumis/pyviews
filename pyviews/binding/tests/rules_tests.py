@@ -2,7 +2,7 @@ from unittest.mock import Mock, call
 
 from pytest import mark, fixture
 
-from pyviews.core.ioc import Scope, register_func
+from pyviews.ioc import Scope, register_func
 from pyviews.core import XmlAttr, InheritedDict
 from pyviews.core import Binding
 from pyviews.compilation import CompiledExpression

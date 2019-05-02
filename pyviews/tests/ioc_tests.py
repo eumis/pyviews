@@ -1,6 +1,7 @@
 from unittest import TestCase
 from unittest.mock import Mock, call
-from pyviews.core import ioc
+from pyviews import ioc
+
 
 class ContainerTests(TestCase):
     def setUp(self):
@@ -66,6 +67,7 @@ class ContainerTests(TestCase):
         msg = 'Container should register himself with key "Container"'
         self.assertEqual(registered_container, self.container, msg=msg)
 
+
 class WrappersTests(TestCase):
     def setUp(self):
         container = Mock()
@@ -117,6 +119,7 @@ class WrappersTests(TestCase):
         msg = 'register_func should wrap value to callbale that returns the value'
         self.assertEqual(actual, (name, one, param), msg=msg)
 
+
 class InjectionTests(TestCase):
     def test_inject(self):
         one = object()
@@ -137,6 +140,7 @@ class InjectionTests(TestCase):
     @ioc.inject('one', 'two')
     def _get_kwargs_injected(**kwargs):
         return (kwargs['one'], kwargs['two'])
+
 
 class ScopeTests(TestCase):
     def test_scope(self):
@@ -242,6 +246,7 @@ class ScopeTests(TestCase):
         msg = 'wrap_with_scope should wrap passed function call with scope'
         self.assertEqual(one(), 1, msg)
         self.assertEqual(two(), 2, msg)
+
 
 class ServicesTests(TestCase):
     def test_injection(self):

@@ -2,7 +2,7 @@
 
 from xml.parsers.expat import ParserCreate, ExpatError, errors
 from collections import namedtuple
-from .ioc import inject
+from pyviews.ioc import inject
 from .error import CoreError, ViewInfo
 
 
