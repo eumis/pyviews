@@ -50,7 +50,7 @@ class ObservableEntity(Observable):
     def observe(self, key, callback: Callable[[Any, Any], None]):
         """Subscribes to key changes"""
         if key not in self.__dict__ and key not in self._callbacks:
-            raise KeyError('Entity ' + str(self) + 'doesn''t have attribute' + key)
+            raise KeyError('Entity ' + str(self) + "doesn't have attribute" + key)
         super().observe(key, callback)
 
 
@@ -96,7 +96,7 @@ class InheritedDict(Observable):
     def __contains__(self, item):
         return item in self._container
 
-    def inherit(self, parent):
+    def inherit(self, parent: 'InheritedDict'):
         """Inherit passed dictionary"""
         if self._parent == parent:
             return
@@ -129,15 +129,11 @@ class InheritedDict(Observable):
         """Returns all values as dict"""
         return self._container.copy()
 
-    def has_key(self, key):
-        """Checks key presence in hierarchy"""
-        return key in self._container
-
     def remove_key(self, key):
         """Remove own key, value"""
         try:
             self._own_keys.discard(key)
-            if self._parent and self._parent.has_key(key):
+            if self._parent and key in self._parent:
                 self._container[key] = self._parent[key]
             else:
                 del self._container[key]
@@ -145,7 +141,7 @@ class InheritedDict(Observable):
             pass
 
     def get(self, key, default=None):
-        """Retuns value by value. default is return in case key does not exist"""
+        """Returns value by value. default is return in case key does not exist"""
         try:
             return self[key]
         except KeyError:

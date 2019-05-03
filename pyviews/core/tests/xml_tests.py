@@ -1,13 +1,12 @@
-# pylint: disable=missing-docstring
-
 from tempfile import TemporaryFile
-from unittest import TestCase
+
+from pytest import mark, raises
+
 from pyviews.ioc import Scope, register_single
-from pyviews.testing import case
-from pyviews.core.xml import Parser, XmlAttr, XmlError
+from pyviews.core.xml import Parser, XmlAttr, XmlError, XmlNode
 
 
-class ParsingTests(TestCase):
+class ParsingTests:
     @staticmethod
     def _parse(xml_string, namespaces: dict = None):
         if namespaces is None:
@@ -21,7 +20,7 @@ class ParsingTests(TestCase):
                 return Parser().parse(xml_file)
 
     @staticmethod
-    def _get_child(root, level):
+    def _get_child(root: XmlNode, level):
         i = 0
         node = root
         while i < level:
@@ -29,97 +28,103 @@ class ParsingTests(TestCase):
             i = i + 1
         return node
 
-    @case({'': 'nsp'}, '<r />', 'nsp')
-    @case({'': 'nsp'}, '<r />', 'nsp')
-    @case({'': 'nsp', 'h': 'h'}, '<r />', 'nsp')
-    @case({'': 'nsp', 'h': 'h'}, '<h:r />', 'h')
-    @case({'': 'default'}, '<r xmlns="nsp"/>', 'nsp')
-    @case({'': 'default'}, '<r xmlns="nsp" xmlns:h="h"/>', 'nsp')
-    @case({'h': 'default'}, '<h:r xmlns="nsp" xmlns:h="h"/>', 'h')
+    @mark.parametrize('namespaces, xml_string, expected', [
+        ({'': 'nsp'}, '<r />', 'nsp'),
+        ({'': 'nsp'}, '<r />', 'nsp'),
+        ({'': 'nsp', 'h': 'h'}, '<r />', 'nsp'),
+        ({'': 'nsp', 'h': 'h'}, '<h:r />', 'h'),
+        ({'': 'default'}, '<r xmlns="nsp"/>', 'nsp'),
+        ({'': 'default'}, '<r xmlns="nsp" xmlns:h="h"/>', 'nsp'),
+        ({'h': 'default'}, '<h:r xmlns="nsp" xmlns:h="h"/>', 'h')
+    ])
     def test_namespace_definition(self, namespaces, xml_string, expected):
+        """namespaces should be parsed"""
         root = self._parse(xml_string, namespaces)
 
-        msg = 'Namespace should be parsed correctly'
-        self.assertEqual(expected, root.namespace, msg)
+        assert expected == root.namespace
 
-    @case({}, '<r xmlns="nsp"><c1 /></r>', 'nsp', 1)
-    @case({'': 'nsp'}, '<r xmlns="nsp"><c1 /></r>', 'nsp', 1)
-    @case({}, '<r xmlns="nsp" xmlns:h="h"><c1 /></r>', 'nsp', 1)
-    @case({'': 'nsp'}, '<r xmlns:h="h"><c1 /></r>', 'nsp', 1)
-    @case({}, '<r xmlns="nsp" xmlns:h="h"><h:c1 /></r>', 'h', 1)
-    @case({'h': 'h'}, '<r xmlns="nsp"><h:c1 /></r>', 'h', 1)
-    @case({}, '<r xmlns="nsp"><c1><c2/></c1></r>', 'nsp', 2)
-    @case({}, '<r xmlns="nsp" xmlns:h="h"><c1><c2/></c1></r>', 'nsp', 2)
-    @case({'': 'nsp'}, '<r xmlns:h="h"><c1><c2/></c1></r>', 'nsp', 2)
-    @case({}, '<r xmlns="nsp" xmlns:h="h"><c1><h:c2/></c1></r>', 'h', 2)
-    @case({'h': 'h'}, '<r xmlns="nsp"><c1><h:c2/></c1></r>', 'h', 2)
+    @mark.parametrize('namespaces, xml_string, expected, child_level', [
+        ({}, '<r xmlns="nsp"><c1 /></r>', 'nsp', 1),
+        ({'': 'nsp'}, '<r xmlns="nsp"><c1 /></r>', 'nsp', 1),
+        ({}, '<r xmlns="nsp" xmlns:h="h"><c1 /></r>', 'nsp', 1),
+        ({'': 'nsp'}, '<r xmlns:h="h"><c1 /></r>', 'nsp', 1),
+        ({}, '<r xmlns="nsp" xmlns:h="h"><h:c1 /></r>', 'h', 1),
+        ({'h': 'h'}, '<r xmlns="nsp"><h:c1 /></r>', 'h', 1),
+        ({}, '<r xmlns="nsp"><c1><c2/></c1></r>', 'nsp', 2),
+        ({}, '<r xmlns="nsp" xmlns:h="h"><c1><c2/></c1></r>', 'nsp', 2),
+        ({'': 'nsp'}, '<r xmlns:h="h"><c1><c2/></c1></r>', 'nsp', 2),
+        ({}, '<r xmlns="nsp" xmlns:h="h"><c1><h:c2/></c1></r>', 'h', 2),
+        ({'h': 'h'}, '<r xmlns="nsp"><c1><h:c2/></c1></r>', 'h', 2)
+    ])
     def test_parent_namespace_definition(self, namespaces, xml_string, expected, child_level):
+        """child namespaces should be parsed"""
         root = self._parse(xml_string, namespaces)
         child = self._get_child(root, child_level)
 
-        msg = 'Namespace should be parsed correctly'
-        self.assertEqual(expected, child.namespace, msg)
+        assert expected == child.namespace
 
-    @case("<r xmlns='n'><c1/></r>", [0])
-    @case("<r xmlns='n'><c1/><c1/><c1/></r>", [0, 0, 0])
-    @case("<r xmlns='n'><c1/><c1><c2/><c2/></c1><c1><c2/></c1></r>", [0, [0, 0], [0]])
+    @mark.parametrize('xml_string, structure', [
+        ("<r xmlns='n'><c1/></r>", [0]),
+        ("<r xmlns='n'><c1/><c1/><c1/></r>", [0, 0, 0]),
+        ("<r xmlns='n'><c1/><c1><c2/><c2/></c1><c1><c2/></c1></r>", [0, [0, 0], [0]])
+    ])
     def test_nodes_structure(self, xml_string, structure):
+        """should return right nodes tree"""
         root = self._parse(xml_string)
 
         self._assert_right_children(root, structure)
 
     def _assert_right_children(self, root, structure):
-        msg = 'Parser should add child to parent'
-        self.assertEqual(len(root.children), len(structure), msg)
+        assert len(root.children) == len(structure)
         for i, child_structure in enumerate(structure):
             child = root.children[i]
             if child_structure == 0:
-                self.assertEqual(len(child.children), 0, msg)
+                assert len(child.children) == 0
             else:
                 self._assert_right_children(child, child_structure)
 
-    @case({},
-          "<r xmlns='n' xmlns:m='nsp' k='{1}' m:k='v' m:a='value'/>",
-          [XmlAttr('k', '{1}'), XmlAttr('k', 'v', 'nsp'), XmlAttr('a', 'value', 'nsp')],
-          0)
-    @case({'': 'n', 'm': 'nsp'},
-          "<r k='{1}' m:k='v' m:a='value'/>",
-          [XmlAttr('k', '{1}'), XmlAttr('k', 'v', 'nsp'), XmlAttr('a', 'value', 'nsp')],
-          0)
-    @case({},
-          "<r xmlns='n' xmlns:m='nsp'><c1 k='{1}' m:k='v' m:a='value'/></r>",
-          [XmlAttr('k', '{1}'), XmlAttr('k', 'v', 'nsp'), XmlAttr('a', 'value', 'nsp')],
-          1)
-    @case({'': 'n', 'm': 'nsp'},
-          "<r><c1 k='{1}' m:k='v' m:a='value'/></r>",
-          [XmlAttr('k', '{1}'), XmlAttr('k', 'v', 'nsp'), XmlAttr('a', 'value', 'nsp')],
-          1)
-    @case({},
-          "<r xmlns='n' xmlns:m='nsp'><c1><c2 k='{1}' m:k='v' m:a='value'/></c1></r>",
-          [XmlAttr('k', '{1}'), XmlAttr('k', 'v', 'nsp'), XmlAttr('a', 'value', 'nsp')],
-          2)
-    @case({'': 'n', 'm': 'nsp'},
-          "<r><c1><c2 k='{1}' m:k='v' m:a='value'/></c1></r>",
-          [XmlAttr('k', '{1}'), XmlAttr('k', 'v', 'nsp'), XmlAttr('a', 'value', 'nsp')],
-          2)
+    @mark.parametrize('namespaces, xml_string, expected, level', [
+        ({},
+         "<r xmlns='n' xmlns:m='nsp' k='{1}' m:k='v' m:a='value'/>",
+         [XmlAttr('k', '{1}'), XmlAttr('k', 'v', 'nsp'), XmlAttr('a', 'value', 'nsp')],
+         0),
+        ({'': 'n', 'm': 'nsp'},
+         "<r k='{1}' m:k='v' m:a='value'/>",
+         [XmlAttr('k', '{1}'), XmlAttr('k', 'v', 'nsp'), XmlAttr('a', 'value', 'nsp')],
+         0),
+        ({},
+         "<r xmlns='n' xmlns:m='nsp'><c1 k='{1}' m:k='v' m:a='value'/></r>",
+         [XmlAttr('k', '{1}'), XmlAttr('k', 'v', 'nsp'), XmlAttr('a', 'value', 'nsp')],
+         1),
+        ({'': 'n', 'm': 'nsp'},
+         "<r><c1 k='{1}' m:k='v' m:a='value'/></r>",
+         [XmlAttr('k', '{1}'), XmlAttr('k', 'v', 'nsp'), XmlAttr('a', 'value', 'nsp')],
+         1),
+        ({},
+         "<r xmlns='n' xmlns:m='nsp'><c1><c2 k='{1}' m:k='v' m:a='value'/></c1></r>",
+         [XmlAttr('k', '{1}'), XmlAttr('k', 'v', 'nsp'), XmlAttr('a', 'value', 'nsp')],
+         2),
+        ({'': 'n', 'm': 'nsp'},
+         "<r><c1><c2 k='{1}' m:k='v' m:a='value'/></c1></r>",
+         [XmlAttr('k', '{1}'), XmlAttr('k', 'v', 'nsp'), XmlAttr('a', 'value', 'nsp')],
+         2)
+    ])
     def test_attribute_parsing(self, namespaces, xml_string, expected, level):
+        """should parse attributes"""
         root = self._parse(xml_string, namespaces)
         parsed_attrs = self._get_child(root, level).attrs
 
-        msg = 'attributes should be parsed correctly'
-        self.assertEqual(len(parsed_attrs), len(expected), msg)
-        self._assert_attributes_equal(expected, parsed_attrs, msg)
-
-    def _assert_attributes_equal(self, expected, parsed_attrs, msg):
+        assert len(parsed_attrs) == len(expected)
         for i, parsed_attr in enumerate(parsed_attrs):
             attr = expected[i]
-            self.assertEqual(attr.name, parsed_attr.name, msg)
-            self.assertEqual(attr.value, parsed_attr.value, msg)
-            self.assertEqual(attr.namespace, parsed_attr.namespace, msg)
+            assert attr.name == parsed_attr.name
+            assert attr.value == parsed_attr.value
+            assert attr.namespace == parsed_attr.namespace
 
-    @case("<r />")
-    @case("<nsp:r xmlns='n' />")
-    @case('''
+    @mark.parametrize('xml_string', [
+        "<r />",
+        "<nsp:r xmlns='n' />",
+        '''
             <r xmlns='n'>
                 <c1>
                     <c2>
@@ -127,14 +132,16 @@ class ParsingTests(TestCase):
                     <c2></c2>
                 </c1>
             </r>
-          ''')
-    @case('''
+          ''',
+        '''
             <r xmlns='n'>
                 <c1>
                     <c2 a='></c2>
                 </c1>
             </r>
-          ''')
+          '''
+    ])
     def test_raises_for_bad_xml(self, xml_string):
-        with self.assertRaises(XmlError):
+        """should raise XmlError for bad formed xml"""
+        with raises(XmlError):
             self._parse(xml_string)
