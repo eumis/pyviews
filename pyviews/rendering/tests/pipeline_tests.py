@@ -1,37 +1,45 @@
-from unittest import TestCase
 from unittest.mock import Mock, call, patch
-from pyviews.testing import case
-from pyviews.core import XmlAttr, Node, InstanceNode
-from pyviews.ioc import Scope, register_single, scope
+
+from pytest import mark, fixture, raises
+
 from pyviews.binding import Binder, OnceRule, OnewayRule
 from pyviews.compilation import CompiledExpression
-from pyviews.rendering.common import RenderingError
-from pyviews.rendering import pipeline
+from pyviews.core import XmlAttr, Node, InstanceNode
+from pyviews.ioc import Scope, register_single
 from pyviews.rendering import modifiers
+from pyviews.rendering import pipeline
+from pyviews.rendering.common import RenderingError
 from pyviews.rendering.pipeline import RenderingPipeline
-from pyviews.rendering.pipeline import call_set_attr, get_setter
 from pyviews.rendering.pipeline import apply_attribute, apply_attributes
+from pyviews.rendering.pipeline import call_set_attr, get_setter
 from pyviews.rendering.pipeline import run_steps, get_pipeline
 
 
-class run_steps_tests(TestCase):
-    @case(0, {'one': 1})
-    @case(1, {'one': 1})
-    @case(3, {'one': 1, 'two': 'value'})
+class RunStepsTests:
+    """run_steps() tests"""
+
+    @mark.parametrize('steps_count, args', [
+        (0, {'one': 1}),
+        (1, {'one': 1}),
+        (3, {'one': 1, 'two': 'value'})
+    ])
     def test_runs_all_steps(self, steps_count, args):
+        """run_steps should call all steps with passed args"""
         node = Node(Mock())
         steps = [Mock() for _ in range(steps_count)]
         render_pipeline = RenderingPipeline(steps=steps)
 
         run_steps(node, render_pipeline, **args)
 
-        msg = 'run_steps should call all steps with passed args'
         for step in steps:
-            self.assertEqual(step.call_args, call(node, pipeline=render_pipeline, **args), msg)
+            assert step.call_args == call(node, pipeline=render_pipeline, **args)
 
-    @case({'one': 'two'}, {'key': 'value'}, {'one': 'two', 'key': 'value'})
-    @case({'key': 'args'}, {'key': 'value'}, {'key': 'value'})
+    @mark.parametrize('args, step_result, expected', [
+        ({'one': 'two'}, {'key': 'value'}, {'one': 'two', 'key': 'value'}),
+        ({'key': 'args'}, {'key': 'value'}, {'key': 'value'})
+    ])
     def test_uses_step_result_as_args(self, args, step_result, expected):
+        """should use step result as args for next step"""
         node = Node(Mock())
 
         def step(_, **__): return step_result
@@ -42,12 +50,15 @@ class run_steps_tests(TestCase):
 
         run_steps(node, render_pipeline, **args)
 
-        msg = 'should use step result as args for next step'
-        self.assertEqual(call(node, pipeline=render_pipeline, **expected), next_step.call_args, msg)
+        assert call(node, pipeline=render_pipeline, **expected) == next_step.call_args
 
 
-class get_pipeline_tests(TestCase):
-    def test_should_return_default_setup(self):
+class GetPipelineTests:
+    """get_pipeline() tests"""
+
+    @staticmethod
+    def test_should_return_default_setup():
+        """should return default setup"""
         render_pipeline = RenderingPipeline()
         with Scope('test_get_pipeline_def'):
             register_single('pipeline', render_pipeline)
@@ -55,38 +66,43 @@ class get_pipeline_tests(TestCase):
             node = Node(Mock())
             actual_setup = get_pipeline(node)
 
-        msg = 'get_pipeline should return default setup'
-        self.assertEqual(actual_setup, render_pipeline, msg)
+        assert actual_setup == render_pipeline
 
-    @case(Node, Node(Mock()))
-    @case(InstanceNode, InstanceNode(Mock(), Mock()))
+    @mark.parametrize('node_type, node', [
+        (Node, Node(Mock())),
+        (InstanceNode, InstanceNode(Mock(), Mock()))
+    ])
     def test_should_return_setup_by_node_type(self, node_type, node):
+        """should return setup by node type"""
         render_pipeline = RenderingPipeline()
         with Scope('test_get_pipeline_node'):
             register_single('pipeline', render_pipeline, node_type)
 
             actual_setup = get_pipeline(node)
 
-        msg = 'get_pipeline should return setup by node type'
-        self.assertEqual(actual_setup, render_pipeline, msg)
+        assert actual_setup == render_pipeline
 
     class OtherInstanceNode(InstanceNode):
         """Class for get_pipeline_tests"""
         pass
 
-    @case(InstanceNode(XmlAttr('name'), Mock()))
-    @case(OtherInstanceNode(XmlAttr('name'), Mock()))
+    @mark.parametrize('node', [
+        (InstanceNode(XmlAttr('name'), Mock())),
+        (OtherInstanceNode(XmlAttr('name'), Mock()))
+    ])
     def test_returns_setup_by_instance_type(self, node: InstanceNode):
+        """get_pipeline should return setup by instance type"""
         render_pipeline = RenderingPipeline()
         with Scope('test_get_pipeline_inst'):
             register_single('pipeline', render_pipeline, node.instance.__class__)
 
             actual_setup = get_pipeline(node)
 
-        msg = 'get_pipeline should return setup by instance type'
-        self.assertEqual(actual_setup, render_pipeline, msg)
+        assert actual_setup == render_pipeline
 
-    def test_steps_order(self):
+    @staticmethod
+    def test_steps_order():
+        """should try get in order: by instance, by node type, default"""
         inst_setup = RenderingPipeline()
         type_setup = RenderingPipeline()
         def_setup = RenderingPipeline()
@@ -108,91 +124,90 @@ class get_pipeline_tests(TestCase):
             for node, expected_setup in cases:
                 actual_setup = get_pipeline(node)
 
-                msg = 'get_pipeline should try get in order: by instance, by node type, default'
-                self.assertEqual(actual_setup, expected_setup, msg)
+                assert actual_setup == expected_setup
 
-    def test_raises(self):
+    @staticmethod
+    def test_raises():
+        """should throw error in case pipeline is not registered"""
         node = Node(Mock())
         with Scope('test_get_pipeline_raises'):
-            msg = 'get_pipeline should throw error in case pipeline is not registered'
-            with self.assertRaises(RenderingError, msg=msg):
+            with raises(RenderingError):
                 get_pipeline(node)
 
 
-class AttributesRenderingTests(TestCase):
-    def setUp(self):
-        with self._get_scope():
+@fixture(scope='function')
+def apply_attribute_fixture(request):
+    setter_mock = Mock()
+    get_setter_mock = Mock()
+    get_setter_mock.side_effect = lambda attr: setter_mock
+    request.cls.setter_mock = setter_mock
+    with patch(pipeline.__name__ + '.get_setter', get_setter_mock):
+        with Scope('bind_fixture_scope') as fixture_scope:
             binder = Binder()
             binder.add_rule('once', OnceRule())
             binder.add_rule('oneway', OnewayRule())
-
             register_single('binder', binder)
             register_single('expression', CompiledExpression)
+            yield fixture_scope
 
-    @staticmethod
-    def _get_scope():
-        return Scope('AttributesRenderingTests')
 
-    @staticmethod
-    def _get_setter_mock(get_setter_mock):
-        setter_mock = Mock()
-        get_setter_mock.side_effect = lambda attr: setter_mock
-        return setter_mock
+@mark.usefixtures('apply_attribute_fixture')
+class ApplyAttributeTests:
+    """apply_attribute() tests"""
 
-    @patch(pipeline.__name__ + '.get_setter')
-    @case(XmlAttr('key', 'value'), 'key', 'value')
-    @case(XmlAttr('', 'value'), '', 'value')
-    @case(XmlAttr('one', '{1}'), 'one', 1)
-    @case(XmlAttr('one', 'once:{1 + 1}'), 'one', 2)
-    def test_apply_attribute_calls_setter(self, get_setter_mock, xml_attr: XmlAttr, key, value):
-        setter_mock = self._get_setter_mock(get_setter_mock)
+    @mark.parametrize('xml_attr, key, value', [
+        (XmlAttr('key', 'value'), 'key', 'value'),
+        (XmlAttr('', 'value'), '', 'value'),
+        (XmlAttr('one', '{1}'), 'one', 1),
+        (XmlAttr('one', 'once:{1 + 1}'), 'one', 2)
+    ])
+    def test_calls_setter(self, xml_attr: XmlAttr, key, value):
+        """ should call setter"""
         node = Node(Mock())
 
-        with self._get_scope():
-            apply_attribute(node, xml_attr)
+        apply_attribute(node, xml_attr)
 
-        msg = 'apply_attribute should call setter'
-        self.assertEqual(setter_mock.call_args, call(node, key, value), msg)
+        assert self.setter_mock.call_args == call(node, key, value)
 
-    @patch(pipeline.__name__ + '.get_setter')
-    @case(XmlAttr('key', '{1}'), 'oneway', '1')
-    @case(XmlAttr('one', 'oneway:{1 + 1}'), 'oneway', '1 + 1')
-    @case(XmlAttr('one', 'twoways:{vm.prop}'), 'twoways', 'vm.prop')
-    def test_apply_attribute_applies_binding(self, get_setter_mock, xml_attr, binding_type, expr_body):
-        setter_mock = self._get_setter_mock(get_setter_mock)
+    @mark.parametrize('xml_attr, binding_type, expr_body', [
+        (XmlAttr('key', '{1}'), 'oneway', '1'),
+        (XmlAttr('one', 'oneway:{1 + 1}'), 'oneway', '1 + 1'),
+        (XmlAttr('one', 'twoways:{vm.prop}'), 'twoways', 'vm.prop')
+    ])
+    def test_applies_binding(self, xml_attr, binding_type, expr_body):
+        """should apply binding"""
         node = Node(Mock())
         binder = Mock()
+        register_single('binder', binder)
         expected_args = {
             'node': node,
             'attr': xml_attr,
-            'modifier': setter_mock,
+            'modifier': self.setter_mock,
             'expr_body': expr_body
         }
 
-        with Scope('test_apply_attribute_binding'):
-            register_single('binder', binder)
-            register_single('expression', CompiledExpression)
-
-            apply_attribute(node, xml_attr)
-
-        msg = 'apply_attribute should apply binding'
-        self.assertEqual(binder.apply.call_args, call(binding_type, **expected_args), msg)
+        apply_attribute(node, xml_attr)
+        assert binder.apply.call_args == call(binding_type, **expected_args)
 
     @patch(pipeline.__name__ + '.apply_attribute')
-    def test_apply_attributes_apply_every_attribute(self, apply_attribute_mock):
+    def test_apply_every_attribute(self, apply_attribute_mock):
+        """should call apply_attribute for every attribute"""
         xml_node = Mock()
         xml_node.attrs = [Mock(), Mock()]
         node = Node(xml_node)
 
         apply_attributes(node)
 
-        msg = 'apply_attributes should call apply_attribute for every attribute'
         calls = [call(node, attr) for attr in xml_node.attrs]
-        self.assertEqual(apply_attribute_mock.call_args_list, calls, msg)
+        assert apply_attribute_mock.call_args_list == calls
 
 
-class SetterTests(TestCase):
-    def test_default_setter_should_call_node_setter(self):
+class GetSetterTests:
+    """get_setter() tests"""
+
+    @staticmethod
+    def test_default_setter():
+        """should call node setter"""
         node = Node(Mock())
         node_setter = Mock()
         node.attr_setter = node_setter
@@ -200,23 +215,25 @@ class SetterTests(TestCase):
 
         call_set_attr(node, key, value)
 
-        msg = 'default_setter should call node setter'
-        self.assertEqual(node_setter.call_args, call(node, key, value), msg)
+        assert node_setter.call_args == call(node, key, value)
 
-    @case(None, call_set_attr)
-    @case(modifiers.__name__ + '.import_global', modifiers.import_global)
-    def test_get_setter_returns_setter(self, setter_path, expected_setter):
+    @mark.parametrize('setter_path, expected_setter', [
+        (None, call_set_attr),
+        (modifiers.__name__ + '.import_global', modifiers.import_global)
+    ])
+    def test_returns_setter(self, setter_path, expected_setter):
+        """should return appropriate setter"""
         actual_setter = get_setter(XmlAttr('', namespace=setter_path))
 
-        msg = 'get_setter should return appropriate setter'
-        self.assertEqual(actual_setter, expected_setter, msg)
+        assert actual_setter == expected_setter
 
-    @scope('modifier_tests')
-    @case('', '')
-    @case('', 'attr_name')
-    @case('tests.rendering.core_test.some_modifier_not', 'attr_name')
-    def test_get_setter_raises(self, namespace, name):
-        msg = 'get_setter should raise ImportError if namespace can''t be imported'
-        with self.assertRaises(ImportError, msg=msg):
+    @mark.parametrize('namespace, name', [
+        ('', ''),
+        ('', 'attr_name'),
+        ('tests.rendering.core_test.some_modifier_not', 'attr_name')
+    ])
+    def test_raises(self, namespace, name):
+        """should raise ImportError if namespace can''t be imported"""
+        with raises(ImportError):
             xml_attr = XmlAttr(name, '', namespace)
             get_setter(xml_attr)

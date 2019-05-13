@@ -1,6 +1,8 @@
 """Rendering pipeline. Node creation from xml node, attribute setup and binding creation"""
 
 from sys import exc_info
+from typing import Optional
+
 from pyviews.core import XmlNode, XmlAttr, CoreError
 from pyviews.core import Node, InstanceNode, import_path
 from pyviews.ioc import SERVICES, DependencyError
@@ -43,7 +45,7 @@ def get_pipeline(node: Node) -> RenderingPipeline:
     return pipeline
 
 
-def _get_registered_pipeline(node: Node) -> RenderingPipeline:
+def _get_registered_pipeline(node: Node) -> Optional[RenderingPipeline]:
     params = [node.__class__, None]
     if isinstance(node, InstanceNode):
         params = [node.instance.__class__] + params

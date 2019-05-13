@@ -1,4 +1,4 @@
-'''View logic'''
+"""View logic"""
 
 from os.path import join
 from sys import exc_info
@@ -7,11 +7,13 @@ from pyviews.ioc import SERVICES as deps
 from pyviews.core.xml import Parser, XmlNode
 from pyviews.container import render
 
+
 class ViewError(CoreError):
-    '''Common error for parsing exceptions'''
+    """Common error for parsing exceptions"""
+
 
 def render_view(view_name, **args):
-    '''Process view and return root Node'''
+    """Process view and return root Node"""
     try:
         root_xml = get_view_root(view_name)
         return render(root_xml, **args)
@@ -24,10 +26,12 @@ def render_view(view_name, **args):
         error.add_cause(info[1])
         raise error from info[1]
 
+
 _XML_CACHE = {}
 
+
 def get_view_root(view_name: str) -> XmlNode:
-    '''Parses xml file and return root XmlNode'''
+    """Parses xml file and return root XmlNode"""
     try:
         path = join(deps.views_folder, '{0}.{1}'.format(view_name, deps.view_ext))
         parser = Parser()
