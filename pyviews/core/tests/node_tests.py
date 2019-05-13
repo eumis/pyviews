@@ -1,66 +1,80 @@
-# pylint: disable=missing-docstring
-
-from unittest import TestCase
 from unittest.mock import Mock, call
-from pyviews.testing import case
-from pyviews.core.xml import XmlNode
-from pyviews.core.observable import InheritedDict
+
+from pytest import fixture, mark
+
 from pyviews.core.node import Node, Property
+from pyviews.core.observable import InheritedDict
+from pyviews.core.xml import XmlNode
 
 
-class NodeTests(TestCase):
-    def setUp(self):
-        self.xml_node = XmlNode('namespace', 'root')
-        self.node = Node(self.xml_node)
+@fixture
+def node_fixture():
+    xml_node = XmlNode('namespace', 'root')
+    return xml_node, Node(xml_node)
 
-    def test_init_xml_node(self):
-        node = Node(self.xml_node)
 
-        msg = 'Node should inititalise properties'
-        self.assertEqual(node.xml_node, self.xml_node, msg)
+class NodeTests:
+    @staticmethod
+    def test_init_xml_node(node_fixture):
+        """__init__() should set xml_node"""
+        xml_node, node = node_fixture
 
-    @case(None)
-    @case(InheritedDict())
-    @case(InheritedDict({'one': 1}))
+        assert node.xml_node == xml_node
+
+    @mark.parametrize('node_globals', [
+        None,
+        InheritedDict(),
+        InheritedDict({'one': 1})
+    ])
     def test_init_setup_globals(self, node_globals: InheritedDict):
-        node = Node(self.xml_node, node_globals)
+        """__init__() should setup node_globals"""
+        node = Node(Mock(), node_globals)
 
-        msg = 'init should setup globals'
-        self.assertIsNotNone(node.node_globals)
+        assert node.node_globals is not None
+        if node_globals is not None:
+            assert node.node_globals == node_globals
 
-        msg = 'init should add node to globals'
-        self.assertEqual(node, node.node_globals['node'], msg)
+    @mark.parametrize('node_globals', [
+        None,
+        InheritedDict(),
+        InheritedDict({'one': 1})
+    ])
+    def test_adds_self_to_globals(self, node_globals: InheritedDict):
+        """__init__() should add self to node_globals"""
+        node = Node(Mock(), node_globals)
 
-        msg = 'should use passed globals or create new one'
-        expected_globals = node_globals if node_globals else node.node_globals
-        self.assertEqual(expected_globals, node.node_globals, msg)
+        assert node == node.node_globals['node']
 
-    @case('key', 1)
-    @case('key', None)
-    @case('key', 'value')
-    @case('setter', 'value')
-    def test_setattr_sets_property(self, key, value):
-        node = Node(Mock())
-        node.properties = {key: Property(key)}
+    @mark.parametrize('key, value', [
+        ('key', 1),
+        ('key', None),
+        ('key', 'value'),
+        ('setter', 'value'),
+    ])
+    def test_setattr_sets_property(self, node_fixture, key, value):
+        """__setattr__() should set property from properties"""
+        node = node_fixture[-1]
+        # node.properties = {key: Property(key)}
 
         setattr(node, key, value)
         actual = getattr(node, key, value)
 
-        msg = 'setattr should set property from properties'
-        self.assertEqual(actual, value, msg)
+        assert actual == value
 
-    def test_setattr_sets_own_property(self):
+    @staticmethod
+    def test_setattr_sets_own_property():
+        """__setattr__() should set own properties"""
         node = Node(Mock())
-        setter = lambda *args: None
+
+        def setter(*_): pass
 
         node.attr_setter = setter
 
-        msg = 'setattr should set own property if key not in properties'
-        self.assertEqual(node.attr_setter, setter, msg)
+        assert node.attr_setter == setter
 
-    @case(1)
-    @case(3)
+    @mark.parametrize('bindings_count', [1, 3])
     def test_destroy_destroys_bindings(self, bindings_count):
+        """destroy() should destroy all node's bindings"""
         node = Node(Mock())
         bindings = []
         for _ in range(bindings_count):
@@ -71,13 +85,12 @@ class NodeTests(TestCase):
 
         node.destroy()
 
-        msg = 'destroy should destroy bindings'
         for binding in bindings:
-            self.assertTrue(binding.destroy.called, msg)
+            assert binding.destroy.called
 
-    @case(1)
-    @case(3)
+    @mark.parametrize('bindings_count', [1, 3])
     def test_destroy_destroys_children(self, bindings_count):
+        """destroy() should destroy children"""
         node = Node(Mock())
         children = []
         for _ in range(bindings_count):
@@ -88,82 +101,100 @@ class NodeTests(TestCase):
 
         node.destroy()
 
-        msg = 'destroy should destroy bindings'
         for child in children:
-            self.assertTrue(child.destroy.called, msg)
+            assert child.destroy.called
 
-    def test_destroy_calls_on_destroy(self):
+    @staticmethod
+    def test_destroy_calls_on_destroy():
+        """destroy() should call on_destroy"""
         node = Node(Mock())
         node.on_destroy = Mock()
 
         node.destroy()
 
-        msg = 'destroy should call on_destroy with passed node'
-        self.assertEqual(node.on_destroy.call_args, call(node), msg)
+        assert node.on_destroy.call_args == call(node)
 
 
-class PropertyTests(TestCase):
-    def test_default_get(self):
+class PropertyTests:
+    @staticmethod
+    def test_default_get():
+        """get() should return None by default"""
         prop = Property('')
 
         actual = prop.get()
 
-        msg = 'get by default should return None'
-        self.assertIsNone(actual, msg)
+        assert actual is None
 
-    @case(None)
-    @case(1)
-    @case(object())
-    @case('value')
+    @mark.parametrize('value', [
+        None,
+        1,
+        object(),
+        'value'
+    ])
     def test_get_returns_set_value(self, value):
+        """get() should return value"""
         prop = Property('')
         prop.set(value)
 
         actual = prop.get()
 
-        msg = 'get should return set value'
-        self.assertEqual(actual, value, msg)
+        assert actual == value
 
-    @case(None)
-    @case(Node(Mock()))
+    @mark.parametrize('node', [
+        None,
+        Node(Mock())
+    ])
     def test_set_calls_setter(self, node):
+        """set() should pass node and value to setter"""
         setter_mock = Mock()
-        setter = lambda node, val: (val, setter_mock(node, val))[0]
+
+        def setter(setter_node, val):
+            (val, setter_mock(setter_node, val))[0]
+
         prop = Property('', setter, node)
         value = 1
 
         prop.set(value)
 
-        msg = 'set should call setter with passed node'
-        self.assertEqual(setter_mock.call_args, call(node, value), msg)
+        assert setter_mock.call_args == call(node, value)
 
-    @case(1, None)
-    @case(None, 1)
-    @case(object(), object())
-    @case('value', 'another value')
+    @mark.parametrize('previous, value', [
+        (1, None),
+        (None, 1),
+        (object(), object()),
+        ('value', 'another value')
+    ])
     def test_set_calls_previous_setter(self, previous, value):
+        """set() should pass node, value and previous value to setter"""
         setter_mock = Mock()
-        setter = lambda node, val, prev: (val, setter_mock(node, val, prev))[0]
+
+        def setter(node, val, prev):
+            (val, setter_mock(node, val, prev))[0]
+
         prop = Property('', setter)
 
         prop.set(previous)
         prop.set(value)
 
-        msg = 'set should call setter with passed value and previous value'
-        self.assertEqual(setter_mock.call_args_list[0], call(None, previous, None), msg)
-        self.assertEqual(setter_mock.call_args_list[1], call(None, value, previous), msg)
+        assert setter_mock.call_args_list[0], call(None, previous, None)
+        assert setter_mock.call_args_list[1], call(None, value, previous)
 
-    @case(None)
-    @case(Node(Mock()))
+    @mark.parametrize('node', [
+        None,
+        Node(Mock())
+    ])
     def test_new_creates_property(self, node):
+        """new() should create same property for passed node"""
         setter_mock = Mock()
-        setter = lambda node, val: (val, setter_mock(node, val))[0]
+
+        def setter(node_, val):
+            (val, setter_mock(node_, val))[0]
+
         prop = Property('', setter)
         value = 1
 
         actual_prop = prop.new(node)
         actual_prop.set(value)
 
-        msg = 'new should return new property for passed node'
-        self.assertNotEqual(actual_prop, prop, msg)
-        self.assertEqual(setter_mock.call_args, call(node, value), msg)
+        assert actual_prop != prop
+        assert setter_mock.call_args, call(node, value)

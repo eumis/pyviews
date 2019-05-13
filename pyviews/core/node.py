@@ -1,20 +1,21 @@
 """Core classes for creation from xml nodes"""
 
 from inspect import signature, Parameter
-from typing import Any, List, Callable, TypeVar
-from .xml import XmlNode
-from .observable import InheritedDict
+from typing import Any, List, Callable
+
 from .binding import Binding
+from .observable import InheritedDict
+from .xml import XmlNode
 
 
 class Node:
     """Represents node with properties and bindings created from xml node"""
 
     def __init__(self, xml_node: XmlNode, node_globals: InheritedDict = None):
-        self._children = []
-        self._bindings = []
-        self._xml_node = xml_node
-        self._globals = node_globals if node_globals else InheritedDict()
+        self._children: List[Node] = []
+        self._bindings: List[Binding] = []
+        self._xml_node: XmlNode = xml_node
+        self._globals: InheritedDict = InheritedDict() if node_globals is None else node_globals
         self._globals['node'] = self
         self.attr_setter = _attr_setter
         self.properties = {}
@@ -111,7 +112,7 @@ class Property:
         if setter:
             args_count = len([p for p in signature(setter).parameters.values() if p.default == Parameter.empty])
             self._setter = setter if args_count == 3 else \
-                lambda node, value, previous: setter(node, value)
+                lambda nd, value, previous: setter(nd, value)
         self._node = node
 
     def get(self):
@@ -127,4 +128,4 @@ class Property:
         return Property(self.name, self._setter, node)
 
 
-Modifier = TypeVar(Callable[[Node, str, Any], None])
+Modifier = Callable[[Node, str, Any], None]

@@ -1,11 +1,13 @@
-'''Binding rules and factory'''
+"""Binding rules and factory"""
 
-from pyviews.core import Binder, BindingRule, Modifier, XmlAttr, Node
+from pyviews.core import BindingRule, Modifier, XmlAttr, Node
 from pyviews.container import expression
 from .implementations import ExpressionBinding, PropertyTarget
 
+
 class OnceRule(BindingRule):
-    '''Applies "once" binding - expression result is assigned to property without binding'''
+    """Applies "once" binding - expression result is assigned to property without binding"""
+
     def suitable(self, **args) -> bool:
         return True
 
@@ -17,8 +19,10 @@ class OnceRule(BindingRule):
         value = expression(expr_body).execute(node.node_globals.to_dictionary())
         modifier(node, attr.name, value)
 
+
 class OnewayRule(BindingRule):
-    '''Applies "oneway" binding'''
+    """Applies "one way" binding"""
+
     def suitable(self, **args) -> bool:
         return True
 
@@ -32,8 +36,3 @@ class OnewayRule(BindingRule):
         binding = ExpressionBinding(target, expr, node.node_globals)
         binding.bind()
         node.add_binding(binding)
-
-def add_one_way_rules(binder: Binder):
-    '''Adds default binding rules to passed binder'''
-    binder.add_rule('once', OnceRule())
-    binder.add_rule('oneway', OnewayRule())

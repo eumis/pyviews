@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from typing import List
-from .common import CoreError
+from .error import CoreError
 
 
 class CompilationError(CoreError):
@@ -24,6 +24,14 @@ class ObjectNode:
 
 class Expression(ABC):
     """Code expression."""
+
+    def __init__(self, code):
+        self._code: str = code
+
+    @property
+    def code(self) -> str:
+        """Expression source code"""
+        return self._code
 
     @abstractmethod
     def get_object_tree(self) -> ObjectNode:

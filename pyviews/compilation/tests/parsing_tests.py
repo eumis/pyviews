@@ -1,40 +1,43 @@
-#pylint: disable=missing-docstring, invalid-name
+from pytest import mark
+from pyviews.compilation.parsing import is_expression, parse_expression, ExpressionSource
 
-from unittest import TestCase
-from pyviews.testing import case
-from pyviews.compilation.parsing import is_expression, parse_expression
 
-class is_expression_tests(TestCase):
-    @case('{asdf}', True)
-    @case('once:{asdf}', True)
-    @case('oneway:{asdf}', True)
-    @case('twoways:{asdf}', True)
-    @case('{{asdf}}', True)
-    @case('twoways:{{asdf}}', True)
-    @case('once:{{asdf}}', True)
-    @case('oneway:{{asdf}}', True)
-    @case('twoways:{conv:{asdf}}', True)
-    @case('twoways:{asdf}', True)
-    @case('twoways:{asdf}', True)
-    @case('oneway{asdf}', False)
-    @case(':{asdf}', False)
-    @case('{asdf', False)
-    @case('once:{asdf', False)
-    @case('asdf}', False)
-    @case(' {asdf}', False)
-    @case('once: {asdf}', False)
-    def test_is_expression(self, expr, expected):
-        self.assertEqual(is_expression(expr), expected)
+@mark.parametrize('expr, expected', [
+    ('{asdf}', True),
+    ('once:{asdf}', True),
+    ('oneway:{asdf}', True),
+    ('twoways:{asdf}', True),
+    ('{{asdf}}', True),
+    ('twoways:{{asdf}}', True),
+    ('once:{{asdf}}', True),
+    ('oneway:{{asdf}}', True),
+    ('twoways:{conv:{asdf}}', True),
+    ('twoways:{asdf}', True),
+    ('twoways:{asdf}', True),
+    ('oneway{asdf}', False),
+    (':{asdf}', False),
+    ('{asdf', False),
+    ('once:{asdf', False),
+    ('asdf}', False),
+    (' {asdf}', False),
+    ('once: {asdf}', False),
+])
+def test_is_expression(expr: str, expected: bool):
+    """is_expression() should return True for valid expression by syntax"""
+    assert is_expression(expr) == expected
 
-class parse_expression_tests(TestCase):
-    @case('{asdf}', ('oneway', 'asdf'))
-    @case('once:{asdf}', ('once', 'asdf'))
-    @case('oneway:{asdf}', ('oneway', 'asdf'))
-    @case('twoways:{asdf}', ('twoways', 'asdf'))
-    @case('{{asdf}}', ('twoways', '{asdf}'))
-    @case('{to_int:{asdf}}', ('twoways', 'to_int:{asdf}'))
-    @case('twoways:{{asdf}}', ('twoways', '{asdf}'))
-    @case('oneway:{{asdf}}', ('oneway', '{asdf}'))
-    @case('twoways:{to_int:{asdf}}', ('twoways', 'to_int:{asdf}'))
-    def test_parse_expression(self, expr, expected):
-        self.assertEqual(parse_expression(expr), expected)
+
+@mark.parametrize('expr, expected', [
+    ('{asdf}', ('oneway', 'asdf')),
+    ('once:{asdf}', ('once', 'asdf')),
+    ('oneway:{asdf}', ('oneway', 'asdf')),
+    ('twoways:{asdf}', ('twoways', 'asdf')),
+    ('{{asdf}}', ('twoways', '{asdf}')),
+    ('{to_int:{asdf}}', ('twoways', 'to_int:{asdf}')),
+    ('twoways:{{asdf}}', ('twoways', '{asdf}')),
+    ('oneway:{{asdf}}', ('oneway', '{asdf}')),
+    ('twoways:{to_int:{asdf}}', ('twoways', 'to_int:{asdf}')),
+])
+def test_parse_expression(expr: str, expected: ExpressionSource):
+    """parse_expression() should return tuple (binding_type, expression body)"""
+    assert parse_expression(expr) == expected
