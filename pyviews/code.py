@@ -24,7 +24,7 @@ def run_code(node: Code,
     try:
         globs = node_globals.to_dictionary()
         exec(dedent(code), globs)
-        definitions = [(key, value) for key, value in globs.items() \
+        definitions = [(key, value) for key, value in globs.items()
                        if key != '__builtins__' and key not in node_globals]
         for key, value in definitions:
             parent_node.node_globals[key] = value

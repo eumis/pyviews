@@ -1,13 +1,19 @@
-from unittest import TestCase
 from unittest.mock import Mock, call
+
+from pytest import fixture, mark, raises
+
 from pyviews import ioc
 
 
-class ContainerTests(TestCase):
-    def setUp(self):
-        self.container = ioc.Container()
+@fixture
+def container_fixture(request):
+    request.cls.container = ioc.Container()
 
-    def test_should_store_dependency(self):
+
+@mark.usefixtures('container_fixture')
+class ContainerTests:
+    def test_register(self):
+        """container should register dependencies"""
         one = object()
         two = object()
         three = object()
@@ -17,19 +23,13 @@ class ContainerTests(TestCase):
         self.container.register('paramed', lambda: three, 1)
         self.container.register_factory('paramed', lambda param: four if param == 2 else None)
 
-        msg = 'Registered dependency should be returned by container'
-        self.assertEqual(self.container.get('key'), one, msg)
-
-        msg = 'Default dependency should be returned by container with None parameter'
-        self.assertEqual(self.container.get('paramed'), two, msg)
-
-        msg = 'Registered with parameter dependency should be returned by container with passed parameter'
-        self.assertEqual(self.container.get('paramed', 1), three, msg)
-
-        msg = 'Registered factory should return dependency by parameter if there no other dependency with the param'
-        self.assertEqual(self.container.get('paramed', 2), four, msg)
+        assert self.container.get('key') == one
+        assert self.container.get('paramed') == two
+        assert self.container.get('paramed', 1) == three
+        assert self.container.get('paramed', 2) == four
 
     def test_last_dependency(self):
+        """register() should overwrite dependency"""
         one = object()
         two = object()
         self.container.register('key', lambda: one)
@@ -37,56 +37,61 @@ class ContainerTests(TestCase):
         self.container.register('paramed', lambda: one, 1)
         self.container.register('paramed', lambda: two, 1)
 
-        msg = 'Last dependency should be registered for the same key'
-        self.assertEqual(self.container.get('key'), two, msg)
-
-        msg = 'Last dependency should be registered for the same key and parameter'
-        self.assertEqual(self.container.get('paramed', 1), two, msg)
+        assert self.container.get('key') == two
+        assert self.container.get('paramed', 1) == two
 
     def test_register_raises(self):
-        msg = 'Denendency initializer should be callable'
-        with self.assertRaises(ioc.DependencyError, msg=msg):
+        """register() should raise error if initializer is not callable"""
+        with raises(ioc.DependencyError):
             self.container.register('key', object())
 
     def test_get_raises(self):
-        msg = 'Container should raise exception for not existent dependency'
-        with self.assertRaises(ioc.DependencyError, msg=msg):
+        """Container should raise exception for not existent dependency"""
+        with raises(ioc.DependencyError):
             self.container.get('key')
 
     def test_get_params_raises(self):
-        msg = 'Container should raise exception for not existent dependency'
-        with self.assertRaises(ioc.DependencyError, msg=msg):
+        """Container should raise exception for not existent dependency"""
+        with raises(ioc.DependencyError):
             self.container.get('new key')
 
         self.container.register('key', lambda: 1)
-        with self.assertRaises(ioc.DependencyError, msg=msg):
+        with raises(ioc.DependencyError):
             self.container.get('key', 'param')
 
     def test_self_registration(self):
+        """Container should register himself with key "Container"""
         registered_container = self.container.get('container')
-        msg = 'Container should register himself with key "Container"'
-        self.assertEqual(registered_container, self.container, msg=msg)
+
+        assert registered_container == self.container
 
 
-class WrappersTests(TestCase):
-    def setUp(self):
-        container = Mock()
-        ioc.Scope._scope_containers['WrappersTests'] = container
+@fixture
+def wrappers_fixture(request):
+    scope_name = 'WrappersTests'
+    request.cls.container = Mock()
+    ioc.Scope._scope_containers[scope_name] = request.cls.container
+    with ioc.Scope(scope_name) as fixture_scope:
+        yield fixture_scope
 
-    @ioc.scope('WrappersTests')
-    def test_register(self):
+
+@mark.usefixtures('wrappers_fixture')
+class WrappersTests:
+    @staticmethod
+    def test_register():
+        """register() should pass same parameters to CONTAINER.register"""
         one = object()
         name = 'name'
         param = 'param'
 
         ioc.register(name, one, param)
 
-        msg = 'register method should pass same parameters to CONTAINER.register'
         container = ioc.get_current_scope().container
-        self.assertEqual(container.register.call_args, call(name, one, param), msg=msg)
+        assert container.register.call_args == call(name, one, param)
 
-    @ioc.scope('WrappersTests')
-    def test_register_single(self):
+    @staticmethod
+    def test_register_single():
+        """register_single() should wrap value to callbale that returns the value"""
         one = object()
         name = 'name'
         param = 'param'
@@ -99,12 +104,12 @@ class WrappersTests(TestCase):
             args[0],
             args[1](),
             args[2])
-        msg = 'register_single should wrap value to callbale that returns the value'
-        self.assertEqual(actual, (name, one, param), msg=msg)
+        assert actual == (name, one, param)
 
-    @ioc.scope('WrappersTests')
-    def test_register_func(self):
-        one = lambda *args: print(args)
+    @staticmethod
+    def test_register_func():
+        """register_func() should wrap value to callable that returns the value"""
+        def one(*one_args): print(one_args)
         name = 'name'
         param = 'param'
 
@@ -116,80 +121,75 @@ class WrappersTests(TestCase):
             args[0],
             args[1](),
             args[2])
-        msg = 'register_func should wrap value to callbale that returns the value'
-        self.assertEqual(actual, (name, one, param), msg=msg)
+        assert actual == (name, one, param)
 
 
-class InjectionTests(TestCase):
-    def test_inject(self):
-        one = object()
-        two = lambda: one
-        ioc.register_single('one', one)
-        ioc.register_func('two', two)
+def test_inject():
+    """should pass dependencies as optional parameters"""
+    one = object()
+    def two(): return one
+    ioc.register_single('one', one)
+    ioc.register_func('two', two)
 
-        msg = 'inject should pass dependencies as optional parameters'
-        self.assertEqual(self._get_default_injected(), (one, two), msg=msg)
-        self.assertEqual(self._get_kwargs_injected(), (one, two), msg=msg)
-
-    @staticmethod
-    @ioc.inject('one', 'two')
-    def _get_default_injected(one=None, two=None):
-        return (one, two)
-
-    @staticmethod
-    @ioc.inject('one', 'two')
-    def _get_kwargs_injected(**kwargs):
-        return (kwargs['one'], kwargs['two'])
+    assert _get_default_injected() == (one, two)
+    assert _get_kwargs_injected() == (one, two)
 
 
-class ScopeTests(TestCase):
+@ioc.inject('one', 'two')
+def _get_default_injected(one=None, two=None):
+    return one, two
+
+
+@ioc.inject('one', 'two')
+def _get_kwargs_injected(**kwargs):
+    return kwargs['one'], kwargs['two']
+
+
+class ScopeTests:
     def test_scope(self):
+        """Scope should use own Container for resolving dependencies"""
         ioc.register_single('value', 0)
         with ioc.Scope('one'):
             ioc.register_single('value', 1)
         with ioc.Scope('two'):
             ioc.register_single('value', 2)
 
-        msg = 'Scope should use own Container for resolving dependencies'
         with ioc.Scope('one'):
-            self.assertEqual(self._get_injected_value(), 1, msg)
+            assert self._get_injected_value() == 1
         with ioc.Scope('two'):
-            self.assertEqual(self._get_injected_value(), 2, msg)
-        self.assertEqual(self._get_injected_value(), 0, msg)
+            assert self._get_injected_value() == 2
+        assert self._get_injected_value() == 0
 
-    def test_current_scope(self):
-        msg = 'Scope should use own Container for resolving dependencies'
+    @staticmethod
+    def test_current_scope():
+        """Scope should use own Container for resolving dependencies"""
         with ioc.Scope('one') as one_scope:
-            self.assertEqual(one_scope, ioc.get_current_scope(), msg)
+            assert one_scope == ioc.get_current_scope()
             with ioc.Scope('two') as two_scope:
-                self.assertEqual(two_scope, ioc.get_current_scope(), msg)
-            self.assertEqual(one_scope, ioc.get_current_scope(), msg)
+                assert two_scope == ioc.get_current_scope()
+            assert one_scope == ioc.get_current_scope()
 
-    def test_wrap_same_scope(self):
+    @staticmethod
+    def test_wrap_same_scope():
         with ioc.Scope('scope') as outer_scope:
             with ioc.Scope('scope') as inner_scope:
-                msg = '__enter__ should return new Scope object'
-                self.assertNotEqual(outer_scope, inner_scope, msg)
-
-                msg = 'Outer scope should be current'
-                self.assertEqual(outer_scope, ioc.get_current_scope(), msg)
-
-                msg = 'Scopes with same name should use same container'
-                self.assertEqual(outer_scope.container, inner_scope.container, msg)
+                assert outer_scope != inner_scope
+                assert outer_scope == ioc.get_current_scope()
+                assert outer_scope.container == inner_scope.container
 
     def test_inner_scope(self):
+        """Scope should use own Container for resolving dependencies if used inside other scope"""
         ioc.register_single('value', 0)
         with ioc.Scope('one'):
             ioc.register_single('value', 1)
             with ioc.Scope('two'):
                 ioc.register_single('value', 2)
 
-        msg = 'Scope should use own Container for resolving dependencies if used inside other scope'
         with ioc.Scope('one'):
-            self.assertEqual(self._get_injected_value(), 1, msg)
+            assert self._get_injected_value() == 1
         with ioc.Scope('two'):
-            self.assertEqual(self._get_injected_value(), 2, msg)
-        self.assertEqual(self._get_injected_value(), 0, msg)
+            assert self._get_injected_value() == 2
+        assert self._get_injected_value() == 0
 
     @staticmethod
     @ioc.inject('value')
@@ -197,16 +197,16 @@ class ScopeTests(TestCase):
         return value
 
     def test_scope_decorator(self):
+        """scope decorator should wrap function call with passed scope"""
         ioc.register_single('value', 0)
         with ioc.Scope('one'):
             ioc.register_single('value', 1)
         with ioc.Scope('two'):
             ioc.register_single('value', 2)
 
-        msg = 'scope decorator should wrap function call with passed scope'
-        self.assertEqual(self._get_injected_value(), 0, msg)
-        self.assertEqual(self._get_one_scope_value(), 1, msg)
-        self.assertEqual(self._get_two_scope_value(), 2, msg)
+        assert self._get_injected_value() == 0
+        assert self._get_one_scope_value() == 1
+        assert self._get_two_scope_value() == 2
 
     @staticmethod
     @ioc.scope('one')
@@ -221,6 +221,7 @@ class ScopeTests(TestCase):
         return value
 
     def test_wrap_with_scope(self):
+        """wrap_with_scope should wrap passed function call with scope"""
         ioc.register_single('value', 0)
         with ioc.Scope('one'):
             ioc.register_single('value', 1)
@@ -230,11 +231,11 @@ class ScopeTests(TestCase):
         one = ioc.wrap_with_scope(self._get_injected_value, 'one')
         two = ioc.wrap_with_scope(self._get_injected_value, 'two')
 
-        msg = 'wrap_with_scope should wrap passed function call with scope'
-        self.assertEqual(one(), 1, msg)
-        self.assertEqual(two(), 2, msg)
+        assert one() == 1
+        assert two() == 2
 
     def test_wrap_with_current_scope(self):
+        """wrap_with_scope should wrap passed function call with scope"""
         ioc.register_single('value', 0)
         with ioc.Scope('one'):
             ioc.register_single('value', 1)
@@ -243,23 +244,25 @@ class ScopeTests(TestCase):
             ioc.register_single('value', 2)
             two = ioc.wrap_with_scope(self._get_injected_value)
 
-        msg = 'wrap_with_scope should wrap passed function call with scope'
-        self.assertEqual(one(), 1, msg)
-        self.assertEqual(two(), 2, msg)
+        assert one() == 1
+        assert two() == 2
 
 
-class ServicesTests(TestCase):
-    def test_injection(self):
+class ServicesTests:
+    @staticmethod
+    def test_injection():
+        """services should return registered dependencies"""
         one = object()
-        two = lambda: one
+        def two(): return one
         ioc.register_single('one', one)
         ioc.register_func('two', two)
 
-        msg = 'services should return registered dependencies'
-        self.assertEqual(ioc.SERVICES.one, one, msg=msg)
-        self.assertEqual(ioc.SERVICES.two, two, msg=msg)
+        assert ioc.SERVICES.one == one
+        assert ioc.SERVICES.two == two
 
-    def test_scope_injection(self):
+    @staticmethod
+    def test_scope_injection():
+        """services should return registered dependencies in current scope"""
         one = object()
         two = object()
         with ioc.Scope('one'):
@@ -267,18 +270,18 @@ class ServicesTests(TestCase):
         with ioc.Scope('two'):
             ioc.register_single('dep', two)
 
-        msg = 'services should return registered dependencies in current scope'
         with ioc.Scope('one'):
-            self.assertEqual(ioc.SERVICES.dep, one, msg=msg)
+            assert ioc.SERVICES.dep == one
         with ioc.Scope('two'):
-            self.assertEqual(ioc.SERVICES.dep, two, msg=msg)
+            assert ioc.SERVICES.dep == two
 
-    def test_for_(self):
+    @staticmethod
+    def test_for_():
+        """for_ should return services that using passed param"""
         one = object()
         two = object()
         ioc.register_single('dep', one, 'one')
         ioc.register_single('dep', two, 'two')
 
-        msg = 'for_ should return services that using passed param'
-        self.assertEqual(ioc.SERVICES.for_('one').dep, one, msg=msg)
-        self.assertEqual(ioc.SERVICES.for_('two').dep, two, msg=msg)
+        assert ioc.SERVICES.for_('one').dep == one
+        assert ioc.SERVICES.for_('two').dep == two

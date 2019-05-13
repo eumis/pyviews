@@ -1,9 +1,7 @@
-from unittest import TestCase
 from unittest.mock import Mock
 
 from pytest import mark, raises
 
-from pyviews.testing import case
 from pyviews.core import XmlNode, Node, InstanceNode
 from pyviews.core import InheritedDict, Observable
 from pyviews.ioc import Services
