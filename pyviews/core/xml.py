@@ -2,7 +2,7 @@
 from typing import List, Tuple
 from xml.parsers.expat import ParserCreate, ExpatError, errors
 from collections import namedtuple
-from pyviews.ioc import inject
+from injectool import inject
 from .error import CoreError, ViewInfo
 
 

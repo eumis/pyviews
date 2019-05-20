@@ -1,30 +1,30 @@
 """Contains interfaces for pyviews dependencies"""
+from injectool import resolve
 
 from pyviews.binding import Binder
 from pyviews.core import XmlNode, Node, Expression
-from pyviews.ioc import SERVICES
 
 
 def create_node(xml_node: XmlNode, **init_args) -> Node:
     """Creates node from xml node using namespace as module and tag name as class name"""
-    return SERVICES.create_node(xml_node, **init_args)
+    return resolve('create_node')(xml_node, **init_args)
 
 
 def render(xml_node: XmlNode, **args) -> Node:
     """Renders node from xml node"""
-    return SERVICES.render(xml_node, **args)
+    return resolve('render')(xml_node, **args)
 
 
 def binder() -> Binder:
     """Returns Binder instance"""
-    return SERVICES.binder
+    return resolve('binder')
 
 
 def expression(code: str) -> Expression:
     """Creates Expression instance"""
-    return SERVICES.expression(code)
+    return resolve('expression')(code)
 
 
 def namespaces() -> str:
     """Predefined namespaces used in views"""
-    return SERVICES.namespaces
+    return resolve('namespaces')

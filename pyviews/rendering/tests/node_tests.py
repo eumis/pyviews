@@ -1,10 +1,10 @@
 from unittest.mock import Mock
 
+from injectool import Container
 from pytest import mark, raises
 
 from pyviews.core import XmlNode, Node, InstanceNode
 from pyviews.core import InheritedDict, Observable
-from pyviews.ioc import Services
 from pyviews.code import Code
 from pyviews.rendering.common import RenderingError
 from pyviews.rendering.node import get_init_args, convert_to_node
@@ -48,6 +48,7 @@ class InstWithKwargs:
 
 class GetInitArgsTests:
     """get_init_args() tests"""
+
     @mark.parametrize('inst_type, init_args, args, kwargs, add_kwargs', [
         (Inst, {'xml_node': 1, 'parent_node': 'node'}, [1, 'node'], {}, True),
         (Inst, {'xml_node': 1, 'parent_node': 'node'}, [1, 'node'], {}, False),
@@ -144,7 +145,7 @@ class create_node_tests:
 
     @mark.parametrize('namespace, tag, inst_type', [
         ('pyviews.core.observable', 'Observable', Observable),
-        ('pyviews.ioc', 'Services', Services)
+        ('injectool', 'Container', Container)
     ])
     def test_creates_instance_node(self, namespace, tag, inst_type):
         """should create instance and wrap it with InstanceNode"""

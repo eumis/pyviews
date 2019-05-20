@@ -5,7 +5,7 @@ from pytest import mark, fixture, raises
 from pyviews.binding import Binder, OnceRule, OnewayRule
 from pyviews.compilation import CompiledExpression
 from pyviews.core import XmlAttr, Node, InstanceNode
-from pyviews.ioc import Scope, register_single
+from injectool import Scope, register_single
 from pyviews.rendering import modifiers
 from pyviews.rendering import pipeline
 from pyviews.rendering.common import RenderingError

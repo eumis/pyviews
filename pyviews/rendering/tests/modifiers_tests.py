@@ -7,7 +7,7 @@ from unittest.mock import call as call_args, Mock
 from pytest import mark
 
 from pyviews.core import Node, XmlNode
-from pyviews.ioc import register_single, Scope
+from injectool import register_single, Scope
 from pyviews.rendering.modifiers import import_global, set_global, inject_global, call
 
 

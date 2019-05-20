@@ -2,7 +2,7 @@ from tempfile import TemporaryFile
 
 from pytest import mark, raises
 
-from pyviews.ioc import Scope, register_single
+from injectool import Scope, register_single
 from pyviews.core.xml import Parser, XmlAttr, XmlError, XmlNode
 
 

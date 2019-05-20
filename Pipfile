@@ -9,6 +9,7 @@ verify_ssl = true
 requests = "*"
 pyviews = {editable = true,path = "."}
 pytest = "*"
+injectool = "*"
 
 [requires]
 python_version = "3.6"
