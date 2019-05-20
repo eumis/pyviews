@@ -2,15 +2,18 @@
 
 from abc import ABC, abstractmethod
 from typing import List
+
+from injectool import resolve
+
 from .error import CoreError
 
 
 class CompilationError(CoreError):
     """Error for failed expression compilation"""
 
-    def __init__(self, message, expression):
+    def __init__(self, message, expr: 'Expression'):
         super().__init__(message)
-        self.expression = expression
+        self.expression: Expression = expr
         self.add_info('Expression', expression)
 
 
@@ -40,3 +43,8 @@ class Expression(ABC):
     @abstractmethod
     def execute(self, parameters: dict = None) -> any:
         """Executes expression with passed parameters and returns result"""
+
+
+def expression(code: str) -> Expression:
+    """Creates Expression instance"""
+    return resolve(Expression)(code)

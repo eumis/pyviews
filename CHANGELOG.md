@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.0.5
+## 2.1.0
 
 - added call modifier
 - updated modules structure

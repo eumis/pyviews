@@ -1,4 +1,4 @@
-'''Rendering pipeline implementation'''
+"""Rendering pipeline implementation"""
 
 from .common import RenderingError
 from .modifiers import import_global, inject_global, set_global

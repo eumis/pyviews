@@ -4,7 +4,7 @@ from pytest import mark, fixture, raises
 
 from pyviews.binding import Binder, OnceRule, OnewayRule
 from pyviews.compilation import CompiledExpression
-from pyviews.core import XmlAttr, Node, InstanceNode
+from pyviews.core import XmlAttr, Node, InstanceNode, Expression
 from injectool import Scope, register_single
 from pyviews.rendering import modifiers
 from pyviews.rendering import pipeline
@@ -146,8 +146,8 @@ def apply_attribute_fixture(request):
             binder = Binder()
             binder.add_rule('once', OnceRule())
             binder.add_rule('oneway', OnewayRule())
-            register_single('binder', binder)
-            register_single('expression', CompiledExpression)
+            register_single(Binder, binder)
+            register_single(Expression, CompiledExpression)
             yield fixture_scope
 
 
@@ -178,7 +178,7 @@ class ApplyAttributeTests:
         """should apply binding"""
         node = Node(Mock())
         binder = Mock()
-        register_single('binder', binder)
+        register_single(Binder, binder)
         expected_args = {
             'node': node,
             'attr': xml_attr,

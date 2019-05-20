@@ -3,7 +3,7 @@ from unittest.mock import Mock, call
 from pytest import mark, fixture
 
 from injectool import Scope, register_func
-from pyviews.core import XmlAttr, InheritedDict
+from pyviews.core import XmlAttr, InheritedDict, Expression
 from pyviews.core import Binding
 from pyviews.compilation import CompiledExpression
 from pyviews.binding.rules import OnceRule, OnewayRule
@@ -12,7 +12,7 @@ from pyviews.binding.rules import OnceRule, OnewayRule
 @fixture(scope='module')
 def scope_fixture():
     with Scope('rules_tests') as scope:
-        register_func('expression', CompiledExpression)
+        register_func(Expression, CompiledExpression)
         yield scope
 
 
