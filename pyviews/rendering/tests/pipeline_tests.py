@@ -61,7 +61,7 @@ class GetPipelineTests:
         """should return default setup"""
         render_pipeline = RenderingPipeline()
         with Scope('test_get_pipeline_def'):
-            register_single('pipeline', render_pipeline)
+            register_single(RenderingPipeline, render_pipeline)
 
             node = Node(Mock())
             actual_setup = get_pipeline(node)
@@ -76,7 +76,7 @@ class GetPipelineTests:
         """should return setup by node type"""
         render_pipeline = RenderingPipeline()
         with Scope('test_get_pipeline_node'):
-            register_single('pipeline', render_pipeline, node_type)
+            register_single(RenderingPipeline, render_pipeline, node_type)
 
             actual_setup = get_pipeline(node)
 
@@ -94,7 +94,7 @@ class GetPipelineTests:
         """get_pipeline should return setup by instance type"""
         render_pipeline = RenderingPipeline()
         with Scope('test_get_pipeline_inst'):
-            register_single('pipeline', render_pipeline, node.instance.__class__)
+            register_single(RenderingPipeline, render_pipeline, node.instance.__class__)
 
             actual_setup = get_pipeline(node)
 
@@ -116,10 +116,10 @@ class GetPipelineTests:
         ]
 
         with Scope('test_get_pipeline_order'):
-            register_single('pipeline', inst_setup, XmlAttr)
-            register_single('pipeline', type_setup, Node)
-            register_single('pipeline', type_setup, InstanceNode)
-            register_single('pipeline', def_setup)
+            register_single(RenderingPipeline, inst_setup, XmlAttr)
+            register_single(RenderingPipeline, type_setup, Node)
+            register_single(RenderingPipeline, type_setup, InstanceNode)
+            register_single(RenderingPipeline, def_setup)
 
             for node, expected_setup in cases:
                 actual_setup = get_pipeline(node)

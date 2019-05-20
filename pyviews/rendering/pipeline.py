@@ -51,7 +51,7 @@ def _get_registered_pipeline(node: Node) -> Optional[RenderingPipeline]:
         params = [node.instance.__class__] + params
     for param in params:
         try:
-            return resolve('pipeline', param)
+            return resolve(RenderingPipeline, param)
         except (DependencyError, AttributeError):
             pass
     return None
