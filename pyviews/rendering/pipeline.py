@@ -1,13 +1,13 @@
 """Rendering pipeline. Node creation from xml node, attribute setup and binding creation"""
-
 from sys import exc_info
 from typing import Optional
 
+from pyviews.binding import Binder
 from pyviews.core import XmlNode, XmlAttr, CoreError
 from pyviews.core import Node, InstanceNode, import_path
-from pyviews.ioc import SERVICES, DependencyError
+from pyviews.core import create_node, render
+from injectool import DependencyError, resolve
 from pyviews.compilation import is_expression, parse_expression
-from pyviews.container import create_node, binder, render
 from .common import RenderingError
 
 
@@ -51,7 +51,7 @@ def _get_registered_pipeline(node: Node) -> Optional[RenderingPipeline]:
         params = [node.instance.__class__] + params
     for param in params:
         try:
-            return SERVICES.for_(param).pipeline
+            return resolve(RenderingPipeline, param)
         except (DependencyError, AttributeError):
             pass
     return None
@@ -85,7 +85,7 @@ def apply_attribute(node: Node, attr: XmlAttr):
     stripped_value = attr.value.strip() if attr.value else ''
     if is_expression(stripped_value):
         (binding_type, expr_body) = parse_expression(stripped_value)
-        binder().apply(binding_type, node=node, attr=attr, modifier=setter, expr_body=expr_body)
+        resolve(Binder).apply(binding_type, node=node, attr=attr, modifier=setter, expr_body=expr_body)
     else:
         setter(node, attr.name, attr.value)
 

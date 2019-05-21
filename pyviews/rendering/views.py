@@ -2,10 +2,12 @@
 
 from os.path import join
 from sys import exc_info
+
+from injectool import resolve
+
 from pyviews.core import CoreError, ViewInfo
-from pyviews.ioc import SERVICES
 from pyviews.core.xml import Parser, XmlNode
-from pyviews.container import render
+from pyviews.core import render
 
 
 class ViewError(CoreError):
@@ -32,7 +34,7 @@ _XML_CACHE = {}
 
 def get_view_root(view_name: str) -> XmlNode:
     """Parses xml file and return root XmlNode"""
-    path = join(SERVICES.views_folder, '{0}.{1}'.format(view_name, SERVICES.view_ext))
+    path = join(resolve('views_folder'), '{0}.{1}'.format(view_name, resolve('view_ext')))
     if path not in _XML_CACHE:
         _parse_root(path, view_name)
     return _XML_CACHE[path]

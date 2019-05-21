@@ -4,8 +4,8 @@ from pytest import mark, fixture, raises
 
 from pyviews.binding import Binder, OnceRule, OnewayRule
 from pyviews.compilation import CompiledExpression
-from pyviews.core import XmlAttr, Node, InstanceNode
-from pyviews.ioc import Scope, register_single
+from pyviews.core import XmlAttr, Node, InstanceNode, Expression
+from injectool import Scope, register_single
 from pyviews.rendering import modifiers
 from pyviews.rendering import pipeline
 from pyviews.rendering.common import RenderingError
@@ -61,7 +61,7 @@ class GetPipelineTests:
         """should return default setup"""
         render_pipeline = RenderingPipeline()
         with Scope('test_get_pipeline_def'):
-            register_single('pipeline', render_pipeline)
+            register_single(RenderingPipeline, render_pipeline)
 
             node = Node(Mock())
             actual_setup = get_pipeline(node)
@@ -76,7 +76,7 @@ class GetPipelineTests:
         """should return setup by node type"""
         render_pipeline = RenderingPipeline()
         with Scope('test_get_pipeline_node'):
-            register_single('pipeline', render_pipeline, node_type)
+            register_single(RenderingPipeline, render_pipeline, node_type)
 
             actual_setup = get_pipeline(node)
 
@@ -94,7 +94,7 @@ class GetPipelineTests:
         """get_pipeline should return setup by instance type"""
         render_pipeline = RenderingPipeline()
         with Scope('test_get_pipeline_inst'):
-            register_single('pipeline', render_pipeline, node.instance.__class__)
+            register_single(RenderingPipeline, render_pipeline, node.instance.__class__)
 
             actual_setup = get_pipeline(node)
 
@@ -116,10 +116,10 @@ class GetPipelineTests:
         ]
 
         with Scope('test_get_pipeline_order'):
-            register_single('pipeline', inst_setup, XmlAttr)
-            register_single('pipeline', type_setup, Node)
-            register_single('pipeline', type_setup, InstanceNode)
-            register_single('pipeline', def_setup)
+            register_single(RenderingPipeline, inst_setup, XmlAttr)
+            register_single(RenderingPipeline, type_setup, Node)
+            register_single(RenderingPipeline, type_setup, InstanceNode)
+            register_single(RenderingPipeline, def_setup)
 
             for node, expected_setup in cases:
                 actual_setup = get_pipeline(node)
@@ -146,8 +146,8 @@ def apply_attribute_fixture(request):
             binder = Binder()
             binder.add_rule('once', OnceRule())
             binder.add_rule('oneway', OnewayRule())
-            register_single('binder', binder)
-            register_single('expression', CompiledExpression)
+            register_single(Binder, binder)
+            register_single(Expression, CompiledExpression)
             yield fixture_scope
 
 
@@ -178,7 +178,7 @@ class ApplyAttributeTests:
         """should apply binding"""
         node = Node(Mock())
         binder = Mock()
-        register_single('binder', binder)
+        register_single(Binder, binder)
         expected_args = {
             'node': node,
             'attr': xml_attr,

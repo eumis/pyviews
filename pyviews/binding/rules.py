@@ -1,7 +1,7 @@
 """Binding rules and factory"""
 
 from pyviews.core import BindingRule, Modifier, XmlAttr, Node
-from pyviews.container import expression
+from pyviews.core import expression
 from .implementations import ExpressionBinding, PropertyTarget
 
 
