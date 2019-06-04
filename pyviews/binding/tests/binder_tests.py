@@ -37,7 +37,7 @@ def _create_binder(binding_type, rules):
     return binder
 
 
-class Binder_find_rule_tests:
+class BinderTests:
     @mark.parametrize('rules, rule_index', [
         [[TestRule(True), TestRule(True)], 1],
         [[TestRule(False), TestRule(True)], 1],
@@ -98,12 +98,13 @@ class Binder_find_rule_tests:
 
         assert expected.apply_args is not None
 
+    @staticmethod
     @mark.parametrize('args', [
         {},
         {'node': Mock()},
         {'node': Mock(), 'modifier': lambda *args: None}
     ])
-    def test_pass_args_to_rule_apply(self, args):
+    def test_pass_args_to_rule_apply(args):
         """apply() should pass right arguments to rule.apply()"""
         rule = TestRule(True)
         binder = _create_binder(BINDING_TYPE, [rule])

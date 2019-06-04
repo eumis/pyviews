@@ -74,6 +74,7 @@ class GetInitArgsTests:
         assert args == actual_args
         assert kwargs == actual_kwargs
 
+    @staticmethod
     @mark.parametrize('inst_type, init_args', [
         (Inst, {}),
         (Inst, {'xml_node': 1}),
@@ -83,7 +84,7 @@ class GetInitArgsTests:
         (SecondInst, {}),
         (SecondInst, {'parent_node': 'node'})
     ])
-    def test_raises_if_init_args_not_contain_key(self, inst_type, init_args):
+    def test_raises_if_init_args_not_contain_key(inst_type, init_args):
         """should raise RenderingError if there are no required arguments"""
         with raises(RenderingError):
             get_init_args(inst_type, init_args)
@@ -143,11 +144,12 @@ class create_node_tests:
         with raises(RenderingError):
             create_node(xml_node)
 
+    @staticmethod
     @mark.parametrize('namespace, tag, inst_type', [
         ('pyviews.core.observable', 'Observable', Observable),
         ('injectool', 'Container', Container)
     ])
-    def test_creates_instance_node(self, namespace, tag, inst_type):
+    def test_creates_instance_node(namespace, tag, inst_type):
         """should create instance and wrap it with InstanceNode"""
         xml_node = XmlNode(namespace, tag)
 

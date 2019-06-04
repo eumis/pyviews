@@ -12,6 +12,7 @@ def _concat(*items):
 
 
 class CoreErrorTests:
+    @staticmethod
     @mark.parametrize('message, view_info, error_output', [
         ('', None, _concat('Message: ')),
         ('', ViewInfo('view name', 25), _concat(
@@ -24,7 +25,7 @@ class CoreErrorTests:
             'View info: Line 1 in "view"'
         ))
     ])
-    def test_init(self, message, view_info: ViewInfo, error_output):
+    def test_init(message, view_info: ViewInfo, error_output):
         """__init__() should setup message and view info"""
         error = CoreError(message, view_info)
 
@@ -69,11 +70,12 @@ class CoreErrorTests:
 
         assert str(error) == expected
 
+    @staticmethod
     @mark.parametrize('cause_error, cause_output', [
         (ValueError('any value error'), 'Cause error: ValueError - any value error'),
         (TypeError('type error message'), 'Cause error: TypeError - type error message')
     ])
-    def test_add_cause(self, cause_error: Exception, cause_output: str):
+    def test_add_cause(cause_error: Exception, cause_output: str):
         """add_cause() should add info about cause error"""
         error = CoreError('')
         expected = _concat('Message: ', cause_output)

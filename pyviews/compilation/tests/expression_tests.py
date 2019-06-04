@@ -1,5 +1,3 @@
-from unittest import TestCase
-
 from pytest import mark, raises, fixture
 
 from pyviews.core import CompilationError

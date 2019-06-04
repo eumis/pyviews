@@ -42,7 +42,7 @@ class ObservableEntityTests:
 
     def test_release_callback(self):
         """release() should unsubscribe callback from property changes"""
-        old_name, new_name = self.observable.name, "new name"
+        new_name = "new name"
         old_value, new_value = self.observable.value, "new value"
         self.observable.observe('name', self.callback)
         self.observable.observe('value', self.callback)

@@ -40,7 +40,7 @@ def get_pipeline(node: Node) -> RenderingPipeline:
     """Gets rendering pipeline for passed node"""
     pipeline = _get_registered_pipeline(node)
     if pipeline is None:
-        msg = _get_pipeline_registration_error_message(node)
+        msg = _get_pipeline_error_message(node)
         raise RenderingError(msg)
     return pipeline
 
@@ -57,7 +57,7 @@ def _get_registered_pipeline(node: Node) -> Optional[RenderingPipeline]:
     return None
 
 
-def _get_pipeline_registration_error_message(node: Node) -> str:
+def _get_pipeline_error_message(node: Node) -> str:
     if isinstance(node, InstanceNode):
         return 'RenderingPipeline is not found for {0} with instance {1}' \
             .format(node.__class__, node.instance.__class__)

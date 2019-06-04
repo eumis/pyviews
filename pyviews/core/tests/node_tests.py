@@ -72,8 +72,9 @@ class NodeTests:
 
         assert node.attr_setter == setter
 
+    @staticmethod
     @mark.parametrize('bindings_count', [1, 3])
-    def test_destroy_destroys_bindings(self, bindings_count):
+    def test_destroy_destroys_bindings(bindings_count):
         """destroy() should destroy all node's bindings"""
         node = Node(Mock())
         bindings = []
@@ -88,8 +89,9 @@ class NodeTests:
         for binding in bindings:
             assert binding.destroy.called
 
+    @staticmethod
     @mark.parametrize('bindings_count', [1, 3])
-    def test_destroy_destroys_children(self, bindings_count):
+    def test_destroy_destroys_children(bindings_count):
         """destroy() should destroy children"""
         node = Node(Mock())
         children = []
@@ -149,7 +151,8 @@ class PropertyTests:
         setter_mock = Mock()
 
         def setter(setter_node, val):
-            (val, setter_mock(setter_node, val))[0]
+            setter_mock(setter_node, val)
+            return val
 
         prop = Property('', setter, node)
         value = 1
@@ -168,8 +171,9 @@ class PropertyTests:
         """set() should pass node, value and previous value to setter"""
         setter_mock = Mock()
 
-        def setter(node, val, prev):
-            (val, setter_mock(node, val, prev))[0]
+        def setter(setter_node, val):
+            setter_mock(setter_node, val)
+            return val
 
         prop = Property('', setter)
 
@@ -179,16 +183,18 @@ class PropertyTests:
         assert setter_mock.call_args_list[0], call(None, previous, None)
         assert setter_mock.call_args_list[1], call(None, value, previous)
 
+    @staticmethod
     @mark.parametrize('node', [
         None,
         Node(Mock())
     ])
-    def test_new_creates_property(self, node):
+    def test_new_creates_property(node):
         """new() should create same property for passed node"""
         setter_mock = Mock()
 
-        def setter(node_, val):
-            (val, setter_mock(node_, val))[0]
+        def setter(setter_node, val):
+            setter_mock(setter_node, val)
+            return val
 
         prop = Property('', setter)
         value = 1

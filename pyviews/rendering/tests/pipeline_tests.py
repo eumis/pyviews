@@ -42,7 +42,8 @@ class RunStepsTests:
         """should use step result as args for next step"""
         node = Node(Mock())
 
-        def step(_, **__): return step_result
+        def step(_, **__):
+            return step_result
 
         next_step = Mock()
         steps = [step, next_step]
@@ -57,7 +58,7 @@ class GetPipelineTests:
     """get_pipeline() tests"""
 
     @staticmethod
-    def test_should_return_default_setup():
+    def test_returns_default_setup():
         """should return default setup"""
         render_pipeline = RenderingPipeline()
         with Scope('test_get_pipeline_def'):
@@ -227,12 +228,13 @@ class GetSetterTests:
 
         assert actual_setter == expected_setter
 
+    @staticmethod
     @mark.parametrize('namespace, name', [
         ('', ''),
         ('', 'attr_name'),
         ('tests.rendering.core_test.some_modifier_not', 'attr_name')
     ])
-    def test_raises(self, namespace, name):
+    def test_raises(namespace, name):
         """should raise ImportError if namespace can''t be imported"""
         with raises(ImportError):
             xml_attr = XmlAttr(name, '', namespace)
