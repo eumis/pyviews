@@ -4,9 +4,9 @@ from typing import Any
 from unittest import TestCase
 from unittest.mock import call as call_args, Mock
 
-from pytest import mark
+from pytest import mark, raises
 
-from pyviews.core import Node, XmlNode
+from pyviews.core import Node, XmlNode, InstanceNode
 from injectool import register_single, Scope
 from pyviews.rendering.modifiers import import_global, set_global, inject_global, call
 
@@ -55,29 +55,84 @@ class TestNode(Node):
         self.mocked_method = Mock()
 
 
-@mark.parametrize('value, expected_args', [
-    (None, call_args()),
-    ([], call_args()),
-    ((), call_args()),
-    ("value", call_args("value")),
-    (1, call_args(1)),
-    ([1], call_args(1)),
-    ([None], call_args(None)),
-    ([1, "value"], call_args(1, "value")),
-    ([1, "value", {}], call_args(1, "value", **{})),
-    ([1, "value", {'key': 'value'}], call_args(1, "value", **{'key': 'value'})),
-    ([1, "value", {'key': 1}, {'key': 'value'}], call_args(1, "value", {'key': 1}, **{'key': 'value'})),
-    ((1,), call_args(1)),
-    ((None,), call_args(None)),
-    ((1, "value"), call_args(1, "value")),
-    ((1, "value", {}), call_args(1, "value", **{})),
-    ((1, "value", {'key': 'value'}), call_args(1, "value", **{'key': 'value'})),
-    ((1, "value", {'key': 1}, {'key': 'value'}), call_args(1, "value", {'key': 1}, **{'key': 'value'}))
-])
-def test_call_modifier(value: Any, expected_args: call_args):
-    """call modifier should call node method"""
-    node = TestNode()
+class TestInstanceNode(InstanceNode):
+    def __init__(self):
+        instance = Mock(mocked_method=Mock())
+        super().__init__(instance, XmlNode('', ''))
 
-    call(node, 'mocked_method', value)
 
-    assert expected_args == node.mocked_method.call_args
+class CallTests:
+    @staticmethod
+    @mark.parametrize('value, expected_args', [
+        (None, call_args()),
+        ([], call_args()),
+        ((), call_args()),
+        ("value", call_args("value")),
+        (1, call_args(1)),
+        ([1], call_args(1)),
+        ([None], call_args(None)),
+        ([1, "value"], call_args(1, "value")),
+        ([1, "value", {}], call_args(1, "value", **{})),
+        ([1, "value", {'key': 'value'}], call_args(1, "value", **{'key': 'value'})),
+        ([1, "value", {'key': 1}, {'key': 'value'}], call_args(1, "value", {'key': 1}, **{'key': 'value'})),
+        ((1,), call_args(1)),
+        ((None,), call_args(None)),
+        ((1, "value"), call_args(1, "value")),
+        ((1, "value", {}), call_args(1, "value", **{})),
+        ((1, "value", {'key': 'value'}), call_args(1, "value", **{'key': 'value'})),
+        ((1, "value", {'key': 1}, {'key': 'value'}), call_args(1, "value", {'key': 1}, **{'key': 'value'}))
+    ])
+    def test_calls_node_method(value: Any, expected_args: call_args):
+        """call modifier should call node method"""
+        node = TestNode()
+
+        call(node, 'mocked_method', value)
+
+        assert expected_args == node.mocked_method.call_args
+
+    @staticmethod
+    @mark.parametrize('value, expected_args', [
+        (None, call_args()),
+        ([], call_args()),
+        ((), call_args()),
+        ("value", call_args("value")),
+        (1, call_args(1)),
+        ([1], call_args(1)),
+        ([None], call_args(None)),
+        ([1, "value"], call_args(1, "value")),
+        ([1, "value", {}], call_args(1, "value", **{})),
+        ([1, "value", {'key': 'value'}], call_args(1, "value", **{'key': 'value'})),
+        ([1, "value", {'key': 1}, {'key': 'value'}], call_args(1, "value", {'key': 1}, **{'key': 'value'})),
+        ((1,), call_args(1)),
+        ((None,), call_args(None)),
+        ((1, "value"), call_args(1, "value")),
+        ((1, "value", {}), call_args(1, "value", **{})),
+        ((1, "value", {'key': 'value'}), call_args(1, "value", **{'key': 'value'})),
+        ((1, "value", {'key': 1}, {'key': 'value'}), call_args(1, "value", {'key': 1}, **{'key': 'value'}))
+    ])
+    def test_calls_instance_method(value: Any, expected_args: call_args):
+        """call modifier should call node instance method"""
+        node = TestInstanceNode()
+
+        call(node, 'mocked_method', value)
+
+        assert expected_args == node.instance.mocked_method.call_args
+
+    @staticmethod
+    @mark.parametrize('node, method', [
+        (TestNode(), 'some_method'),
+        (InstanceNode('value', XmlNode('', '')), 'instance_method')
+    ])
+    def test_raises_if_method_not_found(node: Node, method: str):
+        with raises(AttributeError):
+            call(node, method, 'value')
+
+    @staticmethod
+    def test_uses_node_method_first():
+        node = TestInstanceNode()
+        node.mocked_method = Mock()
+
+        call(node, 'mocked_method', 'value')
+
+        assert node.mocked_method.called
+        assert not node.instance.mocked_method.called

@@ -2,7 +2,7 @@
 from typing import Any
 
 from injectool import get_container
-from pyviews.core import Node, import_path
+from pyviews.core import Node, import_path, InstanceNode
 
 
 def import_global(node: Node, key: str, path: Any):
@@ -21,14 +21,14 @@ def set_global(node: Node, key: str, value: Any):
     node.node_globals[key] = value
 
 
-def call(node: Node, key: str, value: Any):
+def call(node: (Node, InstanceNode), key: str, value: Any):
     """Calls node or node instance method"""
     value = _to_list(value)
     if not value or not isinstance(value[-1], dict):
         value.append({})
-    args = value[0:-1]
-    kwargs = value[-1]
-    node.__dict__[key](*args, **kwargs)
+    args, kwargs = value[0:-1], value[-1]
+    target = node if hasattr(node, key) else node.instance
+    getattr(target, key)(*args, **kwargs)
 
 
 def _to_list(value: Any):
