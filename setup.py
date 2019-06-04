@@ -43,7 +43,7 @@ def _get_version() -> str:
         return match.group(1)
 
 
-def _get_long_description():
+def _get_long_description() -> str:
     readme_path = join_path(_HERE, "README.md")
     with codecs.open(readme_path, encoding="utf-8") as readme:
         return "\n" + readme.read()
