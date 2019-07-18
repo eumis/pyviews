@@ -3,18 +3,16 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from injectool import resolve
-
 from .error import CoreError
 
 
 class CompilationError(CoreError):
     """Error for failed expression compilation"""
 
-    def __init__(self, message, expr: 'Expression'):
+    def __init__(self, message, expr: str):
         super().__init__(message)
-        self.expression: Expression = expr
-        self.add_info('Expression', expression)
+        self.expression: str = expr
+        self.add_info('Expression', expr)
 
 
 class ObjectNode:
@@ -43,8 +41,3 @@ class Expression(ABC):
     @abstractmethod
     def execute(self, parameters: dict = None) -> any:
         """Executes expression with passed parameters and returns result"""
-
-
-def expression(code: str) -> Expression:
-    """Creates Expression instance"""
-    return resolve(Expression)(code)

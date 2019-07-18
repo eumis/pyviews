@@ -1,7 +1,8 @@
 """Module with modifiers"""
 from typing import Any
 
-from injectool import get_container
+from injectool import resolve
+
 from pyviews.core import Node, import_path, InstanceNode
 
 
@@ -12,7 +13,7 @@ def import_global(node: Node, key: str, path: Any):
 
 def inject_global(node: Node, global_key: str, inject_key: Any):
     """Resolves passed dependency and stores it to node's globals"""
-    value = get_container().get(inject_key)
+    value = resolve(inject_key)
     set_global(node, global_key, value)
 
 

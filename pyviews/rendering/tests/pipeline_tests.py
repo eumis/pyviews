@@ -1,11 +1,11 @@
 from unittest.mock import Mock, call, patch
 
+from injectool import make_default, add_singleton, SingletonResolver, add_resolver, add_resolve_function
 from pytest import mark, fixture, raises
 
 from pyviews.binding import Binder, OnceRule, OnewayRule
 from pyviews.compilation import CompiledExpression
 from pyviews.core import XmlAttr, Node, InstanceNode, Expression
-from injectool import Scope, register_single
 from pyviews.rendering import modifiers
 from pyviews.rendering import pipeline
 from pyviews.rendering.common import RenderingError
@@ -61,8 +61,8 @@ class GetPipelineTests:
     def test_returns_default_setup():
         """should return default setup"""
         render_pipeline = RenderingPipeline()
-        with Scope('test_get_pipeline_def'):
-            register_single(RenderingPipeline, render_pipeline)
+        with make_default('test_get_pipeline_def'):
+            add_singleton(RenderingPipeline, render_pipeline)
 
             node = Node(Mock())
             actual_setup = get_pipeline(node)
@@ -76,8 +76,8 @@ class GetPipelineTests:
     def test_should_return_setup_by_node_type(self, node_type, node):
         """should return setup by node type"""
         render_pipeline = RenderingPipeline()
-        with Scope('test_get_pipeline_node'):
-            register_single(RenderingPipeline, render_pipeline, node_type)
+        with make_default('test_get_pipeline_node'):
+            add_resolver(RenderingPipeline, SingletonResolver(render_pipeline, node_type))
 
             actual_setup = get_pipeline(node)
 
@@ -94,8 +94,8 @@ class GetPipelineTests:
     def test_returns_setup_by_instance_type(self, node: InstanceNode):
         """get_pipeline should return setup by instance type"""
         render_pipeline = RenderingPipeline()
-        with Scope('test_get_pipeline_inst'):
-            register_single(RenderingPipeline, render_pipeline, node.instance.__class__)
+        with make_default('test_get_pipeline_inst'):
+            add_resolver(RenderingPipeline, SingletonResolver(render_pipeline, node.instance.__class__))
 
             actual_setup = get_pipeline(node)
 
@@ -116,11 +116,12 @@ class GetPipelineTests:
             (inst_node, def_setup)
         ]
 
-        with Scope('test_get_pipeline_order'):
-            register_single(RenderingPipeline, inst_setup, XmlAttr)
-            register_single(RenderingPipeline, type_setup, Node)
-            register_single(RenderingPipeline, type_setup, InstanceNode)
-            register_single(RenderingPipeline, def_setup)
+        with make_default('test_get_pipeline_order'):
+            resolver = SingletonResolver(def_setup)
+            resolver.add_value(type_setup, Node)
+            resolver.add_value(type_setup, InstanceNode)
+            resolver.add_value(inst_setup, XmlAttr)
+            add_resolver(RenderingPipeline, resolver)
 
             for node, expected_setup in cases:
                 actual_setup = get_pipeline(node)
@@ -131,7 +132,7 @@ class GetPipelineTests:
     def test_raises():
         """should throw error in case pipeline is not registered"""
         node = Node(Mock())
-        with Scope('test_get_pipeline_raises'):
+        with make_default('test_get_pipeline_raises'):
             with raises(RenderingError):
                 get_pipeline(node)
 
@@ -143,12 +144,12 @@ def apply_attribute_fixture(request):
     get_setter_mock.side_effect = lambda attr: setter_mock
     request.cls.setter_mock = setter_mock
     with patch(pipeline.__name__ + '.get_setter', get_setter_mock):
-        with Scope('bind_fixture_scope') as fixture_scope:
+        with make_default('bind_fixture_scope') as fixture_scope:
             binder = Binder()
             binder.add_rule('once', OnceRule())
             binder.add_rule('oneway', OnewayRule())
-            register_single(Binder, binder)
-            register_single(Expression, CompiledExpression)
+            add_singleton(Binder, binder)
+            add_resolve_function(Expression, lambda c, p=None: CompiledExpression(p))
             yield fixture_scope
 
 
@@ -179,7 +180,7 @@ class ApplyAttributeTests:
         """should apply binding"""
         node = Node(Mock())
         binder = Mock()
-        register_single(Binder, binder)
+        add_singleton(Binder, binder)
         expected_args = {
             'node': node,
             'attr': xml_attr,

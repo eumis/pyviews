@@ -1,7 +1,7 @@
 """Binding rules and factory"""
+from injectool import resolve
 
-from pyviews.core import BindingRule, Modifier, XmlAttr, Node
-from pyviews.core import expression
+from pyviews.core import BindingRule, Modifier, XmlAttr, Node, Expression
 from .implementations import ExpressionBinding, PropertyTarget
 
 
@@ -16,7 +16,7 @@ class OnceRule(BindingRule):
         expr_body: str = args['expr_body']
         modifier: Modifier = args['modifier']
         attr: XmlAttr = args['attr']
-        value = expression(expr_body).execute(node.node_globals.to_dictionary())
+        value = resolve(Expression, expr_body).execute(node.node_globals.to_dictionary())
         modifier(node, attr.name, value)
 
 
@@ -31,7 +31,7 @@ class OnewayRule(BindingRule):
         expr_body: str = args['expr_body']
         modifier: Modifier = args['modifier']
         attr: XmlAttr = args['attr']
-        expr = expression(expr_body)
+        expr = resolve(Expression, expr_body)
         target = PropertyTarget(node, attr.name, modifier)
         binding = ExpressionBinding(target, expr, node.node_globals)
         binding.bind()

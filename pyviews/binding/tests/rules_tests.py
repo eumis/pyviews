@@ -1,8 +1,8 @@
 from unittest.mock import Mock, call
 
+from injectool import make_default, add_resolve_function
 from pytest import mark, fixture
 
-from injectool import Scope, register_func
 from pyviews.core import XmlAttr, InheritedDict, Expression
 from pyviews.core import Binding
 from pyviews.compilation import CompiledExpression
@@ -11,9 +11,9 @@ from pyviews.binding.rules import OnceRule, OnewayRule
 
 @fixture(scope='module')
 def scope_fixture():
-    with Scope('rules_tests') as scope:
-        register_func(Expression, CompiledExpression)
-        yield scope
+    with make_default('rules_tests') as container:
+        add_resolve_function(Expression, lambda c, p=None: CompiledExpression(p))
+        yield container
 
 
 @fixture

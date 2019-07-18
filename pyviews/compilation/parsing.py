@@ -34,4 +34,4 @@ def parse_expression(source: str) -> ExpressionSource:
         type_ = 'twoways'
     else:
         type_ = 'oneway'
-    return (type_, source[1:-1])
+    return ExpressionSource(type_, source[1:-1])

@@ -147,7 +147,7 @@ class create_node_tests:
     @staticmethod
     @mark.parametrize('namespace, tag, inst_type', [
         ('pyviews.core.observable', 'Observable', Observable),
-        ('injectool', 'Container', Container)
+        (__name__, 'InstWithKwargs', InstWithKwargs)
     ])
     def test_creates_instance_node(namespace, tag, inst_type):
         """should create instance and wrap it with InstanceNode"""

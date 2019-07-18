@@ -4,10 +4,10 @@ from typing import Any
 from unittest import TestCase
 from unittest.mock import call as call_args, Mock
 
+from injectool import make_default, add_singleton
 from pytest import mark, raises
 
 from pyviews.core import Node, XmlNode, InstanceNode
-from injectool import register_single, Scope
 from pyviews.rendering.modifiers import import_global, set_global, inject_global, call
 
 
@@ -42,8 +42,8 @@ def test_set_global(node, key, value):
 ])
 def test_inject_global(node, global_key, inject_key, value):
     """should inject value to node globals"""
-    with Scope('test_inject_global'):
-        register_single(inject_key, value)
+    with make_default('test_inject_global'):
+        add_singleton(inject_key, value)
         inject_global(node, global_key, inject_key)
 
     assert node.node_globals[global_key] == value

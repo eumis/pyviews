@@ -1,8 +1,8 @@
 from tempfile import TemporaryFile
 
+from injectool import make_default, add_singleton
 from pytest import mark, raises
 
-from injectool import Scope, register_single
 from pyviews.core.xml import Parser, XmlAttr, XmlError, XmlNode
 
 
@@ -12,8 +12,8 @@ class ParsingTests:
         if namespaces is None:
             namespaces = {}
 
-        with Scope('ParsingTests'):
-            register_single('namespaces', namespaces)
+        with make_default('ParsingTests'):
+            add_singleton('namespaces', namespaces)
             with TemporaryFile() as xml_file:
                 xml_file.write(xml_string.encode())
                 xml_file.seek(0)

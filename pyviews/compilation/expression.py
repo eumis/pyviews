@@ -98,6 +98,6 @@ class CompiledExpression(Expression):
             return eval(self._compiled_code, parameters, {})
         except:
             info = exc_info()
-            error = CompilationError('Error occurred in expression execution', self._code)
+            error = CompilationError('Error occurred in expression execution', self.code)
             error.add_cause(info[1])
             raise error from info[1]
