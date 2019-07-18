@@ -22,7 +22,7 @@ def object_tree_fixture(request):
 
 
 @mark.usefixtures('object_tree_fixture')
-class EvalExpression_compile_tests:
+class EvalExpressionTests:
     @mark.parametrize('code, params, expected', [
         ('', None, None),
         (' ', {'some_key': 1}, None),
@@ -41,11 +41,12 @@ class EvalExpression_compile_tests:
 
         assert expected == actual
 
+    @staticmethod
     @mark.parametrize('body', [
         '2/0',
         'print(some_variable)'
     ])
-    def test_execute_raises(self, body):
+    def test_execute_raises(body):
         """execute() should raise error if expression is invalid"""
         expression = CompiledExpression(body)
 

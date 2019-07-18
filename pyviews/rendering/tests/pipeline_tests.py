@@ -87,11 +87,12 @@ class GetPipelineTests:
         """Class for get_pipeline_tests"""
         pass
 
+    @staticmethod
     @mark.parametrize('node', [
         (InstanceNode(XmlAttr('name'), Mock())),
         (OtherInstanceNode(XmlAttr('name'), Mock()))
     ])
-    def test_returns_setup_by_instance_type(self, node: InstanceNode):
+    def test_returns_setup_by_instance_type(node: InstanceNode):
         """get_pipeline should return setup by instance type"""
         render_pipeline = RenderingPipeline()
         with make_default('test_get_pipeline_inst'):
@@ -191,8 +192,9 @@ class ApplyAttributeTests:
         apply_attribute(node, xml_attr)
         assert binder.apply.call_args == call(binding_type, **expected_args)
 
+    @staticmethod
     @patch(pipeline.__name__ + '.apply_attribute')
-    def test_apply_every_attribute(self, apply_attribute_mock):
+    def test_apply_every_attribute(apply_attribute_mock):
         """should call apply_attribute for every attribute"""
         xml_node = Mock()
         xml_node.attrs = [Mock(), Mock()]
@@ -219,11 +221,12 @@ class GetSetterTests:
 
         assert node_setter.call_args == call(node, key, value)
 
+    @staticmethod
     @mark.parametrize('setter_path, expected_setter', [
         (None, call_set_attr),
         (modifiers.__name__ + '.import_global', modifiers.import_global)
     ])
-    def test_returns_setter(self, setter_path, expected_setter):
+    def test_returns_setter(setter_path, expected_setter):
         """should return appropriate setter"""
         actual_setter = get_setter(XmlAttr('', namespace=setter_path))
 

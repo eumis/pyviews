@@ -1,6 +1,6 @@
 # Changelog
 
-## Dev
+## 2.2.0
 
 - Expression resolved using code as resolve parameter
 - Migrated to injectool 1.1.1

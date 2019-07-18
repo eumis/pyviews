@@ -85,8 +85,8 @@ class OnewayRuleTests:
 
         assert self.modifier.call_args == call(node, self.xml_attr.name, expected_value)
 
-    def test_binds_property_to_expression(self):
-        """apply() should subscribe to expression changes"""
+    def test_subscribes_to_changes(self):
+        """apply() should subscribe to expression changes and update property"""
         initial_value = 'value'
         new_value = 'new value'
 

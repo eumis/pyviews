@@ -148,8 +148,9 @@ def expression_target_fixture(request):
 class PropertyExpressionTargetTests:
     """PropertyExpressionTarget tests"""
 
+    @staticmethod
     @mark.parametrize('expression', ['vm', 'vm.int_value + val'])
-    def test_raises(self, expression):
+    def test_raises(expression):
         """Should raise BindingError if expression is not property expression"""
         with raises(BindingError):
             PropertyExpressionTarget(CompiledExpression(expression), InheritedDict())

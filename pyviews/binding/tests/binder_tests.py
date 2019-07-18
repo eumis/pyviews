@@ -77,19 +77,20 @@ class BinderTests:
         assert args == actual.suitable_args
 
     @staticmethod
-    def test_raises_error_if_rule_not_found():
+    def test_raises_if_rule_not_found():
         """apply() should raise error if rule is not found"""
         binder = Binder()
 
         with raises(BindingError):
             binder.apply('some_type')
 
+    @staticmethod
     @mark.parametrize('rules, rule_index', [
         [[TestRule(True), TestRule(True)], 1],
         [[TestRule(False), TestRule(True)], 1],
         [[TestRule(True), TestRule(False)], 0]
     ])
-    def test_applies_found_rule(self, rules, rule_index):
+    def test_applies_found_rule(rules, rule_index):
         """apply() should call rule.apply() for found rule"""
         binder = _create_binder(BINDING_TYPE, rules)
         expected = rules[rule_index]

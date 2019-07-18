@@ -214,8 +214,9 @@ class InheritedDictTests:
 
         assert callback.called
 
+    @staticmethod
     @mark.parametrize('default', [None, '', 1, True])
-    def test_get(self, default):
+    def test_get(default):
         """get() should return default if key doesn't exist"""
         inh_dict = InheritedDict()
 
@@ -223,6 +224,7 @@ class InheritedDictTests:
 
         assert value == default
 
+    @staticmethod
     @mark.parametrize('source, parent_source, expected', [
         ({}, None, 0),
         ({'k': 1}, None, 1),
@@ -234,7 +236,7 @@ class InheritedDictTests:
         ({'k': 1, 'a': 'v'}, {'k': 2}, 2),
         ({'k': 1, 'a': 'v'}, {'z': 2}, 3)
     ])
-    def test_length(self, source, parent_source, expected):
+    def test_length(source, parent_source, expected):
         """__len__() should return keys count"""
         inh_dict = InheritedDict(source)
         if parent_source is not None:

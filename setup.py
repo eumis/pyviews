@@ -28,7 +28,7 @@ def setup_package():
             'Programming Language :: Python :: 3.6'
         ],
         python_requires='>=3.6',
-        install_requires=['injectool'],
+        install_requires=['injectool==1.1.*'],
         keywords='binding pyviews python mvvm tkviews wxviews',
         packages=find_packages(exclude=['*.tests']))
 

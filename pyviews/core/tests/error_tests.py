@@ -56,12 +56,13 @@ class CoreErrorTests:
 
         assert str(error) == expected
 
+    @staticmethod
     @mark.parametrize('header, message, info_output', [
         ('', 'message', ': message'),
         ('header', '', 'header: '),
         ('header', 'message', 'header: message')
     ])
-    def test_add_info(self, header, message, info_output: str):
+    def test_add_info(header, message, info_output: str):
         """add_info() should add info line to error output"""
         error = CoreError('')
         expected = _concat('Message: ', info_output)

@@ -66,7 +66,8 @@ class NodeTests:
         """__setattr__() should set own properties"""
         node = Node(Mock())
 
-        def setter(*_): pass
+        def setter(*_):
+            pass
 
         node.attr_setter = setter
 
@@ -161,13 +162,14 @@ class PropertyTests:
 
         assert setter_mock.call_args == call(node, value)
 
+    @staticmethod
     @mark.parametrize('previous, value', [
         (1, None),
         (None, 1),
         (object(), object()),
         ('value', 'another value')
     ])
-    def test_set_calls_previous_setter(self, previous, value):
+    def test_set_calls_previous_setter(previous, value):
         """set() should pass node, value and previous value to setter"""
         setter_mock = Mock()
 

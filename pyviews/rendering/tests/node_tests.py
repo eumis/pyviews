@@ -1,6 +1,5 @@
 from unittest.mock import Mock
 
-from injectool import Container
 from pytest import mark, raises
 
 from pyviews.core import XmlNode, Node, InstanceNode
@@ -49,6 +48,7 @@ class InstWithKwargs:
 class GetInitArgsTests:
     """get_init_args() tests"""
 
+    @staticmethod
     @mark.parametrize('inst_type, init_args, args, kwargs, add_kwargs', [
         (Inst, {'xml_node': 1, 'parent_node': 'node'}, [1, 'node'], {}, True),
         (Inst, {'xml_node': 1, 'parent_node': 'node'}, [1, 'node'], {}, False),
@@ -67,7 +67,7 @@ class GetInitArgsTests:
         (InstWithKwargs, {'xml_node': 1, 'parent_node': 'node'}, [], {'xml_node': 1, 'parent_node': 'node'}, True),
         (InstWithKwargs, {'xml_node': 1, 'parent_node': 'node'}, [], {}, False)
     ])
-    def test_returns_args_kwargs_for_constructor(self, inst_type, init_args, args, kwargs, add_kwargs):
+    def test_returns_args_kwargs_for_constructor(inst_type, init_args, args, kwargs, add_kwargs):
         """should return args for inst_type constructor"""
         actual_args, actual_kwargs = get_init_args(inst_type, init_args, add_kwargs=add_kwargs)
 
@@ -120,12 +120,13 @@ def test_convert_to_node(globals_dict):
     assert node.node_globals == node_globals
 
 
-class create_node_tests:
+class CreateNodeTests:
+    @staticmethod
     @mark.parametrize('namespace, tag, node_type, init_args', [
         ('pyviews.core.node', 'Node', Node, {}),
         ('pyviews.code', 'Code', Code, {'parent_node': Node(XmlNode('', ''))})
     ])
-    def test_creates_node(self, namespace, tag, node_type, init_args):
+    def test_creates_node(namespace, tag, node_type, init_args):
         """should create node using namespace as module and tag name as node class name"""
         xml_node = XmlNode(namespace, tag)
 
@@ -133,11 +134,12 @@ class create_node_tests:
 
         assert isinstance(node, node_type)
 
+    @staticmethod
     @mark.parametrize('namespace, tag', [
         ('pyviews.core.node', 'UnknownNode'),
         ('pyviews.core.unknownModule', 'Node')
     ])
-    def test_raises_for_invalid_path(self, namespace, tag):
+    def test_raises_for_invalid_path(namespace, tag):
         """should raise in case module or class cannot be imported"""
         xml_node = XmlNode(namespace, tag)
 
