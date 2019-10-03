@@ -5,53 +5,76 @@ from pytest import mark, fixture, raises
 
 from pyviews.binding import Binder, OnceRule, OnewayRule
 from pyviews.compilation import CompiledExpression
-from pyviews.core import XmlAttr, Node, InstanceNode, Expression
+from pyviews.core import XmlAttr, Node, InstanceNode, Expression, create_node, InheritedDict, render
 from pyviews.rendering import modifiers
 from pyviews.rendering import pipeline
-from pyviews.rendering.common import RenderingError
-from pyviews.rendering.pipeline import RenderingPipeline
+from pyviews.rendering.common import RenderingError, RenderingContext
+from pyviews.rendering.pipeline import RenderingPipeline, render_node, render_children
 from pyviews.rendering.pipeline import apply_attribute, apply_attributes
 from pyviews.rendering.pipeline import call_set_attr, get_setter
 from pyviews.rendering.pipeline import run_steps, get_pipeline
 
 
-class RunStepsTests:
-    """run_steps() tests"""
+@fixture
+def render_node_fixture(request):
+    with make_default('render_node') as container:
+        xml_node = Mock()
+        node = Mock()
+        create_node_mock = Mock(return_value=node)
+        add_singleton(create_node, create_node_mock)
 
-    @mark.parametrize('steps_count, args', [
-        (0, {'one': 1}),
-        (1, {'one': 1}),
-        (3, {'one': 1, 'two': 'value'})
-    ])
-    def test_runs_all_steps(self, steps_count, args):
-        """run_steps should call all steps with passed args"""
-        node = Node(Mock())
-        steps = [Mock() for _ in range(steps_count)]
-        render_pipeline = RenderingPipeline(steps=steps)
+        rendering_pipeline = RenderingPipeline(steps=[])
+        add_singleton(RenderingPipeline, rendering_pipeline)
 
-        run_steps(node, render_pipeline, **args)
+        context = RenderingContext()
+        context.node_globals = InheritedDict()
 
-        for step in steps:
-            assert step.call_args == call(node, pipeline=render_pipeline, **args)
+        request.cls.xml_node = xml_node
+        request.cls.node = node
+        request.cls.create_node = create_node_mock
+        request.cls.context = context
+        request.cls.pipeline = rendering_pipeline
+        yield container
 
-    @mark.parametrize('args, step_result, expected', [
-        ({'one': 'two'}, {'key': 'value'}, {'one': 'two', 'key': 'value'}),
-        ({'key': 'args'}, {'key': 'value'}, {'key': 'value'})
-    ])
-    def test_uses_step_result_as_args(self, args, step_result, expected):
-        """should use step result as args for next step"""
-        node = Node(Mock())
 
-        def step(_, **__):
-            return step_result
+@mark.usefixtures('render_node_fixture')
+class RenderNodeTests:
+    """render_node tests"""
 
-        next_step = Mock()
-        steps = [step, next_step]
-        render_pipeline = RenderingPipeline(steps=steps)
+    def test_returns_created_node(self):
+        """should return create_node"""
+        actual = render_node(self.xml_node, self.context)
 
-        run_steps(node, render_pipeline, **args)
+        assert self.create_node.call_args == call(self.xml_node, self.context)
+        assert actual == self.node
 
-        assert call(node, pipeline=render_pipeline, **expected) == next_step.call_args
+    @mark.parametrize('steps_count', [1, 2, 5])
+    def test_runs_pipeline(self, steps_count):
+        """should run pipeline steps"""
+        self.pipeline.steps = [Mock() for _ in range(steps_count)]
+
+        render_node(self.xml_node, self.context)
+
+        for step in self.pipeline.steps:
+            assert step.call_args == call(self.node, self.context)
+
+
+@mark.parametrize('steps_count, args', [
+    (0, {'one': 1}),
+    (1, {'one': 1}),
+    (3, {'one': 1, 'two': 'value'})
+])
+def test_run_steps(steps_count, args):
+    """should call all steps in pipeline"""
+    node = Node(Mock())
+    steps = [Mock() for _ in range(steps_count)]
+    rendering_pipeline = RenderingPipeline(steps=steps)
+    context = RenderingContext(args)
+
+    run_steps(node, rendering_pipeline, context)
+
+    for step in steps:
+        assert step.call_args == call(node, context)
 
 
 class GetPipelineTests:
@@ -199,8 +222,9 @@ class ApplyAttributeTests:
         xml_node = Mock()
         xml_node.attrs = [Mock(), Mock()]
         node = Node(xml_node)
+        context = RenderingContext()
 
-        apply_attributes(node)
+        apply_attributes(node, context)
 
         calls = [call(node, attr) for attr in xml_node.attrs]
         assert apply_attribute_mock.call_args_list == calls
@@ -243,3 +267,48 @@ class GetSetterTests:
         with raises(ImportError):
             xml_attr = XmlAttr(name, '', namespace)
             get_setter(xml_attr)
+
+
+@fixture
+def render_children_fixture(request):
+    with make_default('render_children') as container:
+        xml_node = Mock(children=[])
+        node = Mock(xml_node=xml_node)
+        render_mock = Mock()
+        add_singleton(render, render_mock)
+        context = RenderingContext()
+        context.node_globals = InheritedDict()
+
+        request.cls.xml_node = xml_node
+        request.cls.node = node
+        request.cls.context = context
+        request.cls.render = render_mock
+        yield container
+
+
+@mark.usefixtures('render_children_fixture')
+class RenderChildrenTests:
+    """render_children() tests"""
+
+    @mark.parametrize('child_count', [1, 2, 5])
+    def test_renders_child(self, child_count):
+        """should render all xml children"""
+        self.xml_node.children = [Mock() for _ in range(child_count)]
+
+        render_children(self.node, self.context)
+
+        actual_calls = [call(child, self.context) for child in self.xml_node.children]
+        assert self.render.call_args_list == actual_calls
+
+    @mark.parametrize('child_count', [1, 2, 5])
+    def test_adds_child_to_node(self, child_count):
+        """should render all xml children"""
+        self.xml_node.children = [Mock() for _ in range(child_count)]
+        actual = []
+        self.node.add_child = Mock()
+        self.node.add_child.side_effect = actual.append
+        self.render.side_effect = lambda xml_n, ctx: xml_n
+
+        render_children(self.node, self.context)
+
+        assert actual == self.xml_node.children
