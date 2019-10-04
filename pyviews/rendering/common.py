@@ -1,6 +1,6 @@
 """Common functionality for rendering package"""
 
-from pyviews.core import CoreError, InheritedDict, Node
+from pyviews.core import CoreError, InheritedDict, Node, XmlNode
 
 
 class RenderingError(CoreError):
@@ -13,7 +13,7 @@ class RenderingContext(dict):
     @property
     def node_globals(self) -> InheritedDict:
         """Node globals"""
-        return self['node_globals']
+        return self.get('node_globals', None)
 
     @node_globals.setter
     def node_globals(self, value):
@@ -22,8 +22,17 @@ class RenderingContext(dict):
     @property
     def parent_node(self) -> Node:
         """Parent node"""
-        return self['parent_node']
+        return self.get('parent_node', None)
 
     @parent_node.setter
     def parent_node(self, value):
         self['parent_node'] = value
+
+    @property
+    def xml_node(self) -> XmlNode:
+        """xml node"""
+        return self.get('xml_node', None)
+
+    @xml_node.setter
+    def xml_node(self, value: XmlNode):
+        self['xml_node'] = value
