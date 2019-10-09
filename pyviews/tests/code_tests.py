@@ -14,23 +14,22 @@ class RunCodeTests:
     """Code.run_code tests"""
 
     @mark.parametrize('content, globals_dict, expected', [
-        (
-                '''
-                def none():
-                    return None
-    
-                def one():
-                    return 1
-    
-                def str_value():
-                    return 'str_value'
-    
-                def global_key():
-                    return key
-                ''',
-                {'key': 'key'},
-                {'none': None, 'one': 1, 'str_value': 'str_value', 'global_key': 'key'}
-        )
+        ('''
+         def none():
+             return None
+
+         def one():
+             return 1
+
+         def str_value():
+             return 'str_value'
+
+         def global_key():
+             return key
+         ''',
+         {'key': 'key'},
+         {'none': None, 'one': 1, 'str_value': 'str_value', 'global_key': 'key'}
+         )
     ])
     def test_adds_methods_definitions(self, content, globals_dict, expected):
         """defined functions should be added to parent globals"""
@@ -44,24 +43,22 @@ class RunCodeTests:
             assert value == parent_node.node_globals[key]()
 
     @mark.parametrize('content, globals_dict, expected', [
-        (
-                '''
-                one = 1
-                str_value = 'str_value'
-                global_key = key
-                ''',
-                {'key': 'key'},
-                {'one': 1, 'str_value': 'str_value', 'global_key': 'key'}
-        ),
-        (
-                '''
-                    one = 1
-                    str_value = 'str_value'
-                    global_key = key
-                ''',
-                {'key': 'key'},
-                {'one': 1, 'str_value': 'str_value', 'global_key': 'key'}
-        )
+        ('''
+         one = 1
+         str_value = 'str_value'
+         global_key = key
+         ''',
+         {'key': 'key'},
+         {'one': 1, 'str_value': 'str_value', 'global_key': 'key'}
+         ),
+        ('''
+         one = 1
+         str_value = 'str_value'
+         global_key = key
+         ''',
+         {'key': 'key'},
+         {'one': 1, 'str_value': 'str_value', 'global_key': 'key'}
+         )
     ])
     def test_adds_variables_definitions(self, content, globals_dict, expected):
         """variables should be added to parent globals"""
@@ -78,16 +75,14 @@ class RunCodeTests:
         ('''a = key.prop''', {'key': None}),
         ('''a = key.prop''', {}),
         ('''2/0''', {}),
-        (
-                '''
-                def some_func():
-                pass
-                ''', {}),
-        (
-                '''
-                def some_func()
-                    pass
-                ''', {})
+        ('''
+         def some_func():
+         pass
+         ''', {}),
+        ('''
+         def some_func()
+             pass
+         ''', {})
     ])
     def test_raises_error(self, content, globals_dict):
         """should raise CompilationError for invalid code"""

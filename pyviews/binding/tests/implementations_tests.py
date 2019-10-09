@@ -48,8 +48,8 @@ class SomeEntity:
         self.str_value = 'str'
 
 
-@fixture
-def target_entity():
+@fixture(name='target_entity')
+def target_entity_fixture():
     return SomeEntity(), 25
 
 

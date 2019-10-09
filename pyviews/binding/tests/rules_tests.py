@@ -27,15 +27,18 @@ def once_rule_fixture(request):
     request.cls.rule = OnceRule()
 
 
+_binding_args = [
+    {},
+    {'node': Mock()},
+    {'node': Mock(), 'modifier': lambda *args: None}
+]
+
+
 @mark.usefixtures('once_rule_fixture', 'rule_params_fixture', 'scope_fixture')
 class OnceRuleTests:
     """OnceRule tests"""
 
-    @mark.parametrize('args', [
-        {},
-        {'node': Mock()},
-        {'node': Mock(), 'modifier': lambda *args: None}
-    ])
+    @mark.parametrize('args', _binding_args)
     def test_suitable(self, args: dict):
         """suitable() should return true"""
         assert self.rule.suitable(**args)
@@ -63,11 +66,7 @@ def oneway_rule_fixture(request):
 class OnewayRuleTests:
     """OnewayRule tests"""
 
-    @mark.parametrize('args', [
-        {},
-        {'node': Mock()},
-        {'node': Mock(), 'modifier': lambda *args: None}
-    ])
+    @mark.parametrize('args', _binding_args)
     def test_returns_true(self, args: dict):
         """suitable() should return true"""
         assert self.rule.suitable(**args)

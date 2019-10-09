@@ -31,6 +31,7 @@ class CoreErrorTests:
 
         assert str(error) == error_output
 
+    @staticmethod
     @mark.parametrize('view_infos, view_output', [
         ([ViewInfo('view name', 25)],
          _concat('View info: Line 25 in "view name"')),
@@ -46,7 +47,7 @@ class CoreErrorTests:
                  '\tView info: Line 9 in "parent view name"',
                  '\t\tView info: Line 10 in "root"')),
     ])
-    def test_add_view_info(self, view_infos: List[ViewInfo], view_output: str):
+    def test_add_view_info(view_infos: List[ViewInfo], view_output: str):
         """add_view_info() should add view info line to error output"""
         error = CoreError('')
         expected = _concat('Message: ', view_output)

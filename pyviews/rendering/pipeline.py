@@ -1,12 +1,12 @@
 """Rendering pipeline. Node creation from xml node, attribute setup and binding creation"""
 from sys import exc_info
 from typing import Optional
+from injectool import DependencyError, resolve
 
 from pyviews.binding import Binder
 from pyviews.core import XmlNode, XmlAttr, CoreError
 from pyviews.core import Node, InstanceNode, import_path
 from pyviews.core import create_node, render
-from injectool import DependencyError, resolve
 from pyviews.compilation import is_expression, parse_expression
 from .common import RenderingError, RenderingContext
 
@@ -28,7 +28,7 @@ def render_node(xml_node: XmlNode, context: RenderingContext) -> Node:
     except CoreError as error:
         error.add_view_info(xml_node.view_info)
         raise
-    except:
+    except Exception:
         info = exc_info()
         msg = 'Unknown error occurred during rendering'
         error = RenderingError(msg, xml_node.view_info)
@@ -61,8 +61,7 @@ def _get_pipeline_error_message(node: Node) -> str:
     if isinstance(node, InstanceNode):
         return 'RenderingPipeline is not found for {0} with instance {1}' \
             .format(node.__class__, node.instance.__class__)
-    else:
-        return 'RenderingPipeline is not found for {0}'.format(node.__class__)
+    return 'RenderingPipeline is not found for {0}'.format(node.__class__)
 
 
 def run_steps(node: Node, pipeline: RenderingPipeline, context: RenderingContext):
@@ -83,7 +82,8 @@ def apply_attribute(node: Node, attr: XmlAttr):
     stripped_value = attr.value.strip() if attr.value else ''
     if is_expression(stripped_value):
         (binding_type, expr_body) = parse_expression(stripped_value)
-        resolve(Binder).apply(binding_type, node=node, attr=attr, modifier=setter, expr_body=expr_body)
+        binder = resolve(Binder)
+        binder.apply(binding_type, node=node, attr=attr, modifier=setter, expr_body=expr_body)
     else:
         setter(node, attr.name, attr.value)
 

@@ -42,7 +42,7 @@ class CompiledExpression(Expression):
 
     def _build_object_tree(self) -> ObjectNode:
         ast_root = ast.parse(self._code)
-        ast_nodes = [node for node in ast.walk(ast_root)]
+        ast_nodes = list(ast.walk(ast_root))
 
         root = ObjectNode('root')
         root.children = self._get_children(ast_nodes, self._is_child)
@@ -53,7 +53,8 @@ class CompiledExpression(Expression):
     def _is_child(ast_node: ast.AST) -> bool:
         return isinstance(ast_node, ast.Name)
 
-    def _get_children(self, ast_nodes: List[ast.AST], is_child: Callable[[ast.AST], bool]) -> List[ObjectNode]:
+    def _get_children(self, ast_nodes: List[ast.AST], is_child: Callable[[ast.AST], bool]) \
+            -> List[ObjectNode]:
         ast_children = [n for n in ast_nodes if is_child(n)]
 
         grouped = self._group_by_key(ast_children)
@@ -61,7 +62,8 @@ class CompiledExpression(Expression):
         children = []
         for key, key_nodes in grouped.items():
             node = ObjectNode(key)
-            node.children = self._get_children(ast_nodes, lambda n, nds=key_nodes: self._is_attribute(n, nds))
+            node.children = self._get_children(ast_nodes,
+                                               lambda n, nds=key_nodes: self._is_attribute(n, nds))
             children.append(node)
 
         return children
@@ -86,7 +88,6 @@ class CompiledExpression(Expression):
         item = _CacheItem(self._compiled_code, self._object_tree)
         _COMPILATION_CACHE[self._code] = item
 
-    @property
     def get_object_tree(self) -> ObjectNode:
         """Returns objects tree from expression"""
         return self._object_tree

@@ -42,5 +42,3 @@ class BindingRule(ABC):
     @abstractmethod
     def apply(self, **args):
         """Applies binding"""
-
-

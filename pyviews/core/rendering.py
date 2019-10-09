@@ -1,3 +1,5 @@
+"""dependency methods for rendering"""
+
 from injectool import dependency, DependencyError
 
 from .xml import XmlNode

@@ -92,11 +92,12 @@ class GetPipelineTests:
 
         assert actual_setup == render_pipeline
 
+    @staticmethod
     @mark.parametrize('node_type, node', [
         (Node, Node(Mock())),
         (InstanceNode, InstanceNode(Mock(), Mock()))
     ])
-    def test_should_return_setup_by_node_type(self, node_type, node):
+    def test_should_return_setup_by_node_type(node_type, node):
         """should return setup by node type"""
         render_pipeline = RenderingPipeline()
         with make_default('test_get_pipeline_node'):
@@ -108,7 +109,6 @@ class GetPipelineTests:
 
     class OtherInstanceNode(InstanceNode):
         """Class for get_pipeline_tests"""
-        pass
 
     @staticmethod
     @mark.parametrize('node', [

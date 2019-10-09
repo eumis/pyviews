@@ -1,3 +1,5 @@
+"""Binder"""
+
 from pyviews.core import BindingRule, BindingError
 
 

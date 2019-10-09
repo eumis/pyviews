@@ -7,7 +7,7 @@ from pyviews.compilation.expression import CompiledExpression
 @fixture
 def object_tree_fixture(request):
     expression = CompiledExpression("str(vm.vm.int_value) + vm.vm.str_value + vm.str_value + vm.get()")
-    root = expression.get_object_tree
+    root = expression.get_object_tree()
     str_node = [entry for entry in root.children if entry.key == 'str'][0]
     vm_node = [entry for entry in root.children if entry.key == 'vm'][0]
     vm_node_str = [entry for entry in vm_node.children if entry.key == 'str_value'][0]
@@ -23,6 +23,8 @@ def object_tree_fixture(request):
 
 @mark.usefixtures('object_tree_fixture')
 class EvalExpressionTests:
+
+    @staticmethod
     @mark.parametrize('code, params, expected', [
         ('', None, None),
         (' ', {'some_key': 1}, None),
@@ -33,7 +35,7 @@ class EvalExpressionTests:
         ('some_key', {'some_key': 'asdf'}, 'asdf'),
         ('some_key(some_value)', {'some_key': lambda val: val, 'some_value': 'value'}, 'value')
     ])
-    def test_execute(self, code, params, expected):
+    def test_execute(code, params, expected):
         """execute() should return expression value"""
         expression = CompiledExpression(code)
 

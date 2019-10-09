@@ -57,8 +57,7 @@ class Node:
         """Destroys node"""
         self.destroy_children()
         self.destroy_bindings()
-        if self.on_destroy:
-            self.on_destroy(self)
+        self.on_destroy(self)
 
     def destroy_children(self):
         """Destroys and removes all bindings"""
@@ -110,7 +109,8 @@ class Property:
         self._value = None
         self._setter = None
         if setter:
-            args_count = len([p for p in signature(setter).parameters.values() if p.default == Parameter.empty])
+            args_count = len([p for p in signature(setter).parameters.values()
+                              if p.default == Parameter.empty])
             self._setter = setter if args_count == 3 else \
                 lambda nd, value, previous: setter(nd, value)
         self._node = node
