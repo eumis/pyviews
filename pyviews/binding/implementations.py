@@ -60,7 +60,7 @@ class ExpressionBinding(Binding):
 
     def bind(self):
         self.destroy()
-        objects_tree = self._expression.get_object_tree
+        objects_tree = self._expression.get_object_tree()
         self._create_dependencies(self._vars, objects_tree)
         self._update_target()
 
@@ -120,7 +120,7 @@ class PropertyExpressionTarget(BindingTarget):
 
     def __init__(self, expression: Expression, expr_globals: InheritedDict):
         self._expression_code = expression.code
-        self._var_tree = expression.get_object_tree
+        self._var_tree = expression.get_object_tree()
         self._validate()
         self._vars = expr_globals
 
@@ -152,7 +152,7 @@ class GlobalValueExpressionTarget(BindingTarget):
     """Global dictionary value is set on change. Key are defined in expression"""
 
     def __init__(self, expression: Expression, expr_vars: InheritedDict):
-        root = expression.get_object_tree
+        root = expression.get_object_tree()
         self._key = expression.code
         self._vars = expr_vars
         self._validate(root)
@@ -236,7 +236,7 @@ PROPERTY_EXPRESSION_REGEX = compile_regex(r'([a-zA-Z_0-9]{1,}\.){0,}([a-zA-Z_0-9
 
 def get_expression_target(expression: Expression, expr_vars: InheritedDict) -> BindingTarget:
     """Factory method to create expression target"""
-    root = expression.get_object_tree
+    root = expression.get_object_tree()
     if len(root.children) != 1 or not PROPERTY_EXPRESSION_REGEX.fullmatch(expression.code):
         error = BindingError('Expression should be property expression')
         error.add_info('Expression', expression.code)

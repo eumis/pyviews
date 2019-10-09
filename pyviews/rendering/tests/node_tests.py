@@ -5,7 +5,7 @@ from pytest import mark, raises
 from pyviews.core import XmlNode, Node, InstanceNode
 from pyviews.core import InheritedDict, Observable
 from pyviews.code import Code
-from pyviews.rendering.common import RenderingError
+from pyviews.rendering.common import RenderingError, RenderingContext
 from pyviews.rendering.node import get_init_args, convert_to_node
 from pyviews.rendering.node import create_node, create_inst
 
@@ -98,7 +98,7 @@ class GetInitArgsTests:
 ])
 def test_create_inst(inst_type, init_args):
     """should create and return instance of passed type"""
-    inst = create_inst(inst_type, **init_args)
+    inst = create_inst(inst_type, RenderingContext(init_args))
 
     assert isinstance(inst, inst_type)
 
@@ -111,13 +111,13 @@ def test_convert_to_node(globals_dict):
     """should create InstanceNode with passed globals"""
     inst = Mock()
     xml_node = Mock()
-    node_globals = InheritedDict(globals_dict)
+    context = RenderingContext({'xml_node': xml_node, 'node_globals': InheritedDict(globals_dict)})
 
-    node = convert_to_node(inst, xml_node, node_globals=node_globals)
+    node = convert_to_node(inst, context)
 
     assert isinstance(node, InstanceNode)
     assert node.instance == inst
-    assert node.node_globals == node_globals
+    assert node.node_globals == context.node_globals
 
 
 class CreateNodeTests:
@@ -130,7 +130,7 @@ class CreateNodeTests:
         """should create node using namespace as module and tag name as node class name"""
         xml_node = XmlNode(namespace, tag)
 
-        node = create_node(xml_node, **init_args)
+        node = create_node(xml_node, RenderingContext(init_args))
 
         assert isinstance(node, node_type)
 
@@ -144,7 +144,7 @@ class CreateNodeTests:
         xml_node = XmlNode(namespace, tag)
 
         with raises(RenderingError):
-            create_node(xml_node)
+            create_node(xml_node, RenderingContext())
 
     @staticmethod
     @mark.parametrize('namespace, tag, inst_type', [
@@ -155,7 +155,7 @@ class CreateNodeTests:
         """should create instance and wrap it with InstanceNode"""
         xml_node = XmlNode(namespace, tag)
 
-        node = create_node(xml_node)
+        node = create_node(xml_node, RenderingContext())
 
         assert isinstance(node, InstanceNode)
         assert isinstance(node.instance, inst_type)

@@ -37,14 +37,22 @@ def _create_binder(binding_type, rules):
     return binder
 
 
+_binding_args = [
+    {},
+    {'node': Mock()},
+    {'node': Mock(), 'modifier': lambda *args: None}
+]
+
+
 class BinderTests:
+    @staticmethod
     @mark.parametrize('rules, rule_index', [
         [[TestRule(True), TestRule(True)], 1],
         [[TestRule(False), TestRule(True)], 1],
         [[TestRule(True), TestRule(False)], 0],
         [[TestRule(False), TestRule(False)], None]
     ])
-    def test_returns_suitable_rule(self, rules, rule_index):
+    def test_returns_suitable_rule(rules, rule_index):
         """find_rule() should return first suitable rule by LIFO"""
         binder = _create_binder(BINDING_TYPE, rules)
         expected = rules[rule_index] if rule_index is not None else None
@@ -62,12 +70,9 @@ class BinderTests:
 
         assert actual is None
 
-    @mark.parametrize('args', [
-        {},
-        {'node': Mock()},
-        {'node': Mock(), 'modifier': lambda *args: None}
-    ])
-    def test_passes_args_to_rule(self, args: dict):
+    @staticmethod
+    @mark.parametrize('args', _binding_args)
+    def test_passes_args_to_rule(args: dict):
         """find_rule() should pass right arguments to rule.suitable()"""
         rule = TestRule(True)
         binder = _create_binder(BINDING_TYPE, [rule])
@@ -100,11 +105,7 @@ class BinderTests:
         assert expected.apply_args is not None
 
     @staticmethod
-    @mark.parametrize('args', [
-        {},
-        {'node': Mock()},
-        {'node': Mock(), 'modifier': lambda *args: None}
-    ])
+    @mark.parametrize('args', _binding_args)
     def test_pass_args_to_rule_apply(args):
         """apply() should pass right arguments to rule.apply()"""
         rule = TestRule(True)

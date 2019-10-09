@@ -1,14 +1,14 @@
 """Rendering pipeline. Node creation from xml node, attribute setup and binding creation"""
 from sys import exc_info
 from typing import Optional
+from injectool import DependencyError, resolve
 
 from pyviews.binding import Binder
 from pyviews.core import XmlNode, XmlAttr, CoreError
 from pyviews.core import Node, InstanceNode, import_path
 from pyviews.core import create_node, render
-from injectool import DependencyError, resolve
 from pyviews.compilation import is_expression, parse_expression
-from .common import RenderingError
+from .common import RenderingError, RenderingContext
 
 
 class RenderingPipeline:
@@ -18,17 +18,17 @@ class RenderingPipeline:
         self.steps = steps
 
 
-def render_node(xml_node: XmlNode, **args) -> Node:
+def render_node(xml_node: XmlNode, context: RenderingContext) -> Node:
     """Renders node from xml node"""
     try:
-        node = create_node(xml_node, **args)
+        node = create_node(xml_node, context)
         pipeline = get_pipeline(node)
-        run_steps(node, pipeline, **args)
+        run_steps(node, pipeline, context)
         return node
     except CoreError as error:
         error.add_view_info(xml_node.view_info)
         raise
-    except:
+    except Exception:
         info = exc_info()
         msg = 'Unknown error occurred during rendering'
         error = RenderingError(msg, xml_node.view_info)
@@ -61,20 +61,17 @@ def _get_pipeline_error_message(node: Node) -> str:
     if isinstance(node, InstanceNode):
         return 'RenderingPipeline is not found for {0} with instance {1}' \
             .format(node.__class__, node.instance.__class__)
-    else:
-        return 'RenderingPipeline is not found for {0}'.format(node.__class__)
+    return 'RenderingPipeline is not found for {0}'.format(node.__class__)
 
 
-def run_steps(node: Node, pipeline: RenderingPipeline, **args):
+def run_steps(node: Node, pipeline: RenderingPipeline, context: RenderingContext):
     """Runs instance node rendering steps"""
     for step in pipeline.steps:
-        result = step(node, pipeline=pipeline, **args)
-        if isinstance(result, dict):
-            args = {**args, **result}
+        step(node, context)
 
 
-def apply_attributes(node: Node, **_):
-    """Applies xml attributes to instance node and setups bindings"""
+def apply_attributes(node: Node, _: RenderingContext):
+    """Rendering step: applies xml attributes to instance node and setups bindings"""
     for attr in node.xml_node.attrs:
         apply_attribute(node, attr)
 
@@ -85,7 +82,8 @@ def apply_attribute(node: Node, attr: XmlAttr):
     stripped_value = attr.value.strip() if attr.value else ''
     if is_expression(stripped_value):
         (binding_type, expr_body) = parse_expression(stripped_value)
-        resolve(Binder).apply(binding_type, node=node, attr=attr, modifier=setter, expr_body=expr_body)
+        binder = resolve(Binder)
+        binder.apply(binding_type, node=node, attr=attr, modifier=setter, expr_body=expr_body)
     else:
         setter(node, attr.name, attr.value)
 
@@ -98,12 +96,12 @@ def get_setter(attr: XmlAttr):
 
 
 def call_set_attr(node: Node, key: str, value):
-    """Calls node setter"""
+    """Modifier: calls node setter"""
     node.set_attr(key, value)
 
 
-def render_children(node: Node, **child_args):
-    """Render node children"""
+def render_children(node: Node, child_context: RenderingContext):
+    """renders node children"""
     for xml_node in node.xml_node.children:
-        child = render(xml_node, **child_args)
+        child = render(xml_node, child_context)
         node.add_child(child)

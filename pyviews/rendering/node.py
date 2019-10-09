@@ -2,20 +2,19 @@
 
 from importlib import import_module
 from inspect import signature, Parameter
-from typing import Tuple, List, Dict
+from typing import Tuple, List, Dict, Type, Any
 from pyviews.core.node import Node, InstanceNode
 from pyviews.core.xml import XmlNode
-from pyviews.core.observable import InheritedDict
-from .common import RenderingError
+from .common import RenderingError, RenderingContext
 
 
-def create_node(xml_node: XmlNode, **init_args):
+def create_node(xml_node: XmlNode, context: RenderingContext):
     """Creates node from xml node using namespace as module and tag name as class name"""
     inst_type = get_inst_type(xml_node)
-    init_args['xml_node'] = xml_node
-    inst = create_inst(inst_type, **init_args)
+    context.xml_node = xml_node
+    inst = create_inst(inst_type, context)
     if not isinstance(inst, Node):
-        inst = convert_to_node(inst, **init_args)
+        inst = convert_to_node(inst, context)
     return inst
 
 
@@ -29,13 +28,13 @@ def get_inst_type(xml_node: XmlNode):
         raise RenderingError(message, xml_node.view_info)
 
 
-def create_inst(inst_type, **init_args):
+def create_inst(inst_type: Type, context: RenderingContext):
     """Creates class instance with args"""
-    args, kwargs = get_init_args(inst_type, init_args)
+    args, kwargs = get_init_args(inst_type, context)
     return inst_type(*args, **kwargs)
 
 
-def get_init_args(inst_type, init_args: dict, add_kwargs=False) -> Tuple[List, Dict]:
+def get_init_args(inst_type, init_args: RenderingContext, add_kwargs=False) -> Tuple[List, Dict]:
     """Returns tuple with args and kwargs to pass it to inst_type constructor"""
     try:
         parameters = signature(inst_type).parameters.values()
@@ -72,7 +71,6 @@ def _get_kwargs(parameters: list, init_args: dict) -> dict:
     }
 
 
-def convert_to_node(instance, xml_node: XmlNode, node_globals: InheritedDict = None) \
-        -> InstanceNode:
+def convert_to_node(instance: Any, context: RenderingContext) -> InstanceNode:
     """Wraps passed instance with InstanceNode"""
-    return InstanceNode(instance, xml_node, node_globals)
+    return InstanceNode(instance, context.xml_node, context.node_globals)

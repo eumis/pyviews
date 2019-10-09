@@ -73,23 +73,25 @@ class InheritedDictTests:
             inh_dict.inherit(parent)
         return inh_dict
 
+    @staticmethod
     @mark.parametrize('source', [
         {},
         {'key': 'value'},
         {'key': 'value', 'two': 1},
     ])
-    def test_dict_source(self, source):
+    def test_dict_source(source):
         """__init__() should copy values from source dict"""
         inh_dict = InheritedDict(source)
 
         assert inh_dict.to_dictionary() == source
 
+    @staticmethod
     @mark.parametrize('parent_source, key, new_parent_value', [
         ({}, 'key', 'value'),
         ({'key': 'value'}, 'key', 1),
         ({'key': 'value', 'two': 1}, 'two', 'new value'),
     ])
-    def test_inherited_dict_source(self, parent_source, key, new_parent_value):
+    def test_inherited_dict_source(parent_source, key, new_parent_value):
         """__init__() should inherit source InheritedDict"""
         parent = InheritedDict(parent_source)
         inh_dict = InheritedDict(parent)
@@ -97,12 +99,13 @@ class InheritedDictTests:
         parent_source[key] = new_parent_value
         assert inh_dict.to_dictionary() == parent.to_dictionary()
 
+    @staticmethod
     @mark.parametrize('parent_source', [
         {},
         {'key': 'value'},
         {'key': 'value', 'two': 1}
     ])
-    def test_inheritance(self, parent_source):
+    def test_inheritance(parent_source):
         """inherit() should use parent as source"""
         parent = InheritedDict(parent_source)
         inh_dict = InheritedDict()
@@ -111,12 +114,13 @@ class InheritedDictTests:
 
         assert inh_dict.to_dictionary() == parent.to_dictionary()
 
+    @staticmethod
     @mark.parametrize('parent_source, key, new_parent_value', [
         ({}, 'key', 'value'),
         ({'key': 'value'}, 'key', 1),
         ({'key': 'value', 'two': 1}, 'two', 'new value'),
     ])
-    def test_using_parent_values(self, parent_source, key, new_parent_value):
+    def test_using_parent_values(parent_source, key, new_parent_value):
         """inherit() should subscribe to parent changes"""
         parent = InheritedDict(parent_source)
         inh_dict = InheritedDict()
@@ -140,10 +144,11 @@ class InheritedDictTests:
 
         assert inh_dict.to_dictionary() == result
 
+    @staticmethod
     @mark.parametrize('source, key', [
         ({'key': 'own value'}, 'key')
     ])
-    def test_remove_key(self, source, key):
+    def test_remove_key(source, key):
         """remove_key() should remove own key"""
         inh_dict = InheritedDict(source)
 

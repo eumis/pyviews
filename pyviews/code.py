@@ -3,7 +3,8 @@
 from sys import exc_info
 from textwrap import dedent
 from traceback import extract_tb
-from pyviews.core import Node, InheritedDict, CompilationError
+from pyviews.core import Node, CompilationError
+from pyviews.rendering.common import RenderingContext
 
 
 class Code(Node):
@@ -13,21 +14,18 @@ class Code(Node):
         super().__init__(xml_node)
 
 
-def run_code(node: Code,
-             parent_node: Node = None,
-             node_globals: InheritedDict = None,
-             **_):
-    """Executes node content as python module and adds its definitions to globals"""
+def run_code(node: Code, context: RenderingContext):
+    """Rendering step: executes node content as python module and adds its definitions to globals"""
     if not node.xml_node.text:
         return
     code = node.xml_node.text
     try:
-        globs = node_globals.to_dictionary()
+        globs = context.node_globals.to_dictionary()
         exec(dedent(code), globs)
         definitions = [(key, value) for key, value in globs.items()
-                       if key != '__builtins__' and key not in node_globals]
+                       if key != '__builtins__' and key not in context.node_globals]
         for key, value in definitions:
-            parent_node.node_globals[key] = value
+            context.parent_node.node_globals[key] = value
     except SyntaxError as err:
         error = _get_compilation_error(code, 'Invalid syntax', err, err.lineno)
         raise error from err

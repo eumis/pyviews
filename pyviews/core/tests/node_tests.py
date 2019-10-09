@@ -8,25 +8,25 @@ from pyviews.core.xml import XmlNode
 
 
 @fixture
-def node_fixture():
+def node_fixture(request):
     xml_node = XmlNode('namespace', 'root')
-    return xml_node, Node(xml_node)
+    request.cls.xml_node = xml_node
+    request.cls.node = Node(xml_node)
 
 
+@mark.usefixtures('node_fixture')
 class NodeTests:
-    @staticmethod
-    def test_init_xml_node(node_fixture):
+    def test_init_xml_node(self):
         """__init__() should set xml_node"""
-        xml_node, node = node_fixture
+        assert self.node.xml_node == self.xml_node
 
-        assert node.xml_node == xml_node
-
+    @staticmethod
     @mark.parametrize('node_globals', [
         None,
         InheritedDict(),
         InheritedDict({'one': 1})
     ])
-    def test_init_setup_globals(self, node_globals: InheritedDict):
+    def test_init_setup_globals(node_globals: InheritedDict):
         """__init__() should setup node_globals"""
         node = Node(Mock(), node_globals)
 
@@ -34,12 +34,13 @@ class NodeTests:
         if node_globals is not None:
             assert node.node_globals == node_globals
 
+    @staticmethod
     @mark.parametrize('node_globals', [
         None,
         InheritedDict(),
         InheritedDict({'one': 1})
     ])
-    def test_adds_self_to_globals(self, node_globals: InheritedDict):
+    def test_adds_self_to_globals(node_globals: InheritedDict):
         """__init__() should add self to node_globals"""
         node = Node(Mock(), node_globals)
 
@@ -51,13 +52,12 @@ class NodeTests:
         ('key', 'value'),
         ('setter', 'value'),
     ])
-    def test_setattr_sets_property(self, node_fixture, key, value):
+    def test_setattr_sets_property(self, key, value):
         """__setattr__() should set property from properties"""
-        node = node_fixture[-1]
         # node.properties = {key: Property(key)}
 
-        setattr(node, key, value)
-        actual = getattr(node, key, value)
+        setattr(self.node, key, value)
+        actual = getattr(self.node, key, value)
 
         assert actual == value
 
@@ -128,13 +128,14 @@ class PropertyTests:
 
         assert actual is None
 
+    @staticmethod
     @mark.parametrize('value', [
         None,
         1,
         object(),
         'value'
     ])
-    def test_get_returns_set_value(self, value):
+    def test_get_returns_set_value(value):
         """get() should return value"""
         prop = Property('')
         prop.set(value)
@@ -143,11 +144,12 @@ class PropertyTests:
 
         assert actual == value
 
+    @staticmethod
     @mark.parametrize('node', [
         None,
         Node(Mock())
     ])
-    def test_set_calls_setter(self, node):
+    def test_set_calls_setter(node):
         """set() should pass node and value to setter"""
         setter_mock = Mock()
 

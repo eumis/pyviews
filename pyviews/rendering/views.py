@@ -5,20 +5,21 @@ from sys import exc_info
 
 from injectool import resolve
 
-from pyviews.core import CoreError, ViewInfo
+from pyviews.core import CoreError, ViewInfo, Node
 from pyviews.core.xml import Parser, XmlNode
 from pyviews.core import render
+from pyviews.rendering.common import RenderingContext
 
 
 class ViewError(CoreError):
     """Common error for parsing exceptions"""
 
 
-def render_view(view_name, **args):
-    """Process view and return root Node"""
+def render_view(view_name: str, context: RenderingContext) -> Node:
+    """Renders view"""
     try:
-        root_xml = get_view_root(view_name)
-        return render(root_xml, **args)
+        xml_root = get_view_root(view_name)
+        return render(xml_root, context)
     except CoreError as error:
         error.add_view_info(ViewInfo(view_name, None))
         raise
