@@ -17,8 +17,8 @@ def register(linter: PyLinter):
     """disable certain messages for test modules"""
     msg_ids = _get_msg_ids(linter)
     base = linter.add_one_message
-    linter.add_one_message = lambda *args: add_one_message(*args, linter=linter, base=base,
-                                                           msg_ids=msg_ids)
+    linter.add_one_message = lambda *args: \
+        add_one_message(*args, linter=linter, base=base, msg_ids=msg_ids)
 
 
 def _get_msg_ids(linter: PyLinter):
@@ -29,8 +29,11 @@ def _get_msg_ids(linter: PyLinter):
     return msg_ids
 
 
-def add_one_message(message_definition, line, node, args, confidence, col_offset,
+def add_one_message(message_definition, *args,
                     linter: PyLinter = None, base: Callable = None, msg_ids=None):
-    if linter.current_name and 'test' in linter.current_name and message_definition.msgid in msg_ids:
+    """skips disabled messages for test modules"""
+    if linter.current_name \
+            and 'test' in linter.current_name \
+            and message_definition.msgid in msg_ids:
         return
-    base(message_definition, line, node, args, confidence, col_offset)
+    base(message_definition, *args)
