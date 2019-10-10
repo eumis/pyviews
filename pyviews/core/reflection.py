@@ -9,7 +9,7 @@ def import_path(path):
         return import_module(path)
     except ImportError:
         return _import_module_entry(path)
-    except Exception as error:
+    except BaseException as error:
         raise ImportError(path) from error
 
 
@@ -18,7 +18,7 @@ def _import_module_entry(path):
     try:
         module = import_module(module)
         return module.__dict__[name]
-    except Exception as error:
+    except BaseException as error:
         raise ImportError(path) from error
 
 

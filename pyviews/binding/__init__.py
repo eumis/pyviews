@@ -1,6 +1,6 @@
 """Binding implementations"""
 
-from .binder import Binder
+from .binder import Binder, BindingRule, BindingContext
 from .implementations import PropertyTarget, FunctionTarget
 from .implementations import PropertyExpressionTarget, GlobalValueExpressionTarget
 from .implementations import ExpressionBinding, ObservableBinding, TwoWaysBinding

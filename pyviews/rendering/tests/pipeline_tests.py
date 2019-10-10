@@ -4,6 +4,7 @@ from injectool import make_default, add_singleton, SingletonResolver, add_resolv
 from pytest import mark, fixture, raises
 
 from pyviews.binding import Binder, OnceRule, OnewayRule
+from pyviews.binding.binder import BindingContext
 from pyviews.compilation import CompiledExpression
 from pyviews.core import XmlAttr, Node, InstanceNode, Expression, create_node, InheritedDict, render
 from pyviews.rendering import modifiers
@@ -205,15 +206,15 @@ class ApplyAttributeTests:
         node = Node(Mock())
         binder = Mock()
         add_singleton(Binder, binder)
-        expected_args = {
+        binding_context = BindingContext({
             'node': node,
-            'attr': xml_attr,
+            'xml_attr': xml_attr,
             'modifier': self.setter_mock,
-            'expr_body': expr_body
-        }
+            'expression_body': expr_body
+        })
 
         apply_attribute(node, xml_attr)
-        assert binder.apply.call_args == call(binding_type, **expected_args)
+        assert binder.apply.call_args == call(binding_type, binding_context)
 
     @staticmethod
     @patch(pipeline.__name__ + '.apply_attribute')

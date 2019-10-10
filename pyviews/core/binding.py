@@ -1,6 +1,7 @@
 """Classes used for binding"""
 
 from abc import ABC, abstractmethod
+
 from .error import CoreError
 
 
@@ -30,15 +31,3 @@ class Binding(ABC):
     @abstractmethod
     def destroy(self):
         """Destroys binding"""
-
-
-class BindingRule(ABC):
-    """Creates binding for args"""
-
-    @abstractmethod
-    def suitable(self, **args) -> bool:
-        """Returns True if rule is suitable for args"""
-
-    @abstractmethod
-    def apply(self, **args):
-        """Applies binding"""

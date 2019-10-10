@@ -98,7 +98,7 @@ class ExpressionBinding(Binding):
         except CoreError as error:
             self.add_error_info(error)
             raise
-        except:
+        except BaseException:
             info = exc_info()
             error = BindingError(BindingError.TargetUpdateError)
             self.add_error_info(error)
@@ -187,7 +187,7 @@ class ObservableBinding(Binding):
         except CoreError as error:
             self.add_error_info(error)
             raise
-        except:
+        except BaseException:
             info = exc_info()
             error = BindingError(BindingError.TargetUpdateError)
             self.add_error_info(error)
