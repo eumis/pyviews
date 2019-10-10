@@ -3,7 +3,7 @@
 ## Dev
 
 - **args are changed to RenderingContext for rendering steps
-_ **args are changed to BindingContext for binding
+- **args are changed to BindingContext for binding
 
 ## 2.2.0
 
