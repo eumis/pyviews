@@ -79,7 +79,7 @@ class ParsingTests:
         for i, child_structure in enumerate(structure):
             child = root.children[i]
             if child_structure == 0:
-                assert len(child.children) == 0
+                assert not child.children
             else:
                 self._assert_right_children(child, child_structure)
 

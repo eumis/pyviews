@@ -1,6 +1,6 @@
-import unittest
 from importlib import import_module
 from typing import Any
+import unittest
 from unittest import TestCase
 from unittest.mock import call as call_args, Mock
 
