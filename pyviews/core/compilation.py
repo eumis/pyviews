@@ -1,7 +1,7 @@
 """Code expressions abstractions"""
 
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, NamedTuple
 
 from .error import CoreError
 
@@ -15,12 +15,10 @@ class CompilationError(CoreError):
         self.add_info('Expression', expr)
 
 
-class ObjectNode:
+class ObjectNode(NamedTuple):
     """Entry of object in expression"""
-
-    def __init__(self, key):
-        self.key = key
-        self.children: List['ObjectNode'] = []
+    key: str
+    children: List['ObjectNode']
 
 
 class Expression(ABC):
