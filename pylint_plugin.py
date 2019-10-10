@@ -14,6 +14,7 @@ TESTS_DISABLED = ['line-too-long',
 
 
 def register(linter: PyLinter):
+    """disable certain messages for test modules"""
     msg_ids = _get_msg_ids(linter)
     base = linter.add_one_message
     linter.add_one_message = lambda *args: add_one_message(*args, linter=linter, base=base,
