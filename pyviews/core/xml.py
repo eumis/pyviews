@@ -1,5 +1,5 @@
 """Xml parsing"""
-from typing import List, Tuple
+from typing import List, Tuple, NamedTuple
 from xml.parsers.expat import ParserCreate, ExpatError, errors
 from collections import namedtuple
 from injectool import inject
@@ -18,13 +18,11 @@ class XmlNode:
         self.view_info = None
 
 
-class XmlAttr:
+class XmlAttr(NamedTuple):
     """Parsed xml attribute"""
-
-    def __init__(self, name, value=None, namespace=None):
-        self.namespace = namespace
-        self.name = name
-        self.value = value
+    name: str
+    value: str = None
+    namespace: str = None
 
 
 class XmlError(CoreError):
