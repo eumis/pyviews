@@ -5,6 +5,7 @@
 - Expression resolved using code as resolve parameter
 - Migrated to injectool 1.1.1
 - **args are changed to RenderingContext for rendering steps
+_ **args are changed to BindingContext for binding
 
 ## 2.1.1
 
