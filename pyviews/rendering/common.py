@@ -1,6 +1,7 @@
 """Common functionality for rendering package"""
+from typing import Union
 
-from pyviews.core import CoreError, InheritedDict, Node, XmlNode
+from pyviews.core import CoreError, InheritedDict, Node, XmlNode, InstanceNode
 
 
 class RenderingError(CoreError):
@@ -20,12 +21,12 @@ class RenderingContext(dict):
         self['node_globals'] = value
 
     @property
-    def parent_node(self) -> Node:
+    def parent_node(self) -> Union[Node, InstanceNode]:
         """Parent node"""
         return self.get('parent_node', None)
 
     @parent_node.setter
-    def parent_node(self, value):
+    def parent_node(self, value: Union[Node, InstanceNode]):
         self['parent_node'] = value
 
     @property

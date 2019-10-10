@@ -4,6 +4,7 @@ from typing import Optional
 from injectool import DependencyError, resolve
 
 from pyviews.binding import Binder
+from pyviews.binding.binder import BindingContext
 from pyviews.core import XmlNode, XmlAttr, CoreError
 from pyviews.core import Node, InstanceNode, import_path
 from pyviews.core import create_node, render
@@ -28,7 +29,7 @@ def render_node(xml_node: XmlNode, context: RenderingContext) -> Node:
     except CoreError as error:
         error.add_view_info(xml_node.view_info)
         raise
-    except Exception:
+    except BaseException:
         info = exc_info()
         msg = 'Unknown error occurred during rendering'
         error = RenderingError(msg, xml_node.view_info)
@@ -83,7 +84,12 @@ def apply_attribute(node: Node, attr: XmlAttr):
     if is_expression(stripped_value):
         (binding_type, expr_body) = parse_expression(stripped_value)
         binder = resolve(Binder)
-        binder.apply(binding_type, node=node, attr=attr, modifier=setter, expr_body=expr_body)
+        binder.apply(binding_type, BindingContext({
+            'node': node,
+            'expression_body': expr_body,
+            'modifier': setter,
+            'xml_attr': attr
+        }))
     else:
         setter(node, attr.name, attr.value)
 
