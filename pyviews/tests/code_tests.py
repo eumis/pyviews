@@ -95,6 +95,5 @@ class RunCodeTests:
 
     @staticmethod
     def _get_code_node(content):
-        xml_node = XmlNode('namespace', 'name')
-        xml_node.text = content
+        xml_node = XmlNode('namespace', 'name', content)
         return Code(xml_node)
