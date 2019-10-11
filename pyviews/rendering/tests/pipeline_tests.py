@@ -52,7 +52,8 @@ class RenderNodeTests:
     @mark.parametrize('steps_count', [1, 2, 5])
     def test_runs_pipeline(self, steps_count):
         """should run pipeline steps"""
-        self.pipeline.steps = [Mock() for _ in range(steps_count)]
+
+        self.pipeline.steps.extend([Mock() for _ in range(steps_count)])
 
         render_node(self.xml_node, self.context)
 

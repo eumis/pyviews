@@ -1,6 +1,6 @@
 """Rendering pipeline. Node creation from xml node, attribute setup and binding creation"""
 from sys import exc_info
-from typing import Optional
+from typing import Optional, NamedTuple, List, Callable, Union
 from injectool import DependencyError, resolve
 
 from pyviews.binding import Binder
@@ -12,11 +12,10 @@ from pyviews.compilation import is_expression, parse_expression
 from .common import RenderingError, RenderingContext
 
 
-class RenderingPipeline:
+class RenderingPipeline(NamedTuple):
     """Contains data, logic used for render steps"""
 
-    def __init__(self, steps=None):
-        self.steps = steps
+    steps: List[Callable[[Union[Node, InstanceNode], RenderingContext], None]] = []
 
 
 def render_node(xml_node: XmlNode, context: RenderingContext) -> Node:
