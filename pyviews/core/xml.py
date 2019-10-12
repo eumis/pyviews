@@ -1,30 +1,27 @@
 """Xml parsing"""
-from typing import List, Tuple
+from typing import List, Tuple, NamedTuple
 from xml.parsers.expat import ParserCreate, ExpatError, errors
 from collections import namedtuple
 from injectool import inject
 from .error import CoreError, ViewInfo
 
 
-class XmlNode:
+class XmlAttr(NamedTuple):
+    """Parsed xml attribute"""
+    name: str
+    value: str = None
+    namespace: str = None
+
+
+class XmlNode(NamedTuple):
     """Parsed xml node"""
 
-    def __init__(self, namespace, name):
-        self.namespace = namespace
-        self.name = name
-        self.text = ''
-        self.children = []
-        self.attrs = []
-        self.view_info = None
-
-
-class XmlAttr:
-    """Parsed xml attribute"""
-
-    def __init__(self, name, value=None, namespace=None):
-        self.namespace = namespace
-        self.name = name
-        self.value = value
+    namespace: str
+    name: str
+    text: str = ''
+    children: List['XmlNode'] = []
+    attrs: List[XmlAttr] = []
+    view_info: ViewInfo = None
 
 
 class XmlError(CoreError):
@@ -33,8 +30,8 @@ class XmlError(CoreError):
     Unknown_default_namespace = 'Unknown default xml namespace.'
 
 
-Attribute = namedtuple('Attribute', ['name', 'value'])
-Item = namedtuple('Item', ['node', 'namespaces'])
+ElementAttr = namedtuple('ElementAttr', ['name', 'value'])
+Element = namedtuple('Element', ['node', 'namespaces'])
 
 
 class Parser:
@@ -44,7 +41,7 @@ class Parser:
     def __init__(self, namespaces: dict = None):
         self._parser = None
         self._root = None
-        self._items = []
+        self._elements: List[Element] = []
         self._predefined_namespaces = namespaces if namespaces else {}
         self._namespaces = {}
         self._view_name = None
@@ -53,31 +50,31 @@ class Parser:
         attrs = self._get_tuples(attrs)
         self._namespaces = self._get_available_namespaces(attrs)
         (namespace, name) = self._split_namespace(full_name, True)
-        node = XmlNode(namespace, name)
-        node.view_info = ViewInfo(self._view_name, self._parser.CurrentLineNumber)
+        view_info = ViewInfo(self._view_name, self._parser.CurrentLineNumber)
         value_attrs = [a for a in attrs if not a.name.startswith('xmlns')]
-        node.attrs = list(self._generate_xml_attributes(value_attrs))
-        self._items.append(Item(node, self._namespaces))
+        attrs = list(self._generate_xml_attributes(value_attrs))
+        node = XmlNode(namespace, name, '', [], attrs, view_info)
+        self._elements.append(Element(node, self._namespaces))
 
     @staticmethod
-    def _get_tuples(attrs) -> List[Attribute]:
+    def _get_tuples(attrs) -> List[ElementAttr]:
         key_indexes = list(range(len(attrs)))[0::2]
-        return [Attribute(attrs[i], attrs[i + 1]) for i in key_indexes]
+        return [ElementAttr(attrs[i], attrs[i + 1]) for i in key_indexes]
 
     def _get_available_namespaces(self, attrs):
-        parent_namespaces = self._items[-1].namespaces if self._items else {}
+        parent_namespaces = self._elements[-1].namespaces if self._elements else {}
         nsp_attrs = [a for a in attrs if a.name.startswith('xmlns')]
         namespaces = {a.name: a.value for a in self._remove_xmlns_prefix(nsp_attrs)}
         return {**self._predefined_namespaces, **parent_namespaces, **namespaces}
 
     @staticmethod
-    def _remove_xmlns_prefix(attrs) -> List[Attribute]:
+    def _remove_xmlns_prefix(attrs) -> List[ElementAttr]:
         for attr in attrs:
             try:
                 key = attr.name.split(':')[1]
             except IndexError:
                 key = ''
-            yield Attribute(key, attr.value)
+            yield ElementAttr(key, attr.value)
 
     def _split_namespace(self, name, use_default=False) -> Tuple[str, str]:
         if ':' in name:
@@ -101,15 +98,17 @@ class Parser:
             yield XmlAttr(name, attr.value, namespace)
 
     def _end_element(self, _):
-        node = self._items.pop().node
+        node = self._elements.pop().node
         try:
-            self._items[-1].node.children.append(node)
+            self._elements[-1].node.children.append(node)
         except IndexError:
             self._root = node
 
     def _set_text(self, text):
-        node = self._items[-1].node
-        node.text = '' if text is None else text
+        if text:
+            item = self._elements[-1]
+            node = item.node._replace(text=text)
+            self._elements[-1] = Element(node, item.namespaces)
 
     def parse(self, xml_file, view_name=None) -> XmlNode:
         """Parses xml file with xml_path and returns XmlNode"""
@@ -136,7 +135,7 @@ class Parser:
     def _reset(self):
         self._parser = None
         self._root = None
-        self._items = []
+        self._elements = []
         self._namespaces = {}
 
     def _get_view_info(self):

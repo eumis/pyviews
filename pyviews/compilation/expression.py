@@ -2,7 +2,7 @@
 
 import ast
 from sys import exc_info
-from typing import List, Callable, Any
+from typing import List, Callable, Any, Iterator
 from collections import namedtuple
 from pyviews.core import Expression, ObjectNode, CompilationError
 
@@ -43,30 +43,23 @@ class CompiledExpression(Expression):
     def _build_object_tree(self) -> ObjectNode:
         ast_root = ast.parse(self._code)
         ast_nodes = list(ast.walk(ast_root))
-
-        root = ObjectNode('root')
-        root.children = self._get_children(ast_nodes, self._is_child)
-
-        return root
+        children = list(self._get_children(ast_nodes, self._is_child))
+        return ObjectNode('root', children)
 
     @staticmethod
     def _is_child(ast_node: ast.AST) -> bool:
         return isinstance(ast_node, ast.Name)
 
     def _get_children(self, ast_nodes: List[ast.AST], is_child: Callable[[ast.AST], bool]) \
-            -> List[ObjectNode]:
+            -> Iterator[ObjectNode]:
         ast_children = [n for n in ast_nodes if is_child(n)]
 
         grouped = self._group_by_key(ast_children)
 
-        children = []
         for key, key_nodes in grouped.items():
-            node = ObjectNode(key)
-            node.children = self._get_children(ast_nodes,
-                                               lambda n, nds=key_nodes: self._is_attribute(n, nds))
-            children.append(node)
-
-        return children
+            children = self._get_children(ast_nodes,
+                                          lambda n, nds=key_nodes: self._is_attribute(n, nds))
+            yield ObjectNode(key, list(children))
 
     @staticmethod
     def _is_attribute(ast_node: ast.AST, key_nodes: dict) -> bool:
@@ -97,7 +90,7 @@ class CompiledExpression(Expression):
         try:
             parameters = {} if parameters is None else parameters
             return eval(self._compiled_code, parameters, {})
-        except:
+        except BaseException:
             info = exc_info()
             error = CompilationError('Error occurred in expression execution', self.code)
             error.add_cause(info[1])
