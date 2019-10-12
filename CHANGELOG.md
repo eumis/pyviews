@@ -4,6 +4,9 @@
 
 - **args are changed to RenderingContext for rendering steps
 - **args are changed to BindingContext for binding
+- ObjectNode is changed to named tuple
+- XmlNode and XmlAttr are changed to named tuples
+- RenderingPipeline is changed to  tuple 
 
 ## 2.2.0
 
