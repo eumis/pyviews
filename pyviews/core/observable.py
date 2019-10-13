@@ -40,12 +40,14 @@ class ObservableEntity(Observable):
 
     def __init__(self):
         super().__setattr__('_callbacks', {})
-        super().__setattr__('_all_callbacks', [])
 
     def __setattr__(self, key, value):
-        old_val = getattr(self, key) if key in self.__dict__ else None
-        super().__setattr__(key, value)
-        self._notify(key, value, old_val)
+        if key in self.__dict__:
+            old_val = getattr(self, key, None)
+            Observable.__setattr__(self, key, value)
+            self._notify(key, value, old_val)
+        else:
+            Observable.__setattr__(self, key, value)
 
     def observe(self, key, callback: Callable[[Any, Any], None]):
         """Subscribes to key changes"""
