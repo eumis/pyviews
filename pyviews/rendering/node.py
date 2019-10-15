@@ -3,11 +3,15 @@
 from importlib import import_module
 from inspect import signature, Parameter
 from typing import Tuple, List, Dict, Type, Any
+
+from injectool import dependency
+
 from pyviews.core.node import Node, InstanceNode
 from pyviews.core.xml import XmlNode
 from .common import RenderingError, RenderingContext
 
 
+@dependency
 def create_node(xml_node: XmlNode, context: RenderingContext):
     """Creates node from xml node using namespace as module and tag name as class name"""
     inst_type = get_inst_type(xml_node)

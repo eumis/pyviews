@@ -7,6 +7,8 @@
 - ObjectNode is changed to named tuple
 - XmlNode and XmlAttr are changed to named tuples
 - RenderingPipeline is changed to  tuple 
+- pyviews.core.rendering module is removed  
+  create_node and render dependencies are moved to pyviews.rendering
 
 ## 2.2.0
 

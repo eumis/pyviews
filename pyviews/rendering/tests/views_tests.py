@@ -3,8 +3,7 @@ from unittest.mock import patch, Mock, call
 from injectool import make_default, add_singleton
 from pytest import mark, fixture
 
-from pyviews.core import render
-from pyviews.rendering import views, render_view
+from pyviews.rendering import views, render_view, render
 from pyviews.rendering.common import RenderingContext
 
 

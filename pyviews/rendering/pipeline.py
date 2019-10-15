@@ -1,14 +1,14 @@
 """Rendering pipeline. Node creation from xml node, attribute setup and binding creation"""
 from sys import exc_info
 from typing import Optional, NamedTuple, List, Callable, Union
-from injectool import DependencyError, resolve
+from injectool import DependencyError, resolve, dependency
 
 from pyviews.binding import Binder
 from pyviews.binding.binder import BindingContext
 from pyviews.core import XmlNode, XmlAttr, CoreError
 from pyviews.core import Node, InstanceNode, import_path
-from pyviews.core import create_node, render
 from pyviews.compilation import is_expression, parse_expression
+from pyviews.rendering import create_node
 from .common import RenderingError, RenderingContext
 
 
@@ -18,7 +18,8 @@ class RenderingPipeline(NamedTuple):
     steps: List[Callable[[Union[Node, InstanceNode], RenderingContext], None]] = []
 
 
-def render_node(xml_node: XmlNode, context: RenderingContext) -> Node:
+@dependency
+def render(xml_node: XmlNode, context: RenderingContext) -> Node:
     """Renders node from xml node"""
     try:
         node = create_node(xml_node, context)
