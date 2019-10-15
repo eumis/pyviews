@@ -1,6 +1,6 @@
 # Changelog
 
-## Dev
+## 2.3.0
 
 - **args are changed to RenderingContext for rendering steps
 - **args are changed to BindingContext for binding
