@@ -8,7 +8,7 @@ from pyviews.binding.binder import BindingContext
 from pyviews.core import XmlNode, XmlAttr, CoreError
 from pyviews.core import Node, InstanceNode, import_path
 from pyviews.compilation import is_expression, parse_expression
-from pyviews.rendering import create_node
+from .node import create_node
 from .common import RenderingError, RenderingContext
 
 
