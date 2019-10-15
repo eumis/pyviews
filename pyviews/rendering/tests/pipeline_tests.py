@@ -1,16 +1,16 @@
 from unittest.mock import Mock, call, patch
 
-from injectool import make_default, add_singleton, SingletonResolver, add_resolver, add_resolve_function
+from injectool import make_default, add_singleton, SingletonResolver, add_resolver, add_function_resolver
 from pytest import mark, fixture, raises
 
 from pyviews.binding import Binder, OnceRule, OnewayRule
 from pyviews.binding.binder import BindingContext
 from pyviews.compilation import CompiledExpression
-from pyviews.core import XmlAttr, Node, InstanceNode, Expression, create_node, InheritedDict, render
-from pyviews.rendering import modifiers
+from pyviews.core import XmlAttr, Node, InstanceNode, Expression, InheritedDict
+from pyviews.rendering import modifiers, create_node
 from pyviews.rendering import pipeline
 from pyviews.rendering.common import RenderingError, RenderingContext
-from pyviews.rendering.pipeline import RenderingPipeline, render_node, render_children
+from pyviews.rendering.pipeline import RenderingPipeline, render_children, render
 from pyviews.rendering.pipeline import apply_attribute, apply_attributes
 from pyviews.rendering.pipeline import call_set_attr, get_setter
 from pyviews.rendering.pipeline import run_steps, get_pipeline
@@ -39,12 +39,12 @@ def render_node_fixture(request):
 
 
 @mark.usefixtures('render_node_fixture')
-class RenderNodeTests:
-    """render_node tests"""
+class RenderTests:
+    """render tests"""
 
     def test_returns_created_node(self):
         """should return create_node"""
-        actual = render_node(self.xml_node, self.context)
+        actual = render(self.xml_node, self.context)
 
         assert self.create_node.call_args == call(self.xml_node, self.context)
         assert actual == self.node
@@ -55,7 +55,7 @@ class RenderNodeTests:
 
         self.pipeline.steps.extend([Mock() for _ in range(steps_count)])
 
-        render_node(self.xml_node, self.context)
+        render(self.xml_node, self.context)
 
         for step in self.pipeline.steps:
             assert step.call_args == call(self.node, self.context)
@@ -144,9 +144,9 @@ class GetPipelineTests:
 
         with make_default('test_get_pipeline_order'):
             resolver = SingletonResolver(def_setup)
-            resolver.add_value(type_setup, Node)
-            resolver.add_value(type_setup, InstanceNode)
-            resolver.add_value(inst_setup, XmlAttr)
+            resolver.set_value(type_setup, Node)
+            resolver.set_value(type_setup, InstanceNode)
+            resolver.set_value(inst_setup, XmlAttr)
             add_resolver(RenderingPipeline, resolver)
 
             for node, expected_setup in cases:
@@ -175,7 +175,7 @@ def apply_attribute_fixture(request):
             binder.add_rule('once', OnceRule())
             binder.add_rule('oneway', OnewayRule())
             add_singleton(Binder, binder)
-            add_resolve_function(Expression, lambda c, p=None: CompiledExpression(p))
+            add_function_resolver(Expression, lambda c, p=None: CompiledExpression(p))
             yield fixture_scope
 
 

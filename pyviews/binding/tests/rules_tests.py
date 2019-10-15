@@ -1,6 +1,6 @@
 from unittest.mock import Mock, call
 
-from injectool import make_default, add_resolve_function
+from injectool import make_default, add_function_resolver
 from pytest import mark, fixture
 
 from pyviews.binding import ExpressionBinding
@@ -13,7 +13,7 @@ from pyviews.binding.rules import OnceRule, OnewayRule
 @fixture(scope='module')
 def scope_fixture():
     with make_default('rules_tests') as container:
-        add_resolve_function(Expression, lambda c, p=None: CompiledExpression(p))
+        add_function_resolver(Expression, lambda c, p=None: CompiledExpression(p))
         yield container
 
 

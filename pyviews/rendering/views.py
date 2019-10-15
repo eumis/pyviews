@@ -3,18 +3,19 @@
 from os.path import join
 from sys import exc_info
 
-from injectool import resolve
+from injectool import resolve, dependency
 
 from pyviews.core import CoreError, ViewInfo, Node
 from pyviews.core.xml import Parser, XmlNode
-from pyviews.core import render
-from pyviews.rendering.common import RenderingContext
+from .pipeline import render
+from .common import RenderingContext
 
 
 class ViewError(CoreError):
     """Common error for parsing exceptions"""
 
 
+@dependency
 def render_view(view_name: str, context: RenderingContext) -> Node:
     """Renders view"""
     try:
@@ -23,7 +24,7 @@ def render_view(view_name: str, context: RenderingContext) -> Node:
     except CoreError as error:
         error.add_view_info(ViewInfo(view_name, None))
         raise
-    except:
+    except BaseException:
         info = exc_info()
         error = ViewError('Unknown error occurred during rendering', ViewInfo(view_name, None))
         error.add_cause(info[1])
@@ -54,7 +55,7 @@ def _parse_root(path, view_name):
     except CoreError as error:
         error.add_view_info(ViewInfo(view_name, None))
         raise
-    except:
+    except BaseException:
         info = exc_info()
         error = ViewError('Unknown error occured during parsing xml', ViewInfo(view_name, None))
         error.add_cause(info[1])
