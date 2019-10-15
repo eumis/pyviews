@@ -3,7 +3,7 @@
 from os.path import join
 from sys import exc_info
 
-from injectool import resolve
+from injectool import resolve, dependency
 
 from pyviews.core import CoreError, ViewInfo, Node
 from pyviews.core.xml import Parser, XmlNode
@@ -15,6 +15,7 @@ class ViewError(CoreError):
     """Common error for parsing exceptions"""
 
 
+@dependency
 def render_view(view_name: str, context: RenderingContext) -> Node:
     """Renders view"""
     try:
