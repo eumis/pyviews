@@ -4,7 +4,7 @@ import unittest
 from unittest import TestCase
 from unittest.mock import call as call_args, Mock
 
-from injectool import make_default, add_singleton
+from injectool import use_container, add_singleton
 from pytest import mark, raises
 
 from pyviews.core import Node, XmlNode, InstanceNode
@@ -42,7 +42,7 @@ def test_set_global(node, key, value):
 ])
 def test_inject_global(node, global_key, inject_key, value):
     """should inject value to node globals"""
-    with make_default('test_inject_global'):
+    with use_container():
         add_singleton(inject_key, value)
         inject_global(node, global_key, inject_key)
 

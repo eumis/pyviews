@@ -1,5 +1,9 @@
 # Changelog
 
+## Dev
+
+- updated injectool up to 2.0.1
+
 ## 2.3.0
 
 - **args are changed to RenderingContext for rendering steps

@@ -1,6 +1,6 @@
 from unittest.mock import Mock, call, patch
 
-from injectool import make_default, add_singleton, SingletonResolver, add_resolver, add_function_resolver
+from injectool import add_singleton, SingletonResolver, add_resolver, add_function_resolver
 from pytest import mark, fixture, raises
 
 from pyviews.binding import Binder, OnceRule, OnewayRule
@@ -18,27 +18,25 @@ from pyviews.rendering.pipeline import run_steps, get_pipeline
 
 @fixture
 def render_node_fixture(request):
-    with make_default('render_node') as container:
-        xml_node = Mock()
-        node = Mock()
-        create_node_mock = Mock(return_value=node)
-        add_singleton(create_node, create_node_mock)
+    xml_node = Mock()
+    node = Mock()
+    create_node_mock = Mock(return_value=node)
+    add_singleton(create_node, create_node_mock)
 
-        rendering_pipeline = RenderingPipeline(steps=[])
-        add_singleton(RenderingPipeline, rendering_pipeline)
+    rendering_pipeline = RenderingPipeline(steps=[])
+    add_singleton(RenderingPipeline, rendering_pipeline)
 
-        context = RenderingContext()
-        context.node_globals = InheritedDict()
+    context = RenderingContext()
+    context.node_globals = InheritedDict()
 
-        request.cls.xml_node = xml_node
-        request.cls.node = node
-        request.cls.create_node = create_node_mock
-        request.cls.context = context
-        request.cls.pipeline = rendering_pipeline
-        yield container
+    request.cls.xml_node = xml_node
+    request.cls.node = node
+    request.cls.create_node = create_node_mock
+    request.cls.context = context
+    request.cls.pipeline = rendering_pipeline
 
 
-@mark.usefixtures('render_node_fixture')
+@mark.usefixtures('container_fixture', 'render_node_fixture')
 class RenderTests:
     """render tests"""
 
@@ -79,6 +77,7 @@ def test_run_steps(steps_count, args):
         assert step.call_args == call(node, context)
 
 
+@mark.usefixtures('container_fixture')
 class GetPipelineTests:
     """get_pipeline() tests"""
 
@@ -86,11 +85,10 @@ class GetPipelineTests:
     def test_returns_default_setup():
         """should return default setup"""
         render_pipeline = RenderingPipeline()
-        with make_default('test_get_pipeline_def'):
-            add_singleton(RenderingPipeline, render_pipeline)
+        add_singleton(RenderingPipeline, render_pipeline)
+        node = Node(Mock())
 
-            node = Node(Mock())
-            actual_setup = get_pipeline(node)
+        actual_setup = get_pipeline(node)
 
         assert actual_setup == render_pipeline
 
@@ -102,10 +100,9 @@ class GetPipelineTests:
     def test_should_return_setup_by_node_type(node_type, node):
         """should return setup by node type"""
         render_pipeline = RenderingPipeline()
-        with make_default('test_get_pipeline_node'):
-            add_resolver(RenderingPipeline, SingletonResolver(render_pipeline, node_type))
+        add_resolver(RenderingPipeline, SingletonResolver(render_pipeline, node_type))
 
-            actual_setup = get_pipeline(node)
+        actual_setup = get_pipeline(node)
 
         assert actual_setup == render_pipeline
 
@@ -120,10 +117,9 @@ class GetPipelineTests:
     def test_returns_setup_by_instance_type(node: InstanceNode):
         """get_pipeline should return setup by instance type"""
         render_pipeline = RenderingPipeline()
-        with make_default('test_get_pipeline_inst'):
-            add_resolver(RenderingPipeline, SingletonResolver(render_pipeline, node.instance.__class__))
+        add_resolver(RenderingPipeline, SingletonResolver(render_pipeline, node.instance.__class__))
 
-            actual_setup = get_pipeline(node)
+        actual_setup = get_pipeline(node)
 
         assert actual_setup == render_pipeline
 
@@ -142,44 +138,41 @@ class GetPipelineTests:
             (inst_node, def_setup)
         ]
 
-        with make_default('test_get_pipeline_order'):
-            resolver = SingletonResolver(def_setup)
-            resolver.set_value(type_setup, Node)
-            resolver.set_value(type_setup, InstanceNode)
-            resolver.set_value(inst_setup, XmlAttr)
-            add_resolver(RenderingPipeline, resolver)
+        resolver = SingletonResolver(def_setup)
+        resolver.set_value(type_setup, Node)
+        resolver.set_value(type_setup, InstanceNode)
+        resolver.set_value(inst_setup, XmlAttr)
+        add_resolver(RenderingPipeline, resolver)
 
-            for node, expected_setup in cases:
-                actual_setup = get_pipeline(node)
+        for node, expected_setup in cases:
+            actual_setup = get_pipeline(node)
 
-                assert actual_setup == expected_setup
+            assert actual_setup == expected_setup
 
     @staticmethod
     def test_raises():
         """should throw error in case pipeline is not registered"""
         node = Node(Mock())
-        with make_default('test_get_pipeline_raises'):
-            with raises(RenderingError):
-                get_pipeline(node)
+        with raises(RenderingError):
+            get_pipeline(node)
 
 
-@fixture(scope='function')
+@fixture
 def apply_attribute_fixture(request):
     setter_mock = Mock()
     get_setter_mock = Mock()
     get_setter_mock.side_effect = lambda attr: setter_mock
     request.cls.setter_mock = setter_mock
-    with patch(pipeline.__name__ + '.get_setter', get_setter_mock):
-        with make_default('bind_fixture_scope') as fixture_scope:
-            binder = Binder()
-            binder.add_rule('once', OnceRule())
-            binder.add_rule('oneway', OnewayRule())
-            add_singleton(Binder, binder)
-            add_function_resolver(Expression, lambda c, p=None: CompiledExpression(p))
-            yield fixture_scope
+    with patch(pipeline.__name__ + '.get_setter', get_setter_mock) as patched:
+        binder = Binder()
+        binder.add_rule('once', OnceRule())
+        binder.add_rule('oneway', OnewayRule())
+        add_singleton(Binder, binder)
+        add_function_resolver(Expression, lambda c, p=None: CompiledExpression(p))
+        yield patched
 
 
-@mark.usefixtures('apply_attribute_fixture')
+@mark.usefixtures('container_fixture', 'apply_attribute_fixture')
 class ApplyAttributeTests:
     """apply_attribute() tests"""
 
@@ -273,22 +266,20 @@ class GetSetterTests:
 
 @fixture
 def render_children_fixture(request):
-    with make_default('render_children') as container:
-        xml_node = Mock(children=[])
-        node = Mock(xml_node=xml_node)
-        render_mock = Mock()
-        add_singleton(render, render_mock)
-        context = RenderingContext()
-        context.node_globals = InheritedDict()
+    xml_node = Mock(children=[])
+    node = Mock(xml_node=xml_node)
+    render_mock = Mock()
+    add_singleton(render, render_mock)
+    context = RenderingContext()
+    context.node_globals = InheritedDict()
 
-        request.cls.xml_node = xml_node
-        request.cls.node = node
-        request.cls.context = context
-        request.cls.render = render_mock
-        yield container
+    request.cls.xml_node = xml_node
+    request.cls.node = node
+    request.cls.context = context
+    request.cls.render = render_mock
 
 
-@mark.usefixtures('render_children_fixture')
+@mark.usefixtures('container_fixture', 'render_children_fixture')
 class RenderChildrenTests:
     """render_children() tests"""
 

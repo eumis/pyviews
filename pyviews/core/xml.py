@@ -1,6 +1,7 @@
 """Xml parsing"""
 from typing import List, Tuple, NamedTuple
-from xml.parsers.expat import ParserCreate, ExpatError, errors
+from xml.parsers.expat import ParserCreate, ExpatError
+from pyexpat.errors import messages as error_messages
 from collections import namedtuple
 from injectool import inject
 from .error import CoreError, ViewInfo
@@ -117,7 +118,7 @@ class Parser:
             self._view_name = view_name
             self._parser.ParseFile(xml_file)
         except ExpatError as error:
-            raise XmlError(errors.messages[error.code], ViewInfo(view_name, error.lineno))
+            raise XmlError(error_messages[error.code], ViewInfo(view_name, error.lineno))
 
         root = self._root
         self._reset()
