@@ -1,8 +1,8 @@
 """Xml parsing"""
 from typing import List, Tuple, NamedTuple
+from collections import namedtuple
 from xml.parsers.expat import ParserCreate, ExpatError
 from pyexpat.errors import messages as error_messages
-from collections import namedtuple
 from injectool import inject
 from .error import CoreError, ViewInfo
 
