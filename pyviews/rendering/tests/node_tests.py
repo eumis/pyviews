@@ -120,6 +120,7 @@ def test_convert_to_node(globals_dict):
     assert node.node_globals == context.node_globals
 
 
+@mark.usefixtures('container_fixture')
 class CreateNodeTests:
     @staticmethod
     @mark.parametrize('namespace, tag, node_type, init_args', [

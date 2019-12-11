@@ -1,23 +1,23 @@
 from tempfile import TemporaryFile
 
-from injectool import make_default, add_singleton
+from injectool import add_singleton
 from pytest import mark, raises
 
 from pyviews.core.xml import Parser, XmlAttr, XmlError, XmlNode
 
 
+@mark.usefixtures('container_fixture')
 class ParsingTests:
     @staticmethod
     def _parse(xml_string, namespaces: dict = None):
         if namespaces is None:
             namespaces = {}
 
-        with make_default('ParsingTests'):
-            add_singleton('namespaces', namespaces)
-            with TemporaryFile() as xml_file:
-                xml_file.write(xml_string.encode())
-                xml_file.seek(0)
-                return Parser().parse(xml_file)
+        add_singleton('namespaces', namespaces)
+        with TemporaryFile() as xml_file:
+            xml_file.write(xml_string.encode())
+            xml_file.seek(0)
+            return Parser().parse(xml_file)
 
     @staticmethod
     def _get_child(root: XmlNode, level):
