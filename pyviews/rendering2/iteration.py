@@ -1,0 +1,55 @@
+from sys import exc_info
+from typing import List, Iterator
+
+from injectool import dependency, resolve
+
+from pyviews.core import XmlNode, Node, CoreError
+from pyviews.rendering.common import RenderingContext, RenderingError
+from pyviews.rendering.pipeline import RenderingItem
+from pyviews.rendering2.pipeline import RenderingPipeline
+
+
+class RenderingIterator:
+    def __init__(self, root: RenderingItem):
+        self._items: List[RenderingItem] = [root]
+        self._index = 0
+
+    def __iter__(self) -> Iterator[RenderingItem]:
+        return self
+
+    def __next__(self) -> RenderingItem:
+        try:
+            self._index += 1
+            return self._items[self._index - 1]
+        except IndexError:
+            raise StopIteration()
+
+    def insert(self, items: List[RenderingItem]):
+        """Inserts items to iterator"""
+        self._items = self._items[:self._index] + items + self._items[self._index:]
+
+
+def get_pipeline(xml_node: XmlNode):
+    key = f'{xml_node.namespace}.{xml_node.name}'
+    return resolve(RenderingPipeline, key)
+
+
+@dependency
+def render(context: RenderingContext) -> Node:
+    """Renders node from xml node"""
+    try:
+        pipeline = get_pipeline(context.xml_node)
+        iterator = RenderingIterator(RenderingItem(context, pipeline))
+        for context, pipeline in iterator:
+            node, new_items = pipeline.run(context)
+            pipeline.insert(new_items)
+        return node
+    except CoreError as error:
+        error.add_view_info(context.xml_node.view_info)
+        raise
+    except BaseException:
+        info = exc_info()
+        msg = 'Unknown error occurred during rendering'
+        error = RenderingError(msg, context.xml_node.view_info)
+        error.add_cause(info[1])
+        raise error from info[1]

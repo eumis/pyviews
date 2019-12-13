@@ -12,6 +12,11 @@ from .node import create_node
 from .common import RenderingError, RenderingContext
 
 
+class RenderingItem(NamedTuple):
+    context: RenderingContext
+    pipeline: 'RenderingPipeline'
+
+
 class RenderingPipeline(NamedTuple):
     """Contains data, logic used for render steps"""
 
