@@ -10,8 +10,8 @@ from pyviews.rendering2.pipeline import RenderingPipeline
 
 
 class RenderingIterator:
-    def __init__(self, root: RenderingItem):
-        self._items: List[RenderingItem] = [root]
+    def __init__(self, root: RenderingItem = None):
+        self._items: List[RenderingItem] = [root] if root else []
         self._index = 0
 
     def __iter__(self) -> Iterator[RenderingItem]:
@@ -39,10 +39,10 @@ def render(context: RenderingContext) -> Node:
     """Renders node from xml node"""
     try:
         pipeline = get_pipeline(context.xml_node)
-        iterator = RenderingIterator(RenderingItem(context, pipeline))
+        iterator = RenderingIterator()
+        node = pipeline.run(context, iterator.insert)
         for context, pipeline in iterator:
-            node, new_items = pipeline.run(context)
-            pipeline.insert(new_items)
+            pipeline.run(context, iterator.insert)
         return node
     except CoreError as error:
         error.add_view_info(context.xml_node.view_info)

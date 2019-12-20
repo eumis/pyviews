@@ -3,27 +3,27 @@
 from typing import NamedTuple, List, Callable, Union, Any
 
 from pyviews.core import Node, InstanceNode
-from pyviews.core import XmlNode
 from .common import RenderingContext
 from ..rendering import get_inst_type, create_inst, convert_to_node
 
 
 class RenderingItem(NamedTuple):
-    xml_node: XmlNode
+    """Tuple with rendering pipeline and rendering context"""
     pipeline: 'RenderingPipeline'
     context: RenderingContext
 
 
 class RenderingPipeline:
-    """Contains data, logic used for render steps"""
+    """Creates and renders node"""
 
-    def __init__(self, ):
-        self.pipes: List[Callable[[Union[Node, InstanceNode, Any], RenderingContext], None]] = []
+    def __init__(self, pipes=None):
+        self._pipes: List[Callable[[Union[Node, InstanceNode, Any], RenderingContext], None]] = pipes if pipes else []
 
-    def run(self, context: RenderingContext):
+    def run(self, context: RenderingContext, render_items: Callable[[List[RenderingItem]], None]) -> Node:
         node = self._create_node(context)
-        for pipe in self.pipes:
-            pipe(node, context)
+        for pipe in self._pipes:
+            pipe(node, context, render_items)
+        return node
 
     @staticmethod
     def _create_node(context: RenderingContext) -> Node:
