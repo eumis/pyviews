@@ -1,12 +1,12 @@
 from sys import exc_info
 from typing import List, Iterator
 
-from injectool import dependency, resolve
+from injectool import dependency
 
-from pyviews.core import XmlNode, Node, CoreError
-from pyviews.rendering.common import RenderingContext, RenderingError
-from pyviews.rendering.pipeline import RenderingItem
-from pyviews.rendering2.pipeline import RenderingPipeline
+from pyviews.core import Node, CoreError
+from pyviews.rendering2.common import RenderingContext, RenderingError
+from pyviews.rendering2.pipeline import RenderingItem
+from pyviews.rendering2.pipeline import get_pipeline
 
 
 class RenderingIterator:
@@ -29,11 +29,6 @@ class RenderingIterator:
         self._items = self._items[:self._index] + items + self._items[self._index:]
 
 
-def get_pipeline(xml_node: XmlNode):
-    key = f'{xml_node.namespace}.{xml_node.name}'
-    return resolve(RenderingPipeline, key)
-
-
 @dependency
 def render(context: RenderingContext) -> Node:
     """Renders node from xml node"""
@@ -41,7 +36,7 @@ def render(context: RenderingContext) -> Node:
         pipeline = get_pipeline(context.xml_node)
         iterator = RenderingIterator()
         node = pipeline.run(context, iterator.insert)
-        for context, pipeline in iterator:
+        for pipeline, context in iterator:
             pipeline.run(context, iterator.insert)
         return node
     except CoreError as error:

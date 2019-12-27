@@ -13,7 +13,7 @@ from pyviews.rendering.common import RenderingError, RenderingContext
 from pyviews.rendering.pipeline import RenderingPipeline, render_children, render
 from pyviews.rendering.pipeline import apply_attribute, apply_attributes
 from pyviews.rendering.pipeline import call_set_attr, get_setter
-from pyviews.rendering.pipeline import run_steps, get_pipeline
+from pyviews.rendering.pipeline import get_pipeline
 
 
 @fixture

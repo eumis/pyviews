@@ -1,10 +1,12 @@
 """Rendering pipeline. Node creation from xml node, attribute setup and binding creation"""
+from importlib import import_module
+from inspect import signature, Parameter
+from typing import NamedTuple, List, Callable, Union, Any, Type, Tuple, Dict
 
-from typing import NamedTuple, List, Callable, Union, Any
+from injectool import resolve
 
-from pyviews.core import Node, InstanceNode
-from .common import RenderingContext
-from ..rendering import get_inst_type, create_inst, convert_to_node
+from pyviews.core import Node, InstanceNode, XmlNode
+from .common import RenderingContext, RenderingError
 
 
 class RenderingItem(NamedTuple):
@@ -27,8 +29,66 @@ class RenderingPipeline:
 
     @staticmethod
     def _create_node(context: RenderingContext) -> Node:
-        inst_type = get_inst_type(context.xml_node)
-        inst = create_inst(inst_type, context)
+        inst_type = get_type(context.xml_node)
+        inst = create_instance(inst_type, context)
         if not isinstance(inst, Node):
-            inst = convert_to_node(inst, context)
+            inst = InstanceNode(inst, context.xml_node, context.node_globals)
         return inst
+
+
+def get_type(xml_node: XmlNode) -> Type:
+    """Returns instance type for xml node"""
+    (module_path, class_name) = (xml_node.namespace, xml_node.name)
+    try:
+        return import_module(module_path).__dict__[class_name]
+    except (KeyError, ImportError, ModuleNotFoundError):
+        message = 'Import "{0}.{1}" is failed.'.format(module_path, class_name)
+        raise RenderingError(message, xml_node.view_info)
+
+
+def create_instance(instance_type: Type, context: RenderingContext):
+    """Creates class instance with args"""
+    args, kwargs = _get_init_args(instance_type, context)
+    return instance_type(*args, **kwargs)
+
+
+def _get_init_args(inst_type, init_args: RenderingContext, add_kwargs=False) -> Tuple[List, Dict]:
+    """Returns tuple with args and kwargs to pass it to inst_type constructor"""
+    try:
+        parameters = signature(inst_type).parameters.values()
+        args_keys = [p.name for p in parameters
+                     if p.kind in [Parameter.POSITIONAL_ONLY, Parameter.POSITIONAL_OR_KEYWORD]
+                     and p.default == Parameter.empty]
+        args = [init_args[key] for key in args_keys]
+        kwargs = _get_var_kwargs(parameters, args_keys, init_args) \
+            if add_kwargs else \
+            _get_kwargs(parameters, init_args)
+    except KeyError as key_error:
+        msg_format = 'parameter with key "{0}" is not found in node args'
+        raise RenderingError(msg_format.format(key_error.args[0]))
+    return args, kwargs
+
+
+def _get_var_kwargs(parameters: list, args_keys: list, init_args: dict) -> dict:
+    try:
+        next(p for p in parameters if p.kind == Parameter.VAR_KEYWORD)
+    except StopIteration:
+        return _get_kwargs(parameters, init_args)
+    else:
+        kwargs = {key: value for key, value in init_args.items() if key not in args_keys}
+    return kwargs
+
+
+def _get_kwargs(parameters: list, init_args: dict) -> dict:
+    init_parameters = [p for p in parameters
+                       if p.kind in [Parameter.KEYWORD_ONLY, Parameter.POSITIONAL_OR_KEYWORD]
+                       and p.default != Parameter.empty
+                       and p.name in init_args]
+    return {
+        p.name: init_args[p.name] for p in init_parameters
+    }
+
+
+def get_pipeline(xml_node: XmlNode) -> RenderingPipeline:
+    key = f'{xml_node.namespace}.{xml_node.name}'
+    return resolve(RenderingPipeline, key)
