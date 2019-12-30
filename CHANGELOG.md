@@ -3,6 +3,12 @@
 ## Dev
 
 - updated injectool up to 2.0.1
+- run_steps() function is moved to RenderingPipeline as run() method
+- create_node() function is made part of RenderingPipeline
+- RenderingPipeline is resolved by xml namespace and tag
+- Added RenderingIterator
+- Rendering steps are renamed to pipes. Common pipes module is moved to core
+- Common modifiers module is moved to core
 
 ## 2.3.0
 
