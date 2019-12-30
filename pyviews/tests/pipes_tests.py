@@ -4,8 +4,8 @@ from injectool import add_singleton, add_function_resolver
 from pytest import fixture, mark, raises
 
 from pyviews.binding import Binder, OnceRule, OnewayRule, BindingContext
-from pyviews.compilation import CompiledExpression
-from pyviews.core import Expression, XmlAttr, Node
+from pyviews.compilation import Expression as Expression
+from pyviews.core import XmlAttr, Node
 from pyviews import pipes, modifiers
 from pyviews.pipes import apply_attribute, apply_attributes, call_set_attr, get_setter
 from pyviews.rendering.common import RenderingContext
@@ -36,7 +36,7 @@ def apply_attribute_fixture(request):
         binder.add_rule('once', OnceRule())
         binder.add_rule('oneway', OnewayRule())
         add_singleton(Binder, binder)
-        add_function_resolver(Expression, lambda c, p=None: CompiledExpression(p))
+        add_function_resolver(Expression, lambda c, p=None: Expression(p))
         yield patched
 
 

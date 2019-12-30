@@ -5,15 +5,15 @@ from pytest import mark, fixture
 
 from pyviews.binding import ExpressionBinding
 from pyviews.binding.binder import BindingContext
-from pyviews.core import XmlAttr, InheritedDict, Expression
-from pyviews.compilation import CompiledExpression
+from pyviews.core import XmlAttr, InheritedDict
+from pyviews.compilation import Expression as Expression
 from pyviews.binding.rules import OnceRule, OnewayRule
 
 
 @fixture(scope='module')
 def scope_fixture():
     with use_container() as container:
-        add_function_resolver(Expression, lambda c, p=None: CompiledExpression(p))
+        add_function_resolver(Expression, lambda c, p=None: Expression(p))
         yield container
 
 

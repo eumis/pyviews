@@ -2,7 +2,7 @@
 from injectool import resolve
 
 from pyviews.binding.binder import BindingRule, BindingContext
-from pyviews.core import Expression
+from pyviews.compilation import Expression as Expression
 from .implementations import ExpressionBinding, PropertyTarget
 
 

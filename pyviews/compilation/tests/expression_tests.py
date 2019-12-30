@@ -1,12 +1,11 @@
 from pytest import mark, raises, fixture
 
-from pyviews.core import CompilationError
-from pyviews.compilation.expression import CompiledExpression
+from pyviews.compilation import Expression, CompilationError
 
 
 @fixture
 def object_tree_fixture(request):
-    expression = CompiledExpression("str(vm.vm.int_value) + vm.vm.str_value + vm.str_value + vm.get()")
+    expression = Expression("str(vm.vm.int_value) + vm.vm.str_value + vm.str_value + vm.get()")
     root = expression.get_object_tree()
     str_node = [entry for entry in root.children if entry.key == 'str'][0]
     vm_node = [entry for entry in root.children if entry.key == 'vm'][0]
@@ -37,7 +36,7 @@ class EvalExpressionTests:
     ])
     def test_execute(code, params, expected):
         """execute() should return expression value"""
-        expression = CompiledExpression(code)
+        expression = Expression(code)
 
         actual = expression.execute(params)
 
@@ -50,7 +49,7 @@ class EvalExpressionTests:
     ])
     def test_execute_raises(body):
         """execute() should raise error if expression is invalid"""
-        expression = CompiledExpression(body)
+        expression = Expression(body)
 
         with raises(CompilationError):
             expression.execute()

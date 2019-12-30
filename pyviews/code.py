@@ -3,7 +3,8 @@
 from sys import exc_info
 from textwrap import dedent
 from traceback import extract_tb
-from pyviews.core import Node, CompilationError
+from pyviews.core import Node
+from pyviews.compilation import CompilationError
 from pyviews.rendering.common import RenderingContext
 
 
@@ -29,7 +30,7 @@ def run_code(node: Code, context: RenderingContext):
     except SyntaxError as err:
         error = _get_compilation_error(code, 'Invalid syntax', err, err.lineno)
         raise error from err
-    except:
+    except BaseException:
         info = exc_info()
         cause = info[1]
         line_number = extract_tb(info[2])[-1][1]

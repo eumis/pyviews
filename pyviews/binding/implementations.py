@@ -3,8 +3,9 @@
 from re import compile as compile_regex
 from sys import exc_info
 from typing import Any
+
+from pyviews.compilation import Expression, ObjectNode
 from pyviews.core import Observable, InheritedDict
-from pyviews.core import Expression, ObjectNode
 from pyviews.core import Binding, BindingTarget
 from pyviews.core import CoreError, BindingError
 

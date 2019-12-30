@@ -1,7 +1,7 @@
 from pytest import fixture, mark, raises
 
 from pyviews.core import ObservableEntity, InheritedDict, BindingError
-from pyviews.compilation import CompiledExpression
+from pyviews.compilation import Expression
 from pyviews.binding.implementations import PropertyTarget, FunctionTarget
 from pyviews.binding.implementations import PropertyExpressionTarget, GlobalValueExpressionTarget
 from pyviews.binding.implementations import ExpressionBinding, ObservableBinding, TwoWaysBinding
@@ -77,7 +77,7 @@ def test_function_target(target_entity):
 def expression_binding_fixture(request):
     inner_vm = InnerViewModel(2, 'inner str')
     view_model = ParentViewModel(3, inner_vm)
-    expression = CompiledExpression(
+    expression = Expression(
         'str(vm.int_value) + vm.inner_vm.str_value + vm.get_val() + vm.inner_vm.get_val()')
     target_inst = SomeEntity()
     target = PropertyTarget(target_inst, 'str_value', setattr)
@@ -137,7 +137,7 @@ def expression_target_fixture(request):
 
     inner = InnerViewModel(1, '1')
     parent = ParentViewModel(1, inner)
-    expression = CompiledExpression(code)
+    expression = Expression(code)
     expr_globals = InheritedDict({'vm': parent})
 
     request.cls.target = PropertyExpressionTarget(expression, expr_globals)
@@ -153,7 +153,7 @@ class PropertyExpressionTargetTests:
     def test_raises(expression):
         """Should raise BindingError if expression is not property expression"""
         with raises(BindingError):
-            PropertyExpressionTarget(CompiledExpression(expression), InheritedDict())
+            PropertyExpressionTarget(Expression(expression), InheritedDict())
 
     def test_change(self):
         """PropertyExpressionTarget.on_change should update target property"""
@@ -180,11 +180,11 @@ class GlobalValueExpressionTargetTests:
     def test_raises(self, expression):
         """Should raise BindingError for invalid expression"""
         with raises(BindingError):
-            GlobalValueExpressionTarget(CompiledExpression(expression), self.expr_globals)
+            GlobalValueExpressionTarget(Expression(expression), self.expr_globals)
 
     def test_change(self):
         """GlobalValueExpressionTarget.on_change should update target property"""
-        target = GlobalValueExpressionTarget(CompiledExpression("vm"), self.expr_globals)
+        target = GlobalValueExpressionTarget(Expression("vm"), self.expr_globals)
         new_val = 25
 
         target.on_change(new_val)
@@ -196,7 +196,7 @@ class GlobalValueExpressionTargetTests:
 def observable_binding_fixture(request):
     target_inst = InnerViewModel(1, '1')
     expr_globals = InheritedDict({'vm': target_inst})
-    expression = CompiledExpression('vm.int_value')
+    expression = Expression('vm.int_value')
     target = PropertyExpressionTarget(expression, expr_globals)
 
     inst = InnerViewModel(5, '1')
@@ -241,7 +241,7 @@ def two_ways_fixture(request):
     expr_inst = InnerViewModel(1, '1')
 
     expr_globals = InheritedDict({'vm': expr_inst})
-    expression = CompiledExpression('vm.int_value')
+    expression = Expression('vm.int_value')
 
     observable_target = PropertyTarget(observable_inst, 'int_value', setattr)
     one_binding = ExpressionBinding(observable_target, expression, expr_globals)
