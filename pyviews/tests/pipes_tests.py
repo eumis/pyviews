@@ -1,14 +1,28 @@
 from unittest.mock import Mock, patch, call
 
 from injectool import add_singleton, add_function_resolver
-from pytest import fixture, mark
+from pytest import fixture, mark, raises
 
 from pyviews.binding import Binder, OnceRule, OnewayRule, BindingContext
 from pyviews.compilation import CompiledExpression
 from pyviews.core import Expression, XmlAttr, Node
-from pyviews import pipes
-from pyviews.pipes import apply_attribute, apply_attributes
-from pyviews.rendering2.common import RenderingContext
+from pyviews import pipes, modifiers
+from pyviews.pipes import apply_attribute, apply_attributes, call_set_attr, get_setter
+from pyviews.rendering.common import RenderingContext
+
+
+@patch(pipes.__name__ + '.apply_attribute')
+def test_apply_attributes(apply_attribute_mock):
+    """should call apply_attribute for every attribute"""
+    xml_node = Mock()
+    xml_node.attrs = [Mock(), Mock()]
+    node = Node(xml_node)
+    context = RenderingContext()
+
+    apply_attributes(node, context)
+
+    calls = [call(node, attr) for attr in xml_node.attrs]
+    assert apply_attribute_mock.call_args_list == calls
 
 
 @fixture
@@ -64,16 +78,41 @@ class ApplyAttributeTests:
         apply_attribute(node, xml_attr)
         assert binder.apply.call_args == call(binding_type, binding_context)
 
+
+class GetSetterTests:
+    """get_setter() tests"""
+
     @staticmethod
-    @patch(pipes.__name__ + '.apply_attribute')
-    def test_apply_every_attribute(apply_attribute_mock):
-        """should call apply_attribute for every attribute"""
-        xml_node = Mock()
-        xml_node.attrs = [Mock(), Mock()]
-        node = Node(xml_node)
-        context = RenderingContext()
+    @mark.parametrize('setter_path, expected_setter', [
+        (None, call_set_attr),
+        (modifiers.__name__ + '.import_global', modifiers.import_global)
+    ])
+    def test_returns_setter(setter_path, expected_setter):
+        """should return appropriate setter"""
+        actual_setter = get_setter(XmlAttr('', namespace=setter_path))
 
-        apply_attributes(node, context)
+        assert actual_setter == expected_setter
 
-        calls = [call(node, attr) for attr in xml_node.attrs]
-        assert apply_attribute_mock.call_args_list == calls
+    @staticmethod
+    @mark.parametrize('namespace, name', [
+        ('', ''),
+        ('', 'attr_name'),
+        ('tests.rendering.core_test.some_modifier_not', 'attr_name')
+    ])
+    def test_raises(namespace, name):
+        """should raise ImportError if namespace can''t be imported"""
+        with raises(ImportError):
+            xml_attr = XmlAttr(name, '', namespace)
+            get_setter(xml_attr)
+
+
+def test_call_set_attr():
+    """should call node setter"""
+    node = Node(Mock())
+    node_setter = Mock()
+    node.attr_setter = node_setter
+    key, value = ('key', 'value')
+
+    call_set_attr(node, key, value)
+
+    assert node_setter.call_args == call(node, key, value)

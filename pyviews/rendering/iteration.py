@@ -4,9 +4,9 @@ from typing import List, Iterator
 from injectool import dependency
 
 from pyviews.core import Node, CoreError
-from pyviews.rendering2.common import RenderingContext, RenderingError
-from pyviews.rendering2.pipeline import RenderingItem
-from pyviews.rendering2.pipeline import get_pipeline
+from pyviews.rendering.common import RenderingContext, RenderingError
+from pyviews.rendering.pipeline import RenderingItem
+from pyviews.rendering.pipeline import get_pipeline
 
 
 class RenderingIterator:

@@ -7,7 +7,7 @@ from pyviews.core.compilation import CompilationError
 from pyviews.core.node import Node
 from pyviews.core.observable import InheritedDict
 from pyviews.core.xml import XmlNode
-from pyviews.rendering2.common import RenderingContext
+from pyviews.rendering.common import RenderingContext
 
 
 class RunCodeTests:

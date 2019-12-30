@@ -3,8 +3,6 @@ from injectool import resolve
 from pyviews.binding import Binder, BindingContext
 from pyviews.compilation import is_expression, parse_expression
 from pyviews.core import Node, XmlAttr, import_path
-from pyviews.rendering2.common import RenderingContext
-from pyviews.rendering2.iteration import render
 
 
 def apply_attributes(node: Node, *_):
@@ -41,9 +39,9 @@ def call_set_attr(node: Node, key: str, value):
     """Modifier: calls node setter"""
     node.set_attr(key, value)
 
-
-def render_children(node: Node, child_context: RenderingContext):
-    """renders node children"""
-    for xml_node in node.xml_node.children:
-        child = render(xml_node, child_context)
-        node.add_child(child)
+#
+# def render_children(node: Node, child_context: RenderingContext):
+#     """renders node children"""
+#     for xml_node in node.xml_node.children:
+#         child = render(xml_node, child_context)
+#         node.add_child(child)

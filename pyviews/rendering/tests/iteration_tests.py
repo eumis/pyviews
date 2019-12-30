@@ -5,9 +5,9 @@ from pytest import fixture, mark, raises
 
 from pyviews.code import Code
 from pyviews.core import XmlNode, Node
-from pyviews.rendering2.common import RenderingContext
-from pyviews.rendering2.iteration import RenderingIterator, render
-from pyviews.rendering2.pipeline import RenderingPipeline, RenderingItem
+from pyviews.rendering.common import RenderingContext
+from pyviews.rendering.iteration import RenderingIterator, render
+from pyviews.rendering.pipeline import RenderingPipeline, RenderingItem
 
 
 @fixture

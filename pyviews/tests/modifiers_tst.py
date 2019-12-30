@@ -8,7 +8,7 @@ from injectool import use_container, add_singleton
 from pytest import mark, raises
 
 from pyviews.core import Node, XmlNode, InstanceNode
-from pyviews.rendering.modifiers import import_global, set_global, inject_global, call
+from pyviews.modifiers import import_global, set_global, inject_global, call
 
 
 @mark.parametrize('node, key, value, expected', [

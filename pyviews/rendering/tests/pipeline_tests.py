@@ -1,12 +1,12 @@
 from unittest.mock import Mock, call
 
-from injectool import SingletonResolver, add_resolver
+from injectool import SingletonResolver, add_resolver, use_container
 from pytest import mark, fixture, raises
 
 from pyviews.code import Code
 from pyviews.core import Node, XmlNode, Observable, InstanceNode, xml
-from pyviews.rendering2.common import RenderingContext, RenderingError
-from pyviews.rendering2.pipeline import RenderingPipeline, get_pipeline, create_instance, get_type
+from pyviews.rendering.common import RenderingContext, RenderingError
+from pyviews.rendering.pipeline import RenderingPipeline, get_pipeline, create_instance, get_type
 
 
 class Inst:
@@ -194,17 +194,18 @@ def test_create_inst(inst_type, init_args):
     assert isinstance(inst, inst_type)
 
 
-@mark.usefixtures('container_fixture')
 @mark.parametrize('xml_node', [
     XmlNode('pyviews.core.node', 'Node'),
     XmlNode('pyviews.core.observable', 'Observable'),
 ])
-def get_pipeline_tests(xml_node):
-    resolver = SingletonResolver()
-    add_resolver(RenderingPipeline, resolver)
-    pipeline = RenderingPipeline()
-    resolver.set_value(pipeline, f'{xml_node.namespace}.{xml_node.name}')
+def test_resolves_pipeline_by_xml_node_namespace_and_name(xml_node):
+    """should resolver RenderingPipeline using namespace.name as parameter"""
+    with use_container():
+        resolver = SingletonResolver()
+        add_resolver(RenderingPipeline, resolver)
+        pipeline = RenderingPipeline()
+        resolver.set_value(pipeline, f'{xml_node.namespace}.{xml_node.name}')
 
-    actual = get_pipeline(xml_node)
+        actual = get_pipeline(xml_node)
 
-    assert actual == pipeline
+        assert actual == pipeline

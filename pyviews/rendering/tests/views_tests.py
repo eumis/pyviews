@@ -3,10 +3,10 @@ from unittest.mock import patch, Mock, call
 from injectool import add_singleton
 from pytest import mark, fixture
 
-from pyviews.rendering2 import views
-from pyviews.rendering2.common import RenderingContext
-from pyviews.rendering2.iteration import render
-from pyviews.rendering2.views import render_view
+from pyviews.rendering import views
+from pyviews.rendering.common import RenderingContext
+from pyviews.rendering.iteration import render
+from pyviews.rendering.views import render_view
 
 
 @fixture

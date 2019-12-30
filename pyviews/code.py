@@ -4,7 +4,7 @@ from sys import exc_info
 from textwrap import dedent
 from traceback import extract_tb
 from pyviews.core import Node, CompilationError
-from pyviews.rendering2.common import RenderingContext
+from pyviews.rendering.common import RenderingContext
 
 
 class Code(Node):

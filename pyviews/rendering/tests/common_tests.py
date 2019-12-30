@@ -3,7 +3,7 @@ from unittest.mock import Mock
 from pytest import mark, fixture
 
 from pyviews.core import InheritedDict, Node, XmlNode
-from pyviews.rendering2.common import RenderingContext
+from pyviews.rendering.common import RenderingContext
 
 
 @fixture
