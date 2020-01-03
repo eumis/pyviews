@@ -9,6 +9,10 @@
 - Added RenderingIterator
 - Rendering steps are renamed to pipes. Common pipes module is moved to core
 - Common modifiers module is moved to core
+- Removed CompiledExpression class
+- Expression class is moved to compilation package and removed ABC inheritance
+- added execute() function to compilation package
+- removed injection of Expression class
 
 ## 2.3.0
 
@@ -18,7 +22,7 @@
 - XmlNode and XmlAttr are changed to named tuples
 - RenderingPipeline is changed to  tuple 
 - pyviews.core.rendering module is removed  
-  create_node and render dependencies are moved to pyviews.rendering
+- create_node and render dependencies are moved to pyviews.rendering
 
 ## 2.2.0
 

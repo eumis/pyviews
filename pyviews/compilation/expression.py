@@ -115,3 +115,8 @@ class Expression:
             error = CompilationError('Error occurred in expression execution', self._code)
             error.add_cause(info[1])
             raise error from info[1]
+
+
+def execute(code: str, parameters: dict = None) -> Any:
+    """Executes passed code using Expression class"""
+    return Expression(code).execute(parameters)

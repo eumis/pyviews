@@ -1,20 +1,11 @@
 from unittest.mock import Mock, call
 
-from injectool import add_function_resolver, use_container
 from pytest import mark, fixture
 
 from pyviews.binding import ExpressionBinding
 from pyviews.binding.binder import BindingContext
 from pyviews.core import XmlAttr, InheritedDict
-from pyviews.compilation import Expression as Expression
 from pyviews.binding.rules import OnceRule, OnewayRule
-
-
-@fixture(scope='module')
-def scope_fixture():
-    with use_container() as container:
-        add_function_resolver(Expression, lambda c, p=None: Expression(p))
-        yield container
 
 
 @fixture
@@ -35,7 +26,7 @@ _binding_args = [
 ]
 
 
-@mark.usefixtures('once_rule_fixture', 'rule_params_fixture', 'scope_fixture')
+@mark.usefixtures('once_rule_fixture', 'rule_params_fixture')
 class OnceRuleTests:
     """OnceRule tests"""
 
@@ -68,7 +59,7 @@ def oneway_rule_fixture(request):
     request.cls.rule = OnewayRule()
 
 
-@mark.usefixtures('oneway_rule_fixture', 'rule_params_fixture', 'scope_fixture')
+@mark.usefixtures('oneway_rule_fixture', 'rule_params_fixture')
 class OnewayRuleTests:
     """OnewayRule tests"""
 
