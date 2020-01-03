@@ -1,10 +1,10 @@
 """Common functionality for rendering package"""
 from typing import Union
 
-from pyviews.core import CoreError, InheritedDict, Node, XmlNode, InstanceNode
+from pyviews.core import ViewsError, InheritedDict, Node, XmlNode, InstanceNode
 
 
-class RenderingError(CoreError):
+class RenderingError(ViewsError):
     """Error for rendering"""
 
 

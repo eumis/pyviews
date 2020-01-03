@@ -1,6 +1,6 @@
 """Package for creation instances from xml and its values to expressions"""
 
-from .error import ViewInfo, CoreError
+from .error import ViewInfo, ViewsError
 from .binding import Binding, BindingError, BindingTarget
 from .node import Node, InstanceNode, Modifier, Property
 from .observable import Observable, ObservableEntity, InheritedDict

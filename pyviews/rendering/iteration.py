@@ -3,7 +3,7 @@ from typing import List, Iterator
 
 from injectool import dependency
 
-from pyviews.core import Node, CoreError
+from pyviews.core import Node, ViewsError
 from pyviews.rendering.common import RenderingContext, RenderingError
 from pyviews.rendering.pipeline import RenderingItem
 from pyviews.rendering.pipeline import get_pipeline
@@ -39,7 +39,7 @@ def render(context: RenderingContext) -> Node:
         for pipeline, context in iterator:
             pipeline.run(context, iterator.insert)
         return node
-    except CoreError as error:
+    except ViewsError as error:
         error.add_view_info(context.xml_node.view_info)
         raise
     except BaseException:

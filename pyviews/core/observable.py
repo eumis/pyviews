@@ -1,6 +1,6 @@
 """Observable implementations"""
 
-from typing import Callable, Any
+from typing import Callable, Any, Union
 
 
 class Observable:
@@ -59,7 +59,7 @@ class ObservableEntity(Observable):
 class InheritedDict(Observable):
     """Dictionary that pulls value from parent if doesn't have own"""
 
-    def __init__(self, source=None):
+    def __init__(self, source: Union[dict, 'InheritedDict'] = None):
         super().__init__()
         self._parent = None
         self._container = {}

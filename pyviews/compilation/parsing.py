@@ -2,10 +2,10 @@
 
 from re import compile as compile_regex
 from collections import namedtuple
-from pyviews.core import CoreError
+from pyviews.core import ViewsError
 
 
-class ExpressionError(CoreError):
+class ExpressionError(ViewsError):
     """Error for expression"""
 
     def __init__(self, message, expression):

@@ -7,7 +7,7 @@ from typing import Any
 from pyviews.compilation import Expression, ObjectNode
 from pyviews.core import Observable, InheritedDict
 from pyviews.core import Binding, BindingTarget
-from pyviews.core import CoreError, BindingError
+from pyviews.core import ViewsError, BindingError
 
 
 class PropertyTarget(BindingTarget):
@@ -96,7 +96,7 @@ class ExpressionBinding(Binding):
                 self.bind()
             else:
                 self._update_target()
-        except CoreError as error:
+        except ViewsError as error:
             self.add_error_info(error)
             raise
         except BaseException:
@@ -185,7 +185,7 @@ class ObservableBinding(Binding):
     def _update_callback(self, new_val, _):
         try:
             self._update_target(new_val)
-        except CoreError as error:
+        except ViewsError as error:
             self.add_error_info(error)
             raise
         except BaseException:

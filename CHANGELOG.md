@@ -13,6 +13,7 @@
 - Expression class is moved to compilation package and removed ABC inheritance
 - added execute() function to compilation package
 - removed injection of Expression class
+- CoreError is renamed to ViewsError
 
 ## 2.3.0
 

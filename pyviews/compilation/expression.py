@@ -4,13 +4,13 @@ import ast
 from sys import exc_info
 from typing import List, Callable, Any, Iterator, NamedTuple
 from collections import namedtuple
-from pyviews.core import CoreError
+from pyviews.core import ViewsError
 
 _COMPILATION_CACHE = {}
 _CacheItem = namedtuple('CacheItem', ['compiled_code', 'tree'])
 
 
-class CompilationError(CoreError):
+class CompilationError(ViewsError):
     """Error for failed expression compilation"""
 
     def __init__(self, message, expr: str):

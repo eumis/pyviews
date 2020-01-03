@@ -2,10 +2,10 @@
 
 from abc import ABC, abstractmethod
 
-from .error import CoreError
+from .error import ViewsError
 
 
-class BindingError(CoreError):
+class BindingError(ViewsError):
     """Base error for binding errors"""
     TargetUpdateError = 'Error occurred during target update'
 

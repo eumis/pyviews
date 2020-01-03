@@ -6,7 +6,7 @@ from collections import namedtuple
 ViewInfo = namedtuple('ViewInfo', ['view', 'line'])
 
 
-class CoreError(Exception):
+class ViewsError(Exception):
     """Base error class for custom exceptions"""
 
     def __init__(self, message, view_info: ViewInfo = None):
@@ -37,6 +37,6 @@ class CoreError(Exception):
     def _format_info(header, message):
         return '{0}: {1}{2}'.format(header, message, linesep)
 
-    def add_cause(self, error: Exception):
+    def add_cause(self, error: BaseException):
         """Adds cause error to error message"""
         self.add_info('Cause error', '{0} - {1}'.format(type(error).__name__, error))
