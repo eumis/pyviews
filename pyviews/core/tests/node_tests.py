@@ -2,7 +2,7 @@ from unittest.mock import Mock, call
 
 from pytest import fixture, mark
 
-from pyviews.core.node import Node, Property
+from pyviews.core.node import Node
 from pyviews.core.observable import InheritedDict
 from pyviews.core.xml import XmlNode
 
@@ -116,95 +116,3 @@ class NodeTests:
         node.destroy()
 
         assert node.on_destroy.call_args == call(node)
-
-
-class PropertyTests:
-    @staticmethod
-    def test_default_get():
-        """get() should return None by default"""
-        prop = Property('')
-
-        actual = prop.get()
-
-        assert actual is None
-
-    @staticmethod
-    @mark.parametrize('value', [
-        None,
-        1,
-        object(),
-        'value'
-    ])
-    def test_get_returns_set_value(value):
-        """get() should return value"""
-        prop = Property('')
-        prop.set(value)
-
-        actual = prop.get()
-
-        assert actual == value
-
-    @staticmethod
-    @mark.parametrize('node', [
-        None,
-        Node(Mock())
-    ])
-    def test_set_calls_setter(node):
-        """set() should pass node and value to setter"""
-        setter_mock = Mock()
-
-        def setter(setter_node, val):
-            setter_mock(setter_node, val)
-            return val
-
-        prop = Property('', setter, node)
-        value = 1
-
-        prop.set(value)
-
-        assert setter_mock.call_args == call(node, value)
-
-    @staticmethod
-    @mark.parametrize('previous, value', [
-        (1, None),
-        (None, 1),
-        (object(), object()),
-        ('value', 'another value')
-    ])
-    def test_set_calls_previous_setter(previous, value):
-        """set() should pass node, value and previous value to setter"""
-        setter_mock = Mock()
-
-        def setter(setter_node, val):
-            setter_mock(setter_node, val)
-            return val
-
-        prop = Property('', setter)
-
-        prop.set(previous)
-        prop.set(value)
-
-        assert setter_mock.call_args_list[0], call(None, previous, None)
-        assert setter_mock.call_args_list[1], call(None, value, previous)
-
-    @staticmethod
-    @mark.parametrize('node', [
-        None,
-        Node(Mock())
-    ])
-    def test_new_creates_property(node):
-        """new() should create same property for passed node"""
-        setter_mock = Mock()
-
-        def setter(setter_node, val):
-            setter_mock(setter_node, val)
-            return val
-
-        prop = Property('', setter)
-        value = 1
-
-        actual_prop = prop.new(node)
-        actual_prop.set(value)
-
-        assert actual_prop != prop
-        assert setter_mock.call_args, call(node, value)
