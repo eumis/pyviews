@@ -6,9 +6,9 @@
 - run_steps() function is moved to RenderingPipeline as run() method
 - create_node() function is made part of RenderingPipeline
 - RenderingPipeline is resolved by xml namespace and tag
-- Added RenderingIterator
-- get_inst_type renamed to get_type
-- create_inst renamed to create_instance
+- render() returns observable
+- get_inst_type() renamed to get_type()
+- create_inst() renamed to create_instance()
 - Rendering steps are renamed to pipes. Common pipes module is moved to core
 - Common modifiers module is moved to core
 - Removed CompiledExpression class

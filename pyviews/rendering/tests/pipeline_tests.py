@@ -4,7 +4,7 @@ from injectool import SingletonResolver, add_resolver, use_container
 from pytest import mark, fixture, raises
 
 from pyviews.code import Code
-from pyviews.core import Node, XmlNode, Observable, InstanceNode, xml
+from pyviews.core import Node, XmlNode, Observable, InstanceNode
 from pyviews.rendering.common import RenderingContext, RenderingError
 from pyviews.rendering.pipeline import RenderingPipeline, get_pipeline, create_instance, get_type
 
@@ -77,10 +77,21 @@ class RenderingPipelineTests:
         context = RenderingContext(init_args)
         context.xml_node = XmlNode(namespace, tag)
 
-        node = self.pipeline.run(context, Mock())
+        node = self.pipeline.run(context).run()
 
         assert isinstance(node, node_type)
         assert node.xml_node == context.xml_node
+
+    @staticmethod
+    def test_creates_node_using_passed_method():
+        """should create node using namespace as module and tag name as node class name"""
+        create_node, node, context = Mock(), Mock(), RenderingContext()
+        create_node.side_effect = lambda ctx: node if ctx == context else None
+        pipeline = RenderingPipeline(create_node=create_node)
+
+        actual = pipeline.run(context).run()
+
+        assert actual == node
 
     @mark.parametrize('namespace, tag', [
         ('pyviews.core.node', 'UnknownNode'),
@@ -91,7 +102,7 @@ class RenderingPipelineTests:
         xml_node = XmlNode(namespace, tag)
 
         with raises(RenderingError):
-            self.pipeline.run(RenderingContext({'xml_node': xml_node}), Mock())
+            self.pipeline.run(RenderingContext({'xml_node': xml_node}))
 
     @mark.parametrize('namespace, tag, inst_type', [
         ('pyviews.core.observable', 'Observable', Observable),
@@ -101,7 +112,7 @@ class RenderingPipelineTests:
         """should create instance and wrap it with InstanceNode"""
         xml_node = XmlNode(namespace, tag)
 
-        node = self.pipeline.run(RenderingContext({'xml_node': xml_node}), Mock())
+        node = self.pipeline.run(RenderingContext({'xml_node': xml_node})).run()
 
         assert isinstance(node, InstanceNode)
         assert isinstance(node.instance, inst_type)
@@ -110,13 +121,12 @@ class RenderingPipelineTests:
     def test_calls_pipes(self, pipes_count):
         """Should call pipes"""
         pipes = [Mock() for _ in range(pipes_count)]
-        pipeline = RenderingPipeline(pipes)
-        render_items = Mock()
+        pipeline = RenderingPipeline(pipes=pipes)
 
-        node = pipeline.run(self.context, render_items)
+        node = pipeline.run(self.context).run()
 
         for pipe in pipes:
-            assert pipe.call_args == call(node, self.context, render_items)
+            assert pipe.call_args == call(node, self.context)
 
 
 class GetTypeTests:
@@ -194,18 +204,38 @@ def test_create_inst(inst_type, init_args):
     assert isinstance(inst, inst_type)
 
 
-@mark.parametrize('xml_node', [
-    XmlNode('pyviews.core.node', 'Node'),
-    XmlNode('pyviews.core.observable', 'Observable'),
-])
-def test_resolves_pipeline_by_xml_node_namespace_and_name(xml_node):
-    """should resolver RenderingPipeline using namespace.name as parameter"""
-    with use_container():
-        resolver = SingletonResolver()
-        add_resolver(RenderingPipeline, resolver)
-        pipeline = RenderingPipeline()
-        resolver.set_value(pipeline, f'{xml_node.namespace}.{xml_node.name}')
+@fixture
+def get_pipeline_fixture(request):
+    request.cls.resolver = SingletonResolver()
+    add_resolver(RenderingPipeline, request.cls.resolver)
+    request.cls.pipeline = RenderingPipeline()
+
+
+@mark.usefixtures('container_fixture', 'get_pipeline_fixture')
+class GetPipelineTests:
+    """get_pipeline() tests"""
+
+    @mark.parametrize('xml_node, key', [
+        (XmlNode('pyviews.core.node', 'Node'), 'pyviews.core.node.Node'),
+        (XmlNode('pyviews.core.node', 'Node'), 'pyviews.core.node'),
+        (XmlNode('pyviews.core.observable', 'Observable'), 'pyviehs.core.observable.Observable'),
+        (XmlNode('pyviews.core.observable', 'Observable'), 'pyviews.core.observable')
+    ])
+    def test_resolves_pipeline_by_xml_node_namespace_and_name(self, xml_node, key):
+        """should resolve RenderingPipeline using namespace.name or namespace"""
+        self.resolver.set_value(self.pipeline, key)
 
         actual = get_pipeline(xml_node)
 
-        assert actual == pipeline
+        assert actual == self.pipeline
+
+    def test_resolves_by_name_first(self):
+        """should try resolve by namespace.name first"""
+        name_pipeline, namespace_pipeline = RenderingPipeline(), RenderingPipeline()
+        xml_node = XmlNode('pyviews.core.node', 'Node')
+        self.resolver.set_value(namespace_pipeline, xml_node.namespace)
+        self.resolver.set_value(name_pipeline, f'{xml_node.namespace}.{xml_node.name}')
+
+        actual = get_pipeline(xml_node)
+
+        assert actual == name_pipeline

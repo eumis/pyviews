@@ -2,8 +2,12 @@
 
 from os.path import join
 from sys import exc_info
+from typing import Union
 
 from injectool import resolve, dependency
+
+from rx import Observable
+from rx.core.typing import Observable as GenericObservable
 
 from pyviews.core import ViewsError, ViewInfo, Node
 from pyviews.core.xml import Parser, XmlNode
@@ -16,11 +20,11 @@ class ViewError(ViewsError):
 
 
 @dependency
-def render_view(view_name: str, context: RenderingContext) -> Node:
+def render_view(view_name: str, context: RenderingContext) -> Union[GenericObservable[Node], Observable]:
     """Renders view"""
     try:
-        xml_root = get_view_root(view_name)
-        return render(xml_root, context)
+        context.xml_node = get_view_root(view_name)
+        return render(context)
     except ViewsError as error:
         error.add_view_info(ViewInfo(view_name, None))
         raise

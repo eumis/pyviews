@@ -2,12 +2,14 @@ from unittest.mock import Mock, patch, call
 
 from injectool import add_singleton, add_function_resolver
 from pytest import fixture, mark, raises
+from rx import of
 
 from pyviews.binding import Binder, OnceRule, OnewayRule, BindingContext
 from pyviews.compilation import Expression
-from pyviews.core import XmlAttr, Node
+from pyviews.core import XmlAttr, Node, XmlNode
 from pyviews import pipes, modifiers
-from pyviews.pipes import apply_attribute, apply_attributes, call_set_attr, get_setter
+from pyviews.pipes import apply_attribute, apply_attributes, call_set_attr, get_setter, render_children
+from pyviews.rendering import render
 from pyviews.rendering.common import RenderingContext
 
 
@@ -50,13 +52,28 @@ class ApplyAttributeTests:
         (XmlAttr('one', '{1}'), 'one', 1),
         (XmlAttr('one', 'once:{1 + 1}'), 'one', 2)
     ])
-    def test_calls_setter(self, xml_attr: XmlAttr, key, value):
+    def test_imports_setter(self, xml_attr: XmlAttr, key, value):
         """ should call setter"""
         node = Node(Mock())
 
         apply_attribute(node, xml_attr)
 
         assert self.setter_mock.call_args == call(node, key, value)
+
+    @mark.parametrize('xml_attr, key, value', [
+        (XmlAttr('key', 'value'), 'key', 'value'),
+        (XmlAttr('', 'value'), '', 'value'),
+        (XmlAttr('one', '{1}'), 'one', 1),
+        (XmlAttr('one', 'once:{1 + 1}'), 'one', 2)
+    ])
+    def test_uses_passed_setter(self, xml_attr: XmlAttr, key, value):
+        """ should call setter"""
+        node = Node(Mock())
+        setter = Mock()
+
+        apply_attribute(node, xml_attr, setter)
+
+        assert setter.call_args == call(node, key, value)
 
     @mark.parametrize('xml_attr, binding_type, expr_body', [
         (XmlAttr('key', '{1}'), 'oneway', '1'),
@@ -116,3 +133,40 @@ def test_call_set_attr():
     call_set_attr(node, key, value)
 
     assert node_setter.call_args == call(node, key, value)
+
+
+@fixture
+def render_children_fixture(request):
+    render_mock = Mock()
+    add_singleton(render, render_mock)
+
+    xml_node = XmlNode('', '')
+    node = Node(xml_node)
+
+    request.cls.xml_node = xml_node
+    request.cls.node = node
+    request.cls.context = RenderingContext()
+    request.cls.render = render_mock
+
+
+@mark.usefixtures('container_fixture', 'render_children_fixture')
+class RenderChildrenTests:
+    """render_children pipe tests"""
+
+    @mark.parametrize('child_count', [1, 2, 5])
+    def test_renders_children(self, child_count):
+        self.xml_node.children.extend([Mock() for _ in range(child_count)])
+
+        render_children(self.node, self.context, lambda x, n, c: (x, n, c))
+
+        assert self.render.call_args_list == [call((xml_node, self.node, self.context)) for xml_node in
+                                              self.xml_node.children]
+
+    @mark.parametrize('child_count', [1, 2, 5])
+    def test_adds_children_to_node(self, child_count):
+        self.xml_node.children.extend([Mock() for _ in range(child_count)])
+        self.render.side_effect = lambda ctx: of(Node(ctx.xml_node))
+
+        render_children(self.node, self.context, lambda x, n, c: RenderingContext({'xml_node': x}))
+
+        assert [child.xml_node for child in self.node.children] == [xml_node for xml_node in self.xml_node.children]

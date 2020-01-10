@@ -1,13 +1,13 @@
 from unittest.mock import Mock
 
-from injectool import SingletonResolver, add_resolver
+from injectool import SingletonResolver, add_resolver, resolve
 from pytest import fixture, mark, raises
 
 from pyviews.code import Code
 from pyviews.core import XmlNode, Node
 from pyviews.rendering.common import RenderingContext
 from pyviews.rendering.iteration import RenderingIterator, render
-from pyviews.rendering.pipeline import RenderingPipeline, RenderingItem
+from pyviews.rendering.pipeline import RenderingPipeline
 
 
 @fixture
@@ -86,19 +86,23 @@ class RenderTests:
         context.xml_node = XmlNode(namespace, tag)
         self._set_pipeline(context.xml_node, RenderingPipeline())
 
-        node = render(context)
+        node = render(context).run()
 
         assert isinstance(node, node_type)
         assert node.xml_node == context.xml_node
 
     def test_runs_child_pipelines(self):
         """should run child pipelines"""
-        child_pipeline, child_context = Mock(), RenderingContext()
+        child_pipeline = Mock()
+        child_xml_node = XmlNode('pyviews.core.node', 'Node')
+        child_context = RenderingContext({'xml_node': child_xml_node})
 
-        def pipe(_, __, render_items):
-            render_items([RenderingItem(child_pipeline, child_context)])
+        def pipe(_, __):
+            child_render = resolve(render)
+            child_render(child_context)
 
         self._set_pipeline(self.xml_node, RenderingPipeline([pipe]))
+        self._set_pipeline(child_xml_node, child_pipeline)
 
         render(self.context)
 

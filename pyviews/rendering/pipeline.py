@@ -1,39 +1,36 @@
 """Rendering pipeline. Node creation from xml node, attribute setup and binding creation"""
 from importlib import import_module
 from inspect import signature, Parameter
-from typing import NamedTuple, List, Callable, Union, Any, Type, Tuple, Dict
+from typing import List, Callable, Union, Type, Tuple, Dict
 
-from injectool import resolve
+from injectool import resolve, DependencyError
+from rx import of, Observable
+from rx.core.typing import Observable as GenericObservable
 
 from pyviews.core import Node, InstanceNode, XmlNode
 from .common import RenderingContext, RenderingError
 
 
-class RenderingItem(NamedTuple):
-    """Tuple with rendering pipeline and rendering context"""
-    pipeline: 'RenderingPipeline'
-    context: RenderingContext
-
-
 class RenderingPipeline:
     """Creates and renders node"""
 
-    def __init__(self, pipes=None):
-        self._pipes: List[Callable[[Union[Node, InstanceNode, Any], RenderingContext], None]] = pipes if pipes else []
+    def __init__(self, pipes=None, create_node=None):
+        self._pipes: List[Callable[[RenderingContext], None]] = pipes if pipes else []
+        self._create_node: Callable[[RenderingContext], Node] = create_node if create_node else _create_node
 
-    def run(self, context: RenderingContext, render_items: Callable[[List[RenderingItem]], None]) -> Node:
+    def run(self, context: RenderingContext) -> Union[Observable, GenericObservable[Node]]:
         node = self._create_node(context)
         for pipe in self._pipes:
-            pipe(node, context, render_items)
-        return node
+            pipe(node, context)
+        return of(node)
 
-    @staticmethod
-    def _create_node(context: RenderingContext) -> Node:
-        inst_type = get_type(context.xml_node)
-        inst = create_instance(inst_type, context)
-        if not isinstance(inst, Node):
-            inst = InstanceNode(inst, context.xml_node, context.node_globals)
-        return inst
+
+def _create_node(context: RenderingContext) -> Node:
+    inst_type = get_type(context.xml_node)
+    inst = create_instance(inst_type, context)
+    if not isinstance(inst, Node):
+        inst = InstanceNode(inst, context.xml_node, context.node_globals)
+    return inst
 
 
 def get_type(xml_node: XmlNode) -> Type:
@@ -46,7 +43,7 @@ def get_type(xml_node: XmlNode) -> Type:
         raise RenderingError(message, xml_node.view_info)
 
 
-def create_instance(instance_type: Type, context: RenderingContext):
+def create_instance(instance_type: Type, context: Union[RenderingContext, dict]):
     """Creates class instance with args"""
     args, kwargs = _get_init_args(instance_type, context)
     return instance_type(*args, **kwargs)
@@ -91,4 +88,7 @@ def _get_kwargs(parameters: list, init_args: dict) -> dict:
 
 def get_pipeline(xml_node: XmlNode) -> RenderingPipeline:
     key = f'{xml_node.namespace}.{xml_node.name}'
-    return resolve(RenderingPipeline, key)
+    try:
+        return resolve(RenderingPipeline, key)
+    except DependencyError:
+        return resolve(RenderingPipeline, xml_node.namespace)
