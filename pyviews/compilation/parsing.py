@@ -30,8 +30,9 @@ def parse_expression(source: str) -> ExpressionSource:
         raise ExpressionError(msg, source)
     if not source.startswith('{'):
         [type_, source] = source.split(':', 1)
-    elif source.endswith('}}'):
+    elif source.startswith('{{') and source.endswith('}}'):
         type_ = 'twoways'
+        source = source[1:-1]
     else:
         type_ = 'oneway'
     return ExpressionSource(type_, source[1:-1])

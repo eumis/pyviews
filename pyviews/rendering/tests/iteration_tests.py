@@ -1,60 +1,11 @@
-from unittest.mock import Mock
-
-from injectool import SingletonResolver, add_resolver, resolve
-from pytest import fixture, mark, raises
+from injectool import SingletonResolver, add_resolver
+from pytest import fixture, mark
 
 from pyviews.code import Code
 from pyviews.core import XmlNode, Node
 from pyviews.rendering.common import RenderingContext
-from pyviews.rendering.iteration import RenderingIterator, render
+from pyviews.rendering.iteration import render
 from pyviews.rendering.pipeline import RenderingPipeline
-
-
-@fixture
-def rendering_iterator_fixture(request):
-    root = Mock()
-    iterator = RenderingIterator(root)
-
-    request.cls.root = root
-    request.cls.iterator = iterator
-
-
-@mark.usefixtures('rendering_iterator_fixture')
-class RenderingIteratorTests:
-    def test_uses_root(self):
-        actual = next(self.iterator)
-
-        assert actual == self.root
-
-    def test_raises_stop_iteration(self):
-        next(self.iterator)
-
-        with raises(StopIteration):
-            next(self.iterator)
-
-    @mark.parametrize('items', [
-        [Mock()],
-        [Mock(), Mock()],
-        [Mock(), Mock(), Mock()]
-    ])
-    def test_inserts_adds_items(self, items):
-        next(self.iterator)
-
-        self.iterator.insert(items)
-
-        actual = list(self.iterator)
-        assert actual == items
-
-    @mark.parametrize('items', [
-        [Mock()],
-        [Mock(), Mock()],
-        [Mock(), Mock(), Mock()]
-    ])
-    def test_inserts_after_current(self, items):
-        self.iterator.insert(items)
-
-        actual = list(self.iterator)
-        assert actual == items + [self.root]
 
 
 @fixture
@@ -80,30 +31,13 @@ class RenderTests:
         ('pyviews.core.node', 'Node', Node, {}),
         ('pyviews.code', 'Code', Code, {'parent_node': Node(XmlNode('', ''))})
     ])
-    def test_returns_created_node(self, namespace, tag, node_type, init_args):
-        """should return node created by pipeline"""
+    def test_runs_pipeline(self, namespace, tag, node_type, init_args):
+        """should run pipeline and return node created by pipeline"""
         context = RenderingContext(init_args)
         context.xml_node = XmlNode(namespace, tag)
         self._set_pipeline(context.xml_node, RenderingPipeline())
 
-        node = render(context).run()
+        node = render(context)
 
         assert isinstance(node, node_type)
         assert node.xml_node == context.xml_node
-
-    def test_runs_child_pipelines(self):
-        """should run child pipelines"""
-        child_pipeline = Mock()
-        child_xml_node = XmlNode('pyviews.core.node', 'Node')
-        child_context = RenderingContext({'xml_node': child_xml_node})
-
-        def pipe(_, __):
-            child_render = resolve(render)
-            child_render(child_context)
-
-        self._set_pipeline(self.xml_node, RenderingPipeline([pipe]))
-        self._set_pipeline(child_xml_node, child_pipeline)
-
-        render(self.context)
-
-        assert child_pipeline.run.call_args[0][0] == child_context

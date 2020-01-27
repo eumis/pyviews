@@ -14,6 +14,7 @@ from pyviews.compilation.parsing import is_expression, parse_expression, Express
     ('twoways:{conv:{asdf}}', True),
     ('twoways:{asdf}', True),
     ('twoways:{asdf}', True),
+    ('bind:{asdf}:{qwerty}', True),
     ('oneway{asdf}', False),
     (':{asdf}', False),
     ('{asdf', False),
@@ -32,11 +33,13 @@ def test_is_expression(expr: str, expected: bool):
     ('once:{asdf}', ('once', 'asdf')),
     ('oneway:{asdf}', ('oneway', 'asdf')),
     ('twoways:{asdf}', ('twoways', 'asdf')),
-    ('{{asdf}}', ('twoways', '{asdf}')),
-    ('{to_int:{asdf}}', ('twoways', 'to_int:{asdf}')),
+    ('{{asdf}}', ('twoways', 'asdf')),
+    ('{to_int:{asdf}}', ('oneway', 'to_int:{asdf}')),
+    ('binding:{to_int:{asdf}}', ('binding', 'to_int:{asdf}')),
     ('twoways:{{asdf}}', ('twoways', '{asdf}')),
     ('oneway:{{asdf}}', ('oneway', '{asdf}')),
     ('twoways:{to_int:{asdf}}', ('twoways', 'to_int:{asdf}')),
+    ('bind:{qwer}:{asdf}', ('bind', 'qwer}:{asdf')),
 ])
 def test_parse_expression(expr: str, expected: ExpressionSource):
     """parse_expression() should return tuple (binding_type, expression body)"""

@@ -4,8 +4,6 @@ from inspect import signature, Parameter
 from typing import List, Callable, Union, Type, Tuple, Dict
 
 from injectool import resolve, DependencyError
-from rx import of, Observable
-from rx.core.typing import Observable as GenericObservable
 
 from pyviews.core import Node, InstanceNode, XmlNode
 from .common import RenderingContext, RenderingError
@@ -18,11 +16,11 @@ class RenderingPipeline:
         self._pipes: List[Callable[[RenderingContext], None]] = pipes if pipes else []
         self._create_node: Callable[[RenderingContext], Node] = create_node if create_node else _create_node
 
-    def run(self, context: RenderingContext) -> Union[Observable, GenericObservable[Node]]:
+    def run(self, context: RenderingContext) -> Node:
         node = self._create_node(context)
         for pipe in self._pipes:
             pipe(node, context)
-        return of(node)
+        return node
 
 
 def _create_node(context: RenderingContext) -> Node:

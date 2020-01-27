@@ -2,7 +2,6 @@ from unittest.mock import Mock, patch, call
 
 from injectool import add_singleton, add_function_resolver
 from pytest import fixture, mark, raises
-from rx import of
 
 from pyviews.binding import Binder, OnceRule, OnewayRule, BindingContext
 from pyviews.compilation import Expression
@@ -165,7 +164,7 @@ class RenderChildrenTests:
     @mark.parametrize('child_count', [1, 2, 5])
     def test_adds_children_to_node(self, child_count):
         self.xml_node.children.extend([Mock() for _ in range(child_count)])
-        self.render.side_effect = lambda ctx: of(Node(ctx.xml_node))
+        self.render.side_effect = lambda ctx: Node(ctx.xml_node)
 
         render_children(self.node, self.context, lambda x, n, c: RenderingContext({'xml_node': x}))
 

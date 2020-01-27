@@ -10,7 +10,6 @@ pyviews = {editable = true,path = "."}
 pytest = "*"
 injectool = "*"
 pylint = "*"
-rx = "*"
 
 [requires]
 python_version = "3"

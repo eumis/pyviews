@@ -48,5 +48,5 @@ def render_children(node: Node, context: RenderingContext,
                         [XmlNode, Union[Node, Any], Union[RenderingContext, Any]], RenderingContext]):
     """renders node children"""
     for xml_node in node.xml_node.children:
-        render(get_child_context(xml_node, node, context)). \
-            subscribe(on_next=lambda child: node.add_child(child))
+        child_node = render(get_child_context(xml_node, node, context))
+        node.add_child(child_node)

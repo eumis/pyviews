@@ -22,21 +22,13 @@ def set_global(node: Node, key: str, value: Any):
     node.node_globals[key] = value
 
 
-def call(node: (Node, InstanceNode), key: str, value: Any):
+class Args:
+    def __init__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+
+
+def call(node: (Node, InstanceNode), key: str, value: Args):
     """Calls node or node instance method"""
-    value = _to_list(value)
-    if not value or not isinstance(value[-1], dict):
-        value.append({})
-    args, kwargs = value[0:-1], value[-1]
     target = node if hasattr(node, key) else node.instance
-    getattr(target, key)(*args, **kwargs)
-
-
-def _to_list(value: Any):
-    if value is None:
-        return []
-    if isinstance(value, tuple):
-        return list(value)
-    if not isinstance(value, list):
-        return [value]
-    return value
+    getattr(target, key)(*value.args, **value.kwargs)
