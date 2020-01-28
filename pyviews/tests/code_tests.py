@@ -10,7 +10,7 @@ from pyviews.core.xml import XmlNode
 from pyviews.rendering.common import RenderingContext
 
 
-class RunCodeTests:
+class CodeTests:
     """Code.run_code tests"""
 
     @mark.parametrize('content, globals_dict, expected', [
@@ -31,7 +31,7 @@ class RunCodeTests:
          {'none': None, 'one': 1, 'str_value': 'str_value', 'global_key': 'key'}
          )
     ])
-    def test_adds_methods_definitions(self, content, globals_dict, expected):
+    def test_run_adds_methods_definitions(self, content, globals_dict, expected):
         """defined functions should be added to parent globals"""
         parent_node = Node(Mock())
         code = self._get_code_node(content)
@@ -60,7 +60,7 @@ class RunCodeTests:
          {'one': 1, 'str_value': 'str_value', 'global_key': 'key'}
          )
     ])
-    def test_adds_variables_definitions(self, content, globals_dict, expected):
+    def test_run_adds_variables_definitions(self, content, globals_dict, expected):
         """variables should be added to parent globals"""
         parent_node = Node(Mock())
         code = self._get_code_node(content)
@@ -84,7 +84,7 @@ class RunCodeTests:
              pass
          ''', {})
     ])
-    def test_raises_error(self, content, globals_dict):
+    def test_run_raises_error(self, content, globals_dict):
         """should raise CompilationError for invalid code"""
         parent_node = Node(Mock())
         code = self._get_code_node(content)

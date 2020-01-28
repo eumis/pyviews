@@ -2,6 +2,7 @@
 
 import ast
 from sys import exc_info
+from types import CodeType
 from typing import List, Callable, Any, Iterator, NamedTuple
 from collections import namedtuple
 from pyviews.core import ViewsError
@@ -30,7 +31,7 @@ class Expression:
 
     def __init__(self, code):
         self._code: str = code
-        self._compiled_code: ast.AST
+        self._compiled_code: CodeType
         self._object_tree: ObjectNode
         if not self._init_from_cache():
             self._compiled_code = self._compile()
@@ -46,7 +47,7 @@ class Expression:
             return False
         return True
 
-    def _compile(self) -> ast.AST:
+    def _compile(self) -> CodeType:
         try:
             code = self._code if self._code.strip(' ') else 'None'
             return compile(code, '<string>', 'eval')

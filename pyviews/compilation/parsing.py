@@ -14,7 +14,7 @@ class ExpressionError(ViewsError):
 
 
 EXPRESSION_REGEX = compile_regex(r'([a-zA-Z_]{1,}\:){0,1}\{.*\}')
-ExpressionSource = namedtuple('Expression', ['type', 'code'])
+ExpressionSource = namedtuple('Expression', ['binding_type', 'code'])
 
 
 def is_expression(source: str) -> bool:
@@ -29,10 +29,10 @@ def parse_expression(source: str) -> ExpressionSource:
             .format(EXPRESSION_REGEX)
         raise ExpressionError(msg, source)
     if not source.startswith('{'):
-        [type_, source] = source.split(':', 1)
+        [binding_type, source] = source.split(':', 1)
     elif source.startswith('{{') and source.endswith('}}'):
-        type_ = 'twoways'
+        binding_type = 'twoways'
         source = source[1:-1]
     else:
-        type_ = 'oneway'
-    return ExpressionSource(type_, source[1:-1])
+        binding_type = 'oneway'
+    return ExpressionSource(binding_type, source[1:-1])

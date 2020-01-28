@@ -1,8 +1,7 @@
 from importlib import import_module
-from typing import Any
 import unittest
 from unittest import TestCase
-from unittest.mock import call as call_args, Mock
+from unittest.mock import Mock, call as call_mock
 
 from injectool import use_container, add_singleton
 from pytest import mark, raises
@@ -63,7 +62,7 @@ class TestInstanceNode(InstanceNode):
 
 class CallTests:
     @staticmethod
-    @mark.parametrize('value', [
+    @mark.parametrize('args', [
         Args(None),
         Args([]),
         Args(()),
@@ -82,10 +81,10 @@ class CallTests:
 
         call(node, 'mocked_method', args)
 
-        assert node.mocked_method.call_args == call(*args.args, **args.kwargs)
+        assert node.mocked_method.call_args == call_mock(*args.args, **args.kwargs)
 
     @staticmethod
-    @mark.parametrize('value', [
+    @mark.parametrize('args', [
         Args(None),
         Args([]),
         Args(()),
@@ -104,7 +103,7 @@ class CallTests:
 
         call(node, 'mocked_method', args)
 
-        assert node.instance.mocked_method.call_args == call(*args.args, **args.kwargs)
+        assert node.instance.mocked_method.call_args == call_mock(*args.args, **args.kwargs)
 
     @staticmethod
     @mark.parametrize('node, method', [
@@ -120,7 +119,7 @@ class CallTests:
         node = TestInstanceNode()
         node.mocked_method = Mock()
 
-        call(node, 'mocked_method', 'value')
+        call(node, 'mocked_method', Args())
 
         assert node.mocked_method.called
         assert not node.instance.mocked_method.called

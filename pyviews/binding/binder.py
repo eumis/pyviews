@@ -1,4 +1,5 @@
 """Binder"""
+
 from abc import abstractmethod, ABC
 from typing import Optional, Union
 
@@ -6,7 +7,7 @@ from pyviews.core import BindingError, Node, Modifier, XmlAttr, Binding, Instanc
 
 
 class BindingContext(dict):
-    """Used as binding arguments container, passed to binder and rule step"""
+    """Used as binding arguments passed to binder and rule step"""
 
     @property
     def node(self) -> Union[Node, InstanceNode]:
@@ -78,7 +79,7 @@ class Binder:
         except (KeyError, StopIteration):
             return None
 
-    def apply(self, binding_type, context: BindingContext):
+    def apply(self, binding_type: str, context: BindingContext):
         """Returns apply function"""
         rule = self.find_rule(binding_type, context)
         if rule is None:

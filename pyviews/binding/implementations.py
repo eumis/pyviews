@@ -213,7 +213,7 @@ class TwoWaysBinding(Binding):
 
     @property
     def add_error_info(self):
-        """Callback to add info to catched error"""
+        """Callback to add info to error"""
         return self._add_error_info
 
     @add_error_info.setter

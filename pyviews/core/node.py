@@ -34,7 +34,7 @@ class Node:
         """Returns child nodes"""
         return self._children
 
-    def set_attr(self, key: str, value):
+    def set_attr(self, key: str, value: Any):
         """Sets node attribute. Can be customized by attr_setter property"""
         self.attr_setter(self, key, value)
 
@@ -43,11 +43,11 @@ class Node:
         binding.add_error_info = lambda error: error.add_view_info(self._xml_node.view_info)
         self._bindings.append(binding)
 
-    def add_child(self, child):
+    def add_child(self, child: 'Node'):
         """Adds rendered child"""
         self._children.append(child)
 
-    def add_children(self, children: List):
+    def add_children(self, children: List['Node']):
         """Adds list of rendered children"""
         self._children = self._children + children
 
