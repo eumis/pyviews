@@ -245,3 +245,30 @@ def get_expression_target(expression: Expression, expr_vars: InheritedDict) -> B
     if root.children[0].children:
         return PropertyExpressionTarget(expression, expr_vars)
     return GlobalValueExpressionTarget(expression, expr_vars)
+
+
+class InlineBinding(Binding):
+    def __init__(self, target: BindingTarget, bind_expression: Expression, value_expression: Expression,
+                 expr_vars: InheritedDict):
+        super().__init__()
+        self._target: BindingTarget = target
+        self._bind_expression: Expression = bind_expression
+        self._value_expression: Expression = value_expression
+        self._expression_vars = expr_vars
+
+        self._destroy = None
+
+    def bind(self):
+        self.destroy()
+        bind = self._bind_expression.execute(self._expression_vars.to_dictionary())
+        self._update_target()
+        self._destroy = bind(self._update_target)
+
+    def _update_target(self):
+        value = self._value_expression.execute(self._expression_vars.to_dictionary())
+        self._target.on_change(value)
+
+    def destroy(self):
+        if self._destroy:
+            self._destroy()
+            self._destroy = None

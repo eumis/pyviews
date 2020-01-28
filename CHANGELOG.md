@@ -17,6 +17,8 @@
 - removed injection of Expression class
 - CoreError is renamed to ViewsError
 - removed Node.properties and Property class
+- updated error message for resolving RenderingPipeline
+- added Args class to pass args to call modifier
 
 ## 2.3.0
 

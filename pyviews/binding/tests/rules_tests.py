@@ -5,7 +5,7 @@ from pytest import mark, fixture
 from pyviews.binding import ExpressionBinding
 from pyviews.binding.binder import BindingContext
 from pyviews.core import XmlAttr, InheritedDict
-from pyviews.binding.rules import OnceRule, OnewayRule
+from pyviews.binding.rules import OnceRule, OnewayRule, InlineRule
 
 
 @fixture
@@ -106,7 +106,7 @@ class OnewayRuleTests:
 
         assert self.modifier.call_args == call(node, self.xml_attr.name, new_value)
 
-    def test_adds_binding_to_node(self):
+    def test_apply_returns_binding(self):
         """apply() should return expression binding"""
         node = Mock(node_globals=InheritedDict())
 
@@ -118,3 +118,18 @@ class OnewayRuleTests:
         }))
 
         assert isinstance(actual_binding, ExpressionBinding)
+
+
+@fixture
+def inline_rule_fixture(request):
+    request.cls.rule = InlineRule()
+
+
+@mark.usefixtures('inline_rule_fixture')
+class InlineRuleTests:
+    """InlineRule tests"""
+
+    def test_suitable_returns_true(self):
+        """suitable should return true"""
+
+        assert self.rule.suitable(BindingContext())

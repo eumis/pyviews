@@ -1,8 +1,11 @@
+from typing import Callable
+from unittest.mock import Mock
+
 from pytest import fixture, mark, raises
 
 from pyviews.core import ObservableEntity, InheritedDict, BindingError
 from pyviews.compilation import Expression
-from pyviews.binding.implementations import PropertyTarget, FunctionTarget
+from pyviews.binding.implementations import PropertyTarget, FunctionTarget, InlineBinding
 from pyviews.binding.implementations import PropertyExpressionTarget, GlobalValueExpressionTarget
 from pyviews.binding.implementations import ExpressionBinding, ObservableBinding, TwoWaysBinding
 
@@ -296,3 +299,58 @@ class TwoWaysBindingTests:
         self.observable_inst.int_value = new_observable_value
 
         assert self.expr_inst.int_value == old_value
+
+
+@fixture
+def inline_binding_fixture(request):
+    target_instance = InnerViewModel(0, '0')
+    source_instance = InnerViewModel(1, '1')
+    request.cls.update_target = None
+    destroy = Mock()
+
+    def bind(update_target: Callable[[], None]):
+        request.cls.update_target = update_target
+
+        return destroy
+
+    expr_globals = InheritedDict({'vm': source_instance, 'bind': bind})
+    bind_expression = Expression('bind')
+    value_expression = Expression('vm.int_value')
+
+    observable_target = PropertyTarget(target_instance, 'int_value', setattr)
+    binding = InlineBinding(observable_target, bind_expression, value_expression, expr_globals)
+    binding.bind()
+
+    request.cls.target_instance = target_instance
+    request.cls.source_instance = source_instance
+    request.cls.binding = binding
+    request.cls.destroy = destroy
+
+
+@mark.usefixtures('inline_binding_fixture')
+class InlineBindingTests:
+    """InlineBinding class tests"""
+
+    def test_updates_target_on_binding(self):
+        """bind() should update target with value expression result"""
+        self.update_target()
+
+        assert self.target_instance.int_value == self.source_instance.int_value
+
+    def test_bind_calls_bind_function_from_bind_expression(self):
+        """bind() method calls bind function returned from bind_expression with update_target() function"""
+        assert self.update_target is not None
+
+    def test_update_target_updates_target(self):
+        """update_target() passed by binding should evaluate value_expression and update target with it"""
+        self.source_instance.int_value = 2
+
+        self.update_target()
+
+        assert self.target_instance.int_value == self.source_instance.int_value
+
+    def test_destroy_called(self):
+        """destroy() should call function returned as bind result"""
+        self.binding.destroy()
+
+        assert self.destroy.called
