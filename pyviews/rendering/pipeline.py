@@ -89,4 +89,9 @@ def get_pipeline(xml_node: XmlNode) -> RenderingPipeline:
     try:
         return resolve(RenderingPipeline, key)
     except DependencyError:
-        return resolve(RenderingPipeline, xml_node.namespace)
+        try:
+            return resolve(RenderingPipeline, xml_node.namespace)
+        except DependencyError as error:
+            render_error = RenderingError('RenderingPipeline is not found')
+            render_error.add_info('Used keys to resolve pipeline', f'{key}, {xml_node.namespace}')
+            raise render_error from error

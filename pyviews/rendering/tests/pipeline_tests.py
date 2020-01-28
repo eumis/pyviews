@@ -239,3 +239,9 @@ class GetPipelineTests:
         actual = get_pipeline(xml_node)
 
         assert actual == name_pipeline
+
+    @staticmethod
+    def test_raises_rendering_error_for_missed_pipeline():
+        """should raise RenderingError if pipeline is not found"""
+        with raises(RenderingError):
+            get_pipeline(XmlNode('pyviews.core.node', 'Node'))

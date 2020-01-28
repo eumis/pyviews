@@ -112,7 +112,7 @@ class CallTests:
     ])
     def test_raises_if_method_not_found(node: Node, method: str):
         with raises(AttributeError):
-            call(node, method, 'value')
+            call(node, method, Args())
 
     @staticmethod
     def test_uses_node_method_first():
