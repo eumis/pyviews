@@ -4,7 +4,7 @@
 
 - updated injectool up to 2.0.1
 - run_steps() function is moved to RenderingPipeline as run() method
-- create_node() function is made part of RenderingPipeline
+- create_node() function is part of RenderingPipeline
 - RenderingPipeline is resolved by xml namespace and tag
 - render() returns observable
 - get_inst_type() renamed to get_type()
@@ -19,6 +19,7 @@
 - removed Node.properties and Property class
 - updated error message for resolving RenderingPipeline
 - added Args class to pass args to call modifier
+- added inline binding
 
 ## 2.3.0
 

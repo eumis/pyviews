@@ -1,5 +1,5 @@
 """Binding and BindingTarget default implementations"""
-
+from functools import partial
 from re import compile as compile_regex
 from sys import exc_info
 from typing import Any
@@ -8,29 +8,6 @@ from pyviews.compilation import Expression, ObjectNode
 from pyviews.core import Observable, InheritedDict
 from pyviews.core import Binding, BindingTarget
 from pyviews.core import ViewsError, BindingError
-
-
-class PropertyTarget(BindingTarget):
-    """Instance modifier is called on change"""
-
-    def __init__(self, instance, prop, modifier):
-        self.inst = instance
-        self.prop = prop
-        self._modifier = modifier
-
-    def on_change(self, value):
-        """Calls modifier on instance with passed value"""
-        self._modifier(self.inst, self.prop, value)
-
-
-class FunctionTarget(BindingTarget):
-    """Function is called on change"""
-
-    def __init__(self, func):
-        self.func = func
-
-    def on_change(self, value):
-        self.func(value)
 
 
 class Dependency:
@@ -52,9 +29,9 @@ class Dependency:
 class ExpressionBinding(Binding):
     """Binds target to expression result"""
 
-    def __init__(self, target: BindingTarget, expression: Expression, expr_vars: InheritedDict):
+    def __init__(self, on_update: BindingTarget, expression: Expression, expr_vars: InheritedDict):
         super().__init__()
-        self._target = target
+        self._on_update = on_update
         self._expression = expression
         self._dependencies = []
         self._vars = expr_vars
@@ -108,7 +85,7 @@ class ExpressionBinding(Binding):
 
     def _update_target(self):
         value = self._expression.execute(self._vars.to_dictionary())
-        self._target.on_change(value)
+        self._on_update(value)
 
     def destroy(self):
         for dependency in self._dependencies:
@@ -116,64 +93,60 @@ class ExpressionBinding(Binding):
         self._dependencies = []
 
 
-class PropertyExpressionTarget(BindingTarget):
-    """Property is set on change. Instance and property are defined in expression"""
+def get_update_property_expression(expression: Expression, expr_globals: InheritedDict) -> BindingTarget:
+    var_tree = expression.get_object_tree()
+    _validate_property_expression(var_tree, expression.code)
+    return partial(_on_property_expression_update, var_tree, expr_globals)
 
-    def __init__(self, expression: Expression, expr_globals: InheritedDict):
-        self._expression_code = expression.code
-        self._var_tree = expression.get_object_tree()
-        self._validate()
-        self._vars = expr_globals
 
-    def _validate(self):
-        if len(self._var_tree.children) != 1 or not self._var_tree.children[0].children:
-            error = BindingError('Expression should be property expression')
-            error.add_info('Expression', self._expression_code)
-            raise error
+def _validate_property_expression(var_tree: ObjectNode, source_code: str):
+    if len(var_tree.children) != 1 or not var_tree.children[0].children:
+        error = BindingError('Expression should be property expression')
+        error.add_info('Expression', source_code)
+        raise error
 
-    def on_change(self, value):
-        (inst, prop) = self._get_target()
-        setattr(inst, prop, value)
 
-    def _get_target(self):
-        entry = self._var_tree.children[0]
-        inst = self._vars[entry.key]
+def _on_property_expression_update(_var_tree: ObjectNode, _vars: InheritedDict, value: Any):
+    (inst, prop) = _get_target(_var_tree, _vars)
+    setattr(inst, prop, value)
+
+
+def _get_target(var_tree: ObjectNode, expr_vars: InheritedDict):
+    entry = var_tree.children[0]
+    inst = expr_vars[entry.key]
+    next_key = entry.children[0].key
+    entry = entry.children[0]
+
+    while entry.children:
+        inst = getattr(inst, next_key)
         next_key = entry.children[0].key
         entry = entry.children[0]
 
-        while entry.children:
-            inst = getattr(inst, next_key)
-            next_key = entry.children[0].key
-            entry = entry.children[0]
-
-        return inst, next_key
+    return inst, next_key
 
 
-class GlobalValueExpressionTarget(BindingTarget):
-    """Global dictionary value is set on change. Key are defined in expression"""
+def get_update_global_value(expression: Expression, expr_vars: InheritedDict) -> BindingTarget:
+    _validate_global_value_expression(expression.get_object_tree(), expression.code)
+    return partial(_on_global_value_update, expr_vars, expression.code)
 
-    def __init__(self, expression: Expression, expr_vars: InheritedDict):
-        root = expression.get_object_tree()
-        self._key = expression.code
-        self._vars = expr_vars
-        self._validate(root)
 
-    def _validate(self, root):
-        if len(root.children) != 1 or root.children[0].children:
-            error = BindingError('Expression should be dictionary key')
-            error.add_info('Expression', self._key)
-            raise error
+def _validate_global_value_expression(root: ObjectNode, source_code: str):
+    if len(root.children) != 1 or root.children[0].children:
+        error = BindingError('Expression should be dictionary key')
+        error.add_info('Expression', source_code)
+        raise error
 
-    def on_change(self, value):
-        self._vars[self._key] = value
+
+def _on_global_value_update(_vars: InheritedDict, key: str, value):
+    _vars[key] = value
 
 
 class ObservableBinding(Binding):
-    """Binds target to observable property"""
+    """Binds to observable property"""
 
-    def __init__(self, target: BindingTarget, observable: Observable, prop):
+    def __init__(self, on_update: BindingTarget, observable: Observable, prop):
         super().__init__()
-        self._target = target
+        self._on_update = on_update
         self._observable = observable
         self._prop = prop
 
@@ -196,7 +169,7 @@ class ObservableBinding(Binding):
             raise error from info[1]
 
     def _update_target(self, value):
-        self._target.on_change(value)
+        self._on_update(value)
 
     def destroy(self):
         self._observable.release(self._prop, self._update_callback)
@@ -243,15 +216,15 @@ def get_expression_target(expression: Expression, expr_vars: InheritedDict) -> B
         error.add_info('Expression', expression.code)
         raise error
     if root.children[0].children:
-        return PropertyExpressionTarget(expression, expr_vars)
-    return GlobalValueExpressionTarget(expression, expr_vars)
+        return get_update_property_expression(expression, expr_vars)
+    return get_update_global_value(expression, expr_vars)
 
 
 class InlineBinding(Binding):
-    def __init__(self, target: BindingTarget, bind_expression: Expression, value_expression: Expression,
+    def __init__(self, on_update: BindingTarget, bind_expression: Expression, value_expression: Expression,
                  expr_vars: InheritedDict):
         super().__init__()
-        self._target: BindingTarget = target
+        self._on_update: BindingTarget = on_update
         self._bind_expression: Expression = bind_expression
         self._value_expression: Expression = value_expression
         self._expression_vars = expr_vars
@@ -266,7 +239,7 @@ class InlineBinding(Binding):
 
     def _update_target(self):
         value = self._value_expression.execute(self._expression_vars.to_dictionary())
-        self._target.on_change(value)
+        self._on_update(value)
 
     def destroy(self):
         if self._destroy:

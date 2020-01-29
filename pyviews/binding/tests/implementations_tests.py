@@ -1,3 +1,4 @@
+from functools import partial
 from typing import Callable
 from unittest.mock import Mock
 
@@ -5,8 +6,7 @@ from pytest import fixture, mark, raises
 
 from pyviews.core import ObservableEntity, InheritedDict, BindingError
 from pyviews.compilation import Expression
-from pyviews.binding.implementations import PropertyTarget, FunctionTarget, InlineBinding
-from pyviews.binding.implementations import PropertyExpressionTarget, GlobalValueExpressionTarget
+from pyviews.binding.implementations import InlineBinding, get_update_global_value, get_update_property_expression
 from pyviews.binding.implementations import ExpressionBinding, ObservableBinding, TwoWaysBinding
 
 
@@ -56,24 +56,24 @@ def target_entity_fixture():
     return SomeEntity(), 25
 
 
-def test_property_target(target_entity):
-    """"PropertyTarget.on_change test"""
-    inst, new_val = target_entity
-    target = PropertyTarget(inst, 'int_value', setattr)
+# def test_property_target(target_entity):
+#     """"PropertyTarget.on_change test"""
+#     inst, new_val = target_entity
+#     target = PropertyTarget(inst, 'int_value', setattr)
+#
+#     target.on_change(new_val)
+#
+#     assert inst.int_value == new_val
 
-    target.on_change(new_val)
 
-    assert inst.int_value == new_val
-
-
-def test_function_target(target_entity):
-    """"FunctionTarget.on_change test"""
-    inst, new_val = target_entity
-    target = FunctionTarget(lambda value: setattr(inst, 'int_value', value))
-
-    target.on_change(new_val)
-
-    assert inst.int_value == new_val
+# def test_function_target(target_entity):
+#     """"FunctionTarget.on_change test"""
+#     inst, new_val = target_entity
+#     target = FunctionTarget(lambda value: setattr(inst, 'int_value', value))
+#
+#     target.on_change(new_val)
+#
+#     assert inst.int_value == new_val
 
 
 @fixture
@@ -83,7 +83,7 @@ def expression_binding_fixture(request):
     expression = Expression(
         'str(vm.int_value) + vm.inner_vm.str_value + vm.get_val() + vm.inner_vm.get_val()')
     target_inst = SomeEntity()
-    target = PropertyTarget(target_inst, 'str_value', setattr)
+    target = partial(setattr, target_inst, 'str_value')
     binding = ExpressionBinding(target, expression, InheritedDict({'vm': view_model}))
     binding.bind()
 
@@ -143,12 +143,12 @@ def expression_target_fixture(request):
     expression = Expression(code)
     expr_globals = InheritedDict({'vm': parent})
 
-    request.cls.target = PropertyExpressionTarget(expression, expr_globals)
+    request.cls.on_update = get_update_property_expression(expression, expr_globals)
     request.cls.target_vm = inner if is_inner else parent
 
 
 @mark.usefixtures('expression_target_fixture')
-class PropertyExpressionTargetTests:
+class GetUpdatePropertyExpressionTests:
     """PropertyExpressionTarget tests"""
 
     @staticmethod
@@ -156,13 +156,13 @@ class PropertyExpressionTargetTests:
     def test_raises(expression):
         """Should raise BindingError if expression is not property expression"""
         with raises(BindingError):
-            PropertyExpressionTarget(Expression(expression), InheritedDict())
+            get_update_property_expression(Expression(expression), InheritedDict())
 
     def test_change(self):
         """PropertyExpressionTarget.on_change should update target property"""
         new_val = self.target_vm.int_value + 5
 
-        self.target.on_change(new_val)
+        self.on_update(new_val)
 
         assert self.target_vm.int_value == new_val
 
@@ -173,7 +173,7 @@ def expr_globals_fixture(request):
 
 
 @mark.usefixtures('expr_globals_fixture')
-class GlobalValueExpressionTargetTests:
+class GetUpdateGlobalValueTests:
     """GlobalValueExpressionTarget tests"""
 
     @mark.parametrize('expression', [
@@ -183,14 +183,14 @@ class GlobalValueExpressionTargetTests:
     def test_raises(self, expression):
         """Should raise BindingError for invalid expression"""
         with raises(BindingError):
-            GlobalValueExpressionTarget(Expression(expression), self.expr_globals)
+            get_update_global_value(Expression(expression), self.expr_globals)
 
     def test_change(self):
         """GlobalValueExpressionTarget.on_change should update target property"""
-        target = GlobalValueExpressionTarget(Expression("vm"), self.expr_globals)
+        on_update = get_update_global_value(Expression("vm"), self.expr_globals)
         new_val = 25
 
-        target.on_change(new_val)
+        on_update(new_val)
 
         assert self.expr_globals['vm'] == new_val
 
@@ -198,13 +198,10 @@ class GlobalValueExpressionTargetTests:
 @fixture
 def observable_binding_fixture(request):
     target_inst = InnerViewModel(1, '1')
-    expr_globals = InheritedDict({'vm': target_inst})
-    expression = Expression('vm.int_value')
-    target = PropertyExpressionTarget(expression, expr_globals)
+    on_update = partial(setattr, target_inst, 'int_value')
 
     inst = InnerViewModel(5, '1')
-
-    binding = ObservableBinding(target, inst, 'int_value')
+    binding = ObservableBinding(on_update, inst, 'int_value')
     binding.bind()
 
     request.cls.inst = inst
@@ -246,10 +243,10 @@ def two_ways_fixture(request):
     expr_globals = InheritedDict({'vm': expr_inst})
     expression = Expression('vm.int_value')
 
-    observable_target = PropertyTarget(observable_inst, 'int_value', setattr)
-    one_binding = ExpressionBinding(observable_target, expression, expr_globals)
+    on_update = partial(setattr, observable_inst, 'int_value')
+    one_binding = ExpressionBinding(on_update, expression, expr_globals)
 
-    expr_target = PropertyExpressionTarget(expression, expr_globals)
+    expr_target = get_update_property_expression(expression, expr_globals)
     two_binding = ObservableBinding(expr_target, observable_inst, 'int_value')
 
     binding = TwoWaysBinding(one_binding, two_binding)
@@ -317,8 +314,8 @@ def inline_binding_fixture(request):
     bind_expression = Expression('bind')
     value_expression = Expression('vm.int_value')
 
-    observable_target = PropertyTarget(target_instance, 'int_value', setattr)
-    binding = InlineBinding(observable_target, bind_expression, value_expression, expr_globals)
+    on_update = partial(setattr, target_instance, 'int_value')
+    binding = InlineBinding(on_update, bind_expression, value_expression, expr_globals)
     binding.bind()
 
     request.cls.target_instance = target_instance

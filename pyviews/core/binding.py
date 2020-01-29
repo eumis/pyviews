@@ -1,6 +1,7 @@
 """Classes used for binding"""
 
 from abc import ABC, abstractmethod
+from typing import Callable, Any
 
 from .error import ViewsError
 
@@ -10,12 +11,7 @@ class BindingError(ViewsError):
     TargetUpdateError = 'Error occurred during target update'
 
 
-class BindingTarget(ABC):
-    """Target for changes, applied when binding has triggered changes"""
-
-    @abstractmethod
-    def on_change(self, value):
-        """Called to apply changes"""
+BindingTarget = Callable[[Any], None]
 
 
 class Binding(ABC):
