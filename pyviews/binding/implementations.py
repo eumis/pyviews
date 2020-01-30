@@ -2,7 +2,7 @@
 from functools import partial
 from re import compile as compile_regex
 from sys import exc_info
-from typing import Any
+from typing import Any, Callable, List
 
 from pyviews.compilation import Expression, ObjectNode
 from pyviews.core import Observable, InheritedDict
@@ -10,31 +10,15 @@ from pyviews.core import Binding, BindingTarget
 from pyviews.core import ViewsError, BindingError
 
 
-class Dependency:
-    """Holds observable subscription"""
-
-    def __init__(self, observable: Observable, key, callback):
-        self._observable = observable
-        self._key = key
-        self._callback = callback
-
-    def destroy(self):
-        """Releases callback from observable"""
-        self._observable.release(self._key, self._callback)
-        self._observable = None
-        self._key = None
-        self._callback = None
-
-
 class ExpressionBinding(Binding):
     """Binds target to expression result"""
 
     def __init__(self, on_update: BindingTarget, expression: Expression, expr_vars: InheritedDict):
         super().__init__()
-        self._on_update = on_update
-        self._expression = expression
-        self._dependencies = []
-        self._vars = expr_vars
+        self._on_update: BindingTarget = on_update
+        self._expression: Expression = expression
+        self._destroy_functions: List[Callable] = []
+        self._vars: InheritedDict = expr_vars
 
     def bind(self):
         self.destroy()
@@ -55,7 +39,7 @@ class ExpressionBinding(Binding):
         try:
             for entry in var_tree.children:
                 inst.observe(entry.key, self._update_callback)
-                self._dependencies.append(Dependency(inst, entry.key, self._update_callback))
+                self._destroy_functions.append(partial(inst.release, entry.key, self._update_callback))
         except KeyError:
             pass
 
@@ -88,9 +72,9 @@ class ExpressionBinding(Binding):
         self._on_update(value)
 
     def destroy(self):
-        for dependency in self._dependencies:
-            dependency.destroy()
-        self._dependencies = []
+        for destroy in self._destroy_functions:
+            destroy()
+        self._destroy_functions = []
 
 
 def get_update_property_expression(expression: Expression, expr_globals: InheritedDict) -> BindingTarget:
