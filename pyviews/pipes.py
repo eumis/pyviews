@@ -21,7 +21,7 @@ def apply_attribute(node: Node, attr: XmlAttr, setter=None):
     if is_expression(stripped_value):
         (binding_type, expr_body) = parse_expression(stripped_value)
         binder = resolve(Binder)
-        binder.apply(binding_type, BindingContext({
+        binder.bind(binding_type, BindingContext({
             'node': node,
             'expression_body': expr_body,
             'modifier': setter,

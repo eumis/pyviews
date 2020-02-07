@@ -93,7 +93,7 @@ class ApplyAttributeTests:
         })
 
         apply_attribute(node, xml_attr)
-        assert binder.apply.call_args == call(binding_type, binding_context)
+        assert binder.bind.call_args == call(binding_type, binding_context)
 
 
 class GetSetterTests:

@@ -76,7 +76,7 @@ class TestRule:
         self.suitable_args = context
         return self._suitable
 
-    def apply(self, context: BindingContext):
+    def bind(self, context: BindingContext):
         self.apply_args = context
         return self.binding
 
@@ -92,7 +92,7 @@ def _find_suitable_rule(rules):
 def _create_binder(binding_type, rules):
     binder = Binder()
     for rule in rules:
-        binder.add_rule(binding_type, rule.apply, rule.suitable)
+        binder.add_rule(binding_type, rule.bind, rule.suitable)
     return binder
 
 
@@ -104,41 +104,7 @@ _binding_args = [
 
 
 class BinderTests:
-    # @staticmethod
-    # @mark.parametrize('rules, rule_index', [
-    #     [[TestRule(True), TestRule(True)], 1],
-    #     [[TestRule(False), TestRule(True)], 1],
-    #     [[TestRule(True), TestRule(False)], 0],
-    #     [[TestRule(False), TestRule(False)], None]
-    # ])
-    # def test_returns_suitable_rule(rules, rule_index):
-    #     """find_rule() should return first suitable rule by LIFO"""
-    #     binder = _create_binder(BINDING_TYPE, rules)
-    #     expected = rules[rule_index] if rule_index is not None else None
-    #
-    #     actual = binder.find_rule(BINDING_TYPE, BindingContext())
-    #
-    #     assert expected == actual
-    #
-    # @staticmethod
-    # def test_returns_rule_by_type():
-    #     """find_rule() should return suitable rule for provided type"""
-    #     binder = _create_binder('one_type', [TestRule(True)])
-    #
-    #     actual = binder.find_rule('two_type', BindingContext())
-    #
-    #     assert actual is None
-    #
-    # @staticmethod
-    # @mark.parametrize('args', _binding_args)
-    # def test_passes_args_to_rule(args: dict):
-    #     """find_rule() should pass right arguments to rule.suitable()"""
-    #     rule = TestRule(True)
-    #     binder = _create_binder(BINDING_TYPE, [rule])
-    #
-    #     actual = binder.find_rule(BINDING_TYPE, BindingContext(args))
-    #
-    #     assert args == actual.suitable_args
+    """Binder tests"""
 
     @staticmethod
     def test_raises_if_rule_not_found():
@@ -146,7 +112,7 @@ class BinderTests:
         binder = Binder()
 
         with raises(BindingError):
-            binder.apply('some_type', BindingContext())
+            binder.bind('some_type', BindingContext())
 
     @staticmethod
     @mark.parametrize('rules, rule_index', [
@@ -154,25 +120,15 @@ class BinderTests:
         [[TestRule(False), TestRule(True)], 1],
         [[TestRule(True), TestRule(False)], 0]
     ])
-    def test_applies_found_rule(rules, rule_index):
-        """apply() should call rule.apply() for found rule"""
+    def test_bind_by_rule(rules, rule_index):
+        """apply() should call bind() for found rule"""
         binder = _create_binder(BINDING_TYPE, rules)
         expected = rules[rule_index]
+        context = BindingContext({'node': Mock(), 'modifier': lambda *args: None})
 
-        binder.apply(BINDING_TYPE, BindingContext())
+        binder.bind(BINDING_TYPE, context)
 
-        assert expected.apply_args is not None
-
-    @staticmethod
-    @mark.parametrize('args', _binding_args)
-    def test_pass_args_to_rule_apply(args):
-        """apply() should pass right arguments to rule.apply()"""
-        rule = TestRule(True)
-        binder = _create_binder(BINDING_TYPE, [rule])
-
-        binder.apply(BINDING_TYPE, BindingContext(args))
-
-        assert args == rule.apply_args
+        assert expected.apply_args == context
 
     @staticmethod
     @mark.parametrize('binding', [None, Mock()])
@@ -181,7 +137,7 @@ class BinderTests:
         binder = _create_binder(BINDING_TYPE, [TestRule(True, binding)])
         node = Mock()
 
-        binder.apply(BINDING_TYPE, BindingContext({'node': node}))
+        binder.bind(BINDING_TYPE, BindingContext({'node': node}))
 
         expected_call = call(binding) if binding else None
         assert node.add_binding.call_args == expected_call
