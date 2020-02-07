@@ -1,13 +1,15 @@
 from functools import partial
 from typing import Callable
-from unittest.mock import Mock
+from unittest.mock import Mock, call
 
 from pytest import fixture, mark, raises
 
-from pyviews.core import ObservableEntity, InheritedDict, BindingError
+from pyviews.binding import BindingContext
+from pyviews.core import ObservableEntity, InheritedDict, BindingError, XmlAttr
 from pyviews.compilation import Expression
-from pyviews.binding.implementations import InlineBinding, get_update_global_value, get_update_property_expression
-from pyviews.binding.implementations import ExpressionBinding, ObservableBinding, TwoWaysBinding
+from pyviews.binding.binding import InlineBinding, get_update_global_value, get_update_property_expression, \
+    bind_to_expression, bind_inline, run_once
+from pyviews.binding.binding import ExpressionBinding, ObservableBinding, TwoWaysBinding
 
 
 class InnerViewModel(ObservableEntity):
@@ -55,25 +57,43 @@ class SomeEntity:
 def target_entity_fixture():
     return SomeEntity(), 25
 
+    # def test_property_target(target_entity):
+    #     """"PropertyTarget.on_change test"""
+    #     inst, new_val = target_entity
+    #     target = PropertyTarget(inst, 'int_value', setattr)
+    #
+    #     target.on_change(new_val)
+    #
+    #     assert inst.int_value == new_val
 
-# def test_property_target(target_entity):
-#     """"PropertyTarget.on_change test"""
-#     inst, new_val = target_entity
-#     target = PropertyTarget(inst, 'int_value', setattr)
-#
-#     target.on_change(new_val)
-#
-#     assert inst.int_value == new_val
+    # def test_function_target(target_entity):
+    #     """"FunctionTarget.on_change test"""
+    #     inst, new_val = target_entity
+    #     target = FunctionTarget(lambda value: setattr(inst, 'int_value', value))
+    #
+    #     target.on_change(new_val)
+    #
+    #     assert inst.int_value == new_val
 
 
-# def test_function_target(target_entity):
-#     """"FunctionTarget.on_change test"""
-#     inst, new_val = target_entity
-#     target = FunctionTarget(lambda value: setattr(inst, 'int_value', value))
-#
-#     target.on_change(new_val)
-#
-#     assert inst.int_value == new_val
+@mark.parametrize('expr_body, node_globals, expected_value', [
+    ('1+1', {}, 2),
+    ('val', {'val': 2}, 2),
+    ('val + 1', {'val': 2}, 3)
+])
+def test_run_once(expr_body: str, node_globals: dict, expected_value):
+    """run_once() should call passed modifier"""
+    node = Mock(node_globals=InheritedDict(node_globals))
+    modifier, xml_attr = Mock(), XmlAttr('name')
+
+    run_once(BindingContext({
+        'node': node,
+        'expression_body': expr_body,
+        'modifier': modifier,
+        'xml_attr': xml_attr
+    }))
+
+    assert modifier.call_args == call(node, xml_attr.name, expected_value)
 
 
 @fixture
@@ -83,8 +103,8 @@ def expression_binding_fixture(request):
     expression = Expression(
         'str(vm.int_value) + vm.inner_vm.str_value + vm.get_val() + vm.inner_vm.get_val()')
     target_inst = SomeEntity()
-    target = partial(setattr, target_inst, 'str_value')
-    binding = ExpressionBinding(target, expression, InheritedDict({'vm': view_model}))
+    on_update = partial(setattr, target_inst, 'str_value')
+    binding = ExpressionBinding(on_update, expression, InheritedDict({'vm': view_model}))
     binding.bind()
 
     request.cls.expression = expression
@@ -129,6 +149,39 @@ class ExpressionBindingTests:
         actual = self.target_inst.str_value
 
         assert actual == old_value
+
+
+@fixture
+def binding_context_fixture(request):
+    modifier, xml_attr = Mock(), XmlAttr('name')
+    context = BindingContext({
+        'modifier': modifier,
+        'xml_attr': xml_attr,
+        'expression_body': '1+1',
+        'node': Mock(node_globals=InheritedDict())
+    })
+
+    request.cls.context = context
+
+
+@mark.usefixtures('binding_context_fixture')
+class BindToExpressionTests:
+    def test_binds_modifier_to_expression_changes(self):
+        """should bind modifier to expression changes"""
+        self.context.node = Mock(node_globals=InheritedDict({'value': 1}))
+        self.context.expression_body = 'value'
+
+        bind_to_expression(self.context)
+        self.context.modifier.reset_mock()
+        self.context.node.node_globals['value'] = 2
+
+        assert self.context.modifier.call_args == call(self.context.node, self.context.xml_attr.name, 2)
+
+    def test_returns_binding(self):
+        """should return expression binding"""
+        actual = bind_to_expression(self.context)
+
+        assert isinstance(actual, ExpressionBinding)
 
 
 @fixture(params=[
@@ -351,3 +404,20 @@ class InlineBindingTests:
         self.binding.destroy()
 
         assert self.destroy.called
+
+
+def test_bind_inline():
+    bind = Mock()
+    context = BindingContext({
+        'node': Mock(node_globals=InheritedDict({
+            'bind': bind,
+            'value': 1
+        })),
+        'expression_body': 'bind()}:{value',
+        'modifier': Mock(),
+        'xml_attr': XmlAttr('name')
+    })
+
+    actual = bind_inline(context)
+
+    assert isinstance(actual, InlineBinding)

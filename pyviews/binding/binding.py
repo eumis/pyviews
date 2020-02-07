@@ -1,13 +1,20 @@
 """Binding and BindingTarget default implementations"""
+
 from functools import partial
 from re import compile as compile_regex
 from sys import exc_info
 from typing import Any, Callable, List
 
-from pyviews.compilation import Expression, ObjectNode
+from pyviews.binding import BindingContext
+from pyviews.compilation import Expression, ObjectNode, execute
 from pyviews.core import Observable, InheritedDict
 from pyviews.core import Binding, BindingTarget
 from pyviews.core import ViewsError, BindingError
+
+
+def run_once(context: BindingContext):
+    value = execute(context.expression_body, context.node.node_globals.to_dictionary())
+    context.modifier(context.node, context.xml_attr.name, value)
 
 
 class ExpressionBinding(Binding):
@@ -77,36 +84,13 @@ class ExpressionBinding(Binding):
         self._destroy_functions = []
 
 
-def get_update_property_expression(expression: Expression, expr_globals: InheritedDict) -> BindingTarget:
-    var_tree = expression.get_object_tree()
-    _validate_property_expression(var_tree, expression.code)
-    return partial(_on_property_expression_update, var_tree, expr_globals)
-
-
-def _validate_property_expression(var_tree: ObjectNode, source_code: str):
-    if len(var_tree.children) != 1 or not var_tree.children[0].children:
-        error = BindingError('Expression should be property expression')
-        error.add_info('Expression', source_code)
-        raise error
-
-
-def _on_property_expression_update(_var_tree: ObjectNode, _vars: InheritedDict, value: Any):
-    (inst, prop) = _get_target(_var_tree, _vars)
-    setattr(inst, prop, value)
-
-
-def _get_target(var_tree: ObjectNode, expr_vars: InheritedDict):
-    entry = var_tree.children[0]
-    inst = expr_vars[entry.key]
-    next_key = entry.children[0].key
-    entry = entry.children[0]
-
-    while entry.children:
-        inst = getattr(inst, next_key)
-        next_key = entry.children[0].key
-        entry = entry.children[0]
-
-    return inst, next_key
+def bind_to_expression(context: BindingContext) -> Binding:
+    """Binds callback to expression result changes"""
+    expr = Expression(context.expression_body)
+    on_update = partial(context.modifier, context.node, context.xml_attr.name)
+    binding = ExpressionBinding(on_update, expr, context.node.node_globals)
+    binding.bind()
+    return binding
 
 
 def get_update_global_value(expression: Expression, expr_vars: InheritedDict) -> BindingTarget:
@@ -204,6 +188,38 @@ def get_expression_target(expression: Expression, expr_vars: InheritedDict) -> B
     return get_update_global_value(expression, expr_vars)
 
 
+def get_update_property_expression(expression: Expression, expr_globals: InheritedDict) -> BindingTarget:
+    var_tree = expression.get_object_tree()
+    _validate_property_expression(var_tree, expression.code)
+    return partial(_on_property_expression_update, var_tree, expr_globals)
+
+
+def _on_property_expression_update(_var_tree: ObjectNode, _vars: InheritedDict, value: Any):
+    (inst, prop) = _get_target(_var_tree, _vars)
+    setattr(inst, prop, value)
+
+
+def _get_target(var_tree: ObjectNode, expr_vars: InheritedDict):
+    entry = var_tree.children[0]
+    inst = expr_vars[entry.key]
+    next_key = entry.children[0].key
+    entry = entry.children[0]
+
+    while entry.children:
+        inst = getattr(inst, next_key)
+        next_key = entry.children[0].key
+        entry = entry.children[0]
+
+    return inst, next_key
+
+
+def _validate_property_expression(var_tree: ObjectNode, source_code: str):
+    if len(var_tree.children) != 1 or not var_tree.children[0].children:
+        error = BindingError('Expression should be property expression')
+        error.add_info('Expression', source_code)
+        raise error
+
+
 class InlineBinding(Binding):
     def __init__(self, on_update: BindingTarget, bind_expression: Expression, value_expression: Expression,
                  expr_vars: InheritedDict):
@@ -229,3 +245,15 @@ class InlineBinding(Binding):
         if self._destroy:
             self._destroy()
             self._destroy = None
+
+
+def bind_inline(context: BindingContext) -> InlineBinding:
+    """should create InlineBinding using binding context"""
+
+    (bind_body, value_body) = context.expression_body.split('}:{')
+    bind_expr = Expression(bind_body)
+    value_expr = Expression(value_body)
+    on_update = partial(context.modifier, context.node, context.xml_attr.name)
+    binding = InlineBinding(on_update, bind_expr, value_expr, context.node.node_globals)
+    binding.bind()
+    return binding

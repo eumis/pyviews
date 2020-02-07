@@ -3,7 +3,8 @@ from unittest.mock import Mock, patch, call
 from injectool import add_singleton, add_function_resolver
 from pytest import fixture, mark, raises
 
-from pyviews.binding import Binder, OnceRule, OnewayRule, BindingContext
+from pyviews.binding import Binder, BindingContext
+from pyviews.binding.binding import run_once, bind_to_expression
 from pyviews.compilation import Expression
 from pyviews.core import XmlAttr, Node, XmlNode
 from pyviews import pipes, modifiers
@@ -34,8 +35,8 @@ def apply_attribute_fixture(request):
     request.cls.setter_mock = setter_mock
     with patch(f'{pipes.__name__}.get_setter', get_setter_mock) as patched:
         binder = Binder()
-        binder.add_rule('once', OnceRule())
-        binder.add_rule('oneway', OnewayRule())
+        binder.add_rule('once', run_once)
+        binder.add_rule('oneway', bind_to_expression)
         add_singleton(Binder, binder)
         add_function_resolver(Expression, lambda c, p=None: Expression(p))
         yield patched

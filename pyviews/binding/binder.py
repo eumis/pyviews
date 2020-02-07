@@ -1,7 +1,6 @@
 """Binder"""
 
-from abc import abstractmethod, ABC
-from typing import Optional, Union
+from typing import Optional, Union, Callable, NamedTuple
 
 from pyviews.core import BindingError, Node, Modifier, XmlAttr, Binding, InstanceNode
 
@@ -46,16 +45,10 @@ class BindingContext(dict):
         self['xml_attr'] = value
 
 
-class BindingRule(ABC):
+class BindingRule(NamedTuple):
     """Creates binding for args"""
-
-    @abstractmethod
-    def suitable(self, context: BindingContext) -> bool:
-        """Returns True if rule is suitable for args"""
-
-    @abstractmethod
-    def apply(self, context: BindingContext) -> Binding:
-        """Applies binding"""
+    suitable: Callable[[BindingContext], bool]
+    bind: Callable[[BindingContext], Binding]
 
 
 class Binder:
@@ -64,12 +57,14 @@ class Binder:
     def __init__(self):
         self._rules = {}
 
-    def add_rule(self, binding_type: str, rule: BindingRule):
+    def add_rule(self, binding_type: str, bind: Callable[[BindingContext], Binding],
+                 suitable: Callable[[BindingContext], bool] = None):
         """Adds new rule"""
+        suitable = suitable if suitable else lambda _: True
         if binding_type not in self._rules:
             self._rules[binding_type] = []
 
-        self._rules[binding_type].insert(0, rule)
+        self._rules[binding_type].insert(0, BindingRule(suitable, bind))
 
     def find_rule(self, binding_type: str, context: BindingContext) -> Optional[BindingRule]:
         """Finds rule by binding type and args"""
@@ -84,7 +79,7 @@ class Binder:
         rule = self.find_rule(binding_type, context)
         if rule is None:
             raise self._get_not_found_error(context, binding_type)
-        binding = rule.apply(context)
+        binding = rule.bind(context)
         if binding:
             context.node.add_binding(binding)
 
