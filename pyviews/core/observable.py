@@ -38,8 +38,10 @@ class Observable:
 class ObservableEntity(Observable):
     """Observable general object"""
 
-    def __init__(self):
-        super().__setattr__('_callbacks', {})
+    #
+    # def __init__(self):
+    #     super().__init__()
+    #     super().__setattr__('_callbacks', {})
 
     def __setattr__(self, key, value):
         if key in self.__dict__:
@@ -87,11 +89,6 @@ class InheritedDict(Observable):
         self._container[key] = value
         self._notify(key, value, old_value)
 
-    def _parent_changed(self, key, value, old_value):
-        if key in self._own_keys:
-            return
-        self._set_value(key, value, old_value)
-
     def __len__(self):
         return len(self._container)
 
@@ -108,6 +105,11 @@ class InheritedDict(Observable):
         self._container = {**parent.to_dictionary(), **self_values}
         self._parent = parent
         self._parent.observe_all(self._parent_changed)
+
+    def _parent_changed(self, key, value, old_value):
+        if key in self._own_keys:
+            return
+        self._set_value(key, value, old_value)
 
     def observe_all(self, callback: Callable[[str, Any, Any], None]):
         """Subscribes to all keys changes"""

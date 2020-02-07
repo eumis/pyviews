@@ -1,0 +1,45 @@
+from functools import partial
+
+from pyviews.binding import BindingContext
+from pyviews.compilation import Expression
+from pyviews.core import Binding, BindingTarget
+from pyviews.core import InheritedDict
+
+
+class InlineBinding(Binding):
+    def __init__(self, on_update: BindingTarget, bind_expression: Expression, value_expression: Expression,
+                 expr_vars: InheritedDict):
+        super().__init__()
+        self._on_update: BindingTarget = on_update
+        self._bind_expression: Expression = bind_expression
+        self._value_expression: Expression = value_expression
+        self._expression_vars = expr_vars
+
+        self._destroy = None
+
+    def bind(self):
+        self.destroy()
+        bind = self._bind_expression.execute(self._expression_vars.to_dictionary())
+        self._update_target()
+        self._destroy = bind(self._update_target)
+
+    def _update_target(self):
+        value = self._value_expression.execute(self._expression_vars.to_dictionary())
+        self._on_update(value)
+
+    def destroy(self):
+        if self._destroy:
+            self._destroy()
+            self._destroy = None
+
+
+def bind_inline(context: BindingContext) -> InlineBinding:
+    """should create InlineBinding using binding context"""
+
+    (bind_body, value_body) = context.expression_body.split('}:{')
+    bind_expr = Expression(bind_body)
+    value_expr = Expression(value_body)
+    on_update = partial(context.modifier, context.node, context.xml_attr.name)
+    binding = InlineBinding(on_update, bind_expr, value_expr, context.node.node_globals)
+    binding.bind()
+    return binding

@@ -4,7 +4,8 @@ from injectool import add_singleton, add_function_resolver
 from pytest import fixture, mark, raises
 
 from pyviews.binding import Binder, BindingContext
-from pyviews.binding.binding import run_once, bind_to_expression
+from pyviews.binding.binding import run_once
+from pyviews.binding.expression import bind_to_expression
 from pyviews.compilation import Expression
 from pyviews.core import XmlAttr, Node, XmlNode
 from pyviews import pipes, modifiers

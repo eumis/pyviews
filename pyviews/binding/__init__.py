@@ -1,5 +1,8 @@
 """Binding implementations"""
 
 from .binder import Binder, BindingRule, BindingContext
-from .binding import ExpressionBinding, ObservableBinding, TwoWaysBinding
+from .expression import ExpressionBinding
+from .inline import InlineBinding
+from .observable import ObservableBinding
+from .twoways import TwoWaysBinding
 from .binding import get_expression_target

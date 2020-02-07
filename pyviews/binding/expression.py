@@ -1,0 +1,83 @@
+from functools import partial
+from sys import exc_info
+from typing import Callable, List, Any
+
+from pyviews.binding import BindingContext
+from pyviews.compilation import Expression, ObjectNode
+from pyviews.core import Binding, BindingTarget, InheritedDict, Observable, BindingError, ViewsError
+
+
+class ExpressionBinding(Binding):
+    """Binds target to expression result"""
+
+    def __init__(self, on_update: BindingTarget, expression: Expression, expr_vars: InheritedDict):
+        super().__init__()
+        self._on_update: BindingTarget = on_update
+        self._expression: Expression = expression
+        self._destroy_functions: List[Callable] = []
+        self._vars: InheritedDict = expr_vars
+
+    def bind(self):
+        self.destroy()
+        objects_tree = self._expression.get_object_tree()
+        self._create_dependencies(self._vars, objects_tree)
+        self._update_target()
+
+    def _create_dependencies(self, inst, var_tree: ObjectNode):
+        if isinstance(inst, Observable):
+            self._subscribe_for_changes(inst, var_tree)
+
+        for entry in var_tree.children:
+            child_inst = self._get_child(inst, entry.key)
+            if child_inst is not None:
+                self._create_dependencies(child_inst, entry)
+
+    def _subscribe_for_changes(self, inst: Observable, var_tree):
+        try:
+            for entry in var_tree.children:
+                inst.observe(entry.key, self._update_callback)
+                self._destroy_functions.append(partial(inst.release, entry.key, self._update_callback))
+        except KeyError:
+            pass
+
+    @staticmethod
+    def _get_child(inst: Any, key: str) -> Any:
+        try:
+            return inst[key] if isinstance(inst, InheritedDict) \
+                else getattr(inst, key)
+        except KeyError:
+            return None
+
+    def _update_callback(self, new_val, old_val):
+        try:
+            if isinstance(new_val, Observable) or isinstance(old_val, Observable):
+                self.bind()
+            else:
+                self._update_target()
+        except ViewsError as error:
+            self.add_error_info(error)
+            raise
+        except BaseException:
+            info = exc_info()
+            error = BindingError(BindingError.TargetUpdateError)
+            self.add_error_info(error)
+            error.add_cause(info[1])
+            raise error from info[1]
+
+    def _update_target(self):
+        value = self._expression.execute(self._vars.to_dictionary())
+        self._on_update(value)
+
+    def destroy(self):
+        for destroy in self._destroy_functions:
+            destroy()
+        self._destroy_functions = []
+
+
+def bind_to_expression(context: BindingContext) -> Binding:
+    """Binds callback to expression result changes"""
+    expr = Expression(context.expression_body)
+    on_update = partial(context.modifier, context.node, context.xml_attr.name)
+    binding = ExpressionBinding(on_update, expr, context.node.node_globals)
+    binding.bind()
+    return binding
