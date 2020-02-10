@@ -30,7 +30,7 @@ class Observable:
     def release(self, key: str, callback: Callable[[Any, Any], None]):
         """Releases callback from key changes"""
         try:
-            self._callbacks[key].remove(callback)
+            self._callbacks[key] = [c for c in self._callbacks[key] if c != callback]
         except (KeyError, ValueError):
             pass
 
@@ -127,7 +127,7 @@ class InheritedDict(Observable):
 
     def release_all(self, callback: Callable[[str, Any, Any], None]):
         """Releases callback from all keys changes"""
-        self._all_callbacks.remove(callback)
+        self._all_callbacks = [c for c in self._all_callbacks if c != callback]
 
     def to_dictionary(self) -> dict:
         """Returns all values as dict"""

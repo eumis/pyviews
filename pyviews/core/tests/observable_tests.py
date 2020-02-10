@@ -54,6 +54,17 @@ class ObservableEntityTests:
         assert self.callback.call_count == 1
         assert self.callback.call_args == call(new_value, old_value)
 
+    def test_release_callback_releases_same_callbacks(self):
+        """release() should unsubscribe same callbacks from property changes"""
+        new_name = "new name"
+        self.observable.observe('name', self.callback)
+        self.observable.observe('name', self.callback)
+
+        self.observable.release('name', self.callback)
+        self.observable.name = new_name
+
+        assert not self.callback.called
+
     def test_observe_in_callback(self):
         """observe() inside callback should add new callback"""
         self.observable.observe('name', lambda *args: self.observable.observe('name', self.callback))
@@ -262,7 +273,7 @@ class InheritedDictTests:
         assert callback.call_args_list == [call('name', 'new name', None), call('value', 'new value', None)]
 
     @staticmethod
-    def test_release_all_callback():
+    def test_release_all():
         """release_all() should remove callback subscription to all changes"""
         inherited_dict = InheritedDict()
         callback = Mock()
@@ -275,4 +286,18 @@ class InheritedDictTests:
         inherited_dict['value'] = 'new value'
 
         assert active_callback.called
+        assert not callback.called
+
+    @staticmethod
+    def test_release_all_same_callback():
+        """release_all() should remove callback subscription to all changes"""
+        inherited_dict = InheritedDict()
+        callback = Mock()
+        inherited_dict.observe_all(callback)
+        inherited_dict.observe_all(callback)
+
+        inherited_dict.release_all(callback)
+        inherited_dict['name'] = 'new name'
+        inherited_dict['value'] = 'new value'
+
         assert not callback.called
