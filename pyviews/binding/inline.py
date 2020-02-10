@@ -2,15 +2,15 @@ from functools import partial
 
 from pyviews.binding import BindingContext
 from pyviews.compilation import Expression
-from pyviews.core import Binding, BindingTarget
+from pyviews.core import Binding, BindingCallback
 from pyviews.core import InheritedDict
 
 
 class InlineBinding(Binding):
-    def __init__(self, on_update: BindingTarget, bind_expression: Expression, value_expression: Expression,
+    def __init__(self, callback: BindingCallback, bind_expression: Expression, value_expression: Expression,
                  expr_vars: InheritedDict):
         super().__init__()
-        self._on_update: BindingTarget = on_update
+        self._callback: BindingCallback = callback
         self._bind_expression: Expression = bind_expression
         self._value_expression: Expression = value_expression
         self._expression_vars = expr_vars
@@ -20,12 +20,12 @@ class InlineBinding(Binding):
     def bind(self):
         self.destroy()
         bind = self._bind_expression.execute(self._expression_vars.to_dictionary())
-        self._update_target()
-        self._destroy = bind(self._update_target)
+        self._execute_callback()
+        self._destroy = bind(self._execute_callback)
 
-    def _update_target(self):
+    def _execute_callback(self):
         value = self._value_expression.execute(self._expression_vars.to_dictionary())
-        self._on_update(value)
+        self._callback(value)
 
     def destroy(self):
         if self._destroy:

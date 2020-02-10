@@ -1,5 +1,4 @@
 from functools import partial
-from typing import Callable
 from unittest.mock import Mock
 
 from pytest import fixture, mark
@@ -7,7 +6,7 @@ from pytest import fixture, mark
 from pyviews.binding import BindingContext, InlineBinding
 from pyviews.binding.inline import bind_inline
 from pyviews.compilation import Expression
-from pyviews.core import ObservableEntity, InheritedDict, XmlAttr
+from pyviews.core import ObservableEntity, InheritedDict, XmlAttr, BindingCallback
 
 
 class InnerViewModel(ObservableEntity):
@@ -55,11 +54,11 @@ class SomeEntity:
 def inline_binding_fixture(request):
     target_instance = InnerViewModel(0, '0')
     source_instance = InnerViewModel(1, '1')
-    request.cls.update_target = None
+    request.cls.binding_callback = None
     destroy = Mock()
 
-    def bind(update_target: Callable[[], None]):
-        request.cls.update_target = update_target
+    def bind(binding_callback: BindingCallback):
+        request.cls.binding_callback = binding_callback
 
         return destroy
 
@@ -67,8 +66,8 @@ def inline_binding_fixture(request):
     bind_expression = Expression('bind')
     value_expression = Expression('vm.int_value')
 
-    on_update = partial(setattr, target_instance, 'int_value')
-    binding = InlineBinding(on_update, bind_expression, value_expression, expr_globals)
+    callback = partial(setattr, target_instance, 'int_value')
+    binding = InlineBinding(callback, bind_expression, value_expression, expr_globals)
     binding.bind()
 
     request.cls.target_instance = target_instance
@@ -83,19 +82,19 @@ class InlineBindingTests:
 
     def test_updates_target_on_binding(self):
         """bind() should update target with value expression result"""
-        self.update_target()
+        self.binding_callback()
 
         assert self.target_instance.int_value == self.source_instance.int_value
 
     def test_bind_calls_bind_function_from_bind_expression(self):
-        """bind() method calls bind function returned from bind_expression with update_target() function"""
-        assert self.update_target is not None
+        """bind() method calls bind function returned from bind_expression with binding_callback function"""
+        assert self.binding_callback is not None
 
-    def test_update_target_updates_target(self):
-        """update_target() passed by binding should evaluate value_expression and update target with it"""
+    def test_binding_callback_updates_target(self):
+        """binding_callback() passed by binding should evaluate value_expression and update target with it"""
         self.source_instance.int_value = 2
 
-        self.update_target()
+        self.binding_callback()
 
         assert self.target_instance.int_value == self.source_instance.int_value
 

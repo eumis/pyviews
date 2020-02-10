@@ -44,10 +44,10 @@ class ParentViewModel(ObservableEntity):
 @fixture
 def observable_binding_fixture(request):
     target_inst = InnerViewModel(1, '1')
-    on_update = partial(setattr, target_inst, 'int_value')
+    callback = partial(setattr, target_inst, 'int_value')
 
     inst = InnerViewModel(5, '1')
-    binding = ObservableBinding(on_update, inst, 'int_value')
+    binding = ObservableBinding(callback, inst, 'int_value')
     binding.bind()
 
     request.cls.inst = inst

@@ -1,12 +1,11 @@
 from functools import partial
 
-from pytest import fixture, mark
+from pytest import fixture, mark, raises
 
 from pyviews.binding import ExpressionBinding, ObservableBinding
-from pyviews.binding.binding import get_update_property_expression
-from pyviews.binding.twoways import TwoWaysBinding
+from pyviews.binding.twoways import TwoWaysBinding, get_property_expression_callback, get_global_value_callback
 from pyviews.compilation import Expression
-from pyviews.core import InheritedDict, ObservableEntity
+from pyviews.core import InheritedDict, ObservableEntity, BindingError
 
 
 class InnerViewModel(ObservableEntity):
@@ -61,7 +60,7 @@ def two_ways_fixture(request):
     on_update = partial(setattr, observable_inst, 'int_value')
     one_binding = ExpressionBinding(on_update, expression, expr_globals)
 
-    expr_target = get_update_property_expression(expression, expr_globals)
+    expr_target = get_property_expression_callback(expression, expr_globals)
     two_binding = ObservableBinding(expr_target, observable_inst, 'int_value')
 
     binding = TwoWaysBinding(one_binding, two_binding)
@@ -111,3 +110,67 @@ class TwoWaysBindingTests:
         self.observable_inst.int_value = new_observable_value
 
         assert self.expr_inst.int_value == old_value
+
+
+@fixture(params=[
+    ('vm.int_value', False),
+    ('vm.inner_vm.int_value', True)
+])
+def expression_target_fixture(request):
+    code, is_inner = request.param
+
+    inner = InnerViewModel(1, '1')
+    parent = ParentViewModel(1, inner)
+    expression = Expression(code)
+    expr_globals = InheritedDict({'vm': parent})
+
+    request.cls.binding_callback = get_property_expression_callback(expression, expr_globals)
+    request.cls.target_vm = inner if is_inner else parent
+
+
+@mark.usefixtures('expression_target_fixture')
+class GetPropertyExpressionCallbackTests:
+    """get_property_expression_callback() tests"""
+
+    @staticmethod
+    @mark.parametrize('expression', ['vm', 'vm.int_value + val'])
+    def test_raises(expression):
+        """Should raise BindingError if expression is not property expression"""
+        with raises(BindingError):
+            get_property_expression_callback(Expression(expression), InheritedDict())
+
+    def test_change(self):
+        """PropertyExpressionTarget.on_change should update target property"""
+        new_val = self.target_vm.int_value + 5
+
+        self.binding_callback(new_val)
+
+        assert self.target_vm.int_value == new_val
+
+
+@fixture
+def expr_globals_fixture(request):
+    request.cls.expr_globals = InheritedDict({'one': 1})
+
+
+@mark.usefixtures('expr_globals_fixture')
+class GetGlobalValueCallbackTests:
+    """get_global_value_callback() tests"""
+
+    @mark.parametrize('expression', [
+        'vm.int_value',
+        'vm + val'
+    ])
+    def test_raises(self, expression):
+        """Should raise BindingError for invalid expression"""
+        with raises(BindingError):
+            get_global_value_callback(Expression(expression), self.expr_globals)
+
+    def test_change(self):
+        """GlobalValueExpressionTarget.on_change should update target property"""
+        callback = get_global_value_callback(Expression("vm"), self.expr_globals)
+        new_val = 25
+
+        callback(new_val)
+
+        assert self.expr_globals['vm'] == new_val

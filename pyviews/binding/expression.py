@@ -4,15 +4,15 @@ from typing import Callable, List, Any
 
 from pyviews.binding import BindingContext
 from pyviews.compilation import Expression, ObjectNode
-from pyviews.core import Binding, BindingTarget, InheritedDict, Observable, BindingError, ViewsError
+from pyviews.core import Binding, BindingCallback, InheritedDict, Observable, BindingError, ViewsError
 
 
 class ExpressionBinding(Binding):
     """Binds target to expression result"""
 
-    def __init__(self, on_update: BindingTarget, expression: Expression, expr_vars: InheritedDict):
+    def __init__(self, callback: BindingCallback, expression: Expression, expr_vars: InheritedDict):
         super().__init__()
-        self._on_update: BindingTarget = on_update
+        self._callback: BindingCallback = callback
         self._expression: Expression = expression
         self._destroy_functions: List[Callable] = []
         self._vars: InheritedDict = expr_vars
@@ -21,7 +21,7 @@ class ExpressionBinding(Binding):
         self.destroy()
         objects_tree = self._expression.get_object_tree()
         self._create_dependencies(self._vars, objects_tree)
-        self._update_target()
+        self._execute_callback()
 
     def _create_dependencies(self, inst, var_tree: ObjectNode):
         if isinstance(inst, Observable):
@@ -53,7 +53,7 @@ class ExpressionBinding(Binding):
             if isinstance(new_val, Observable) or isinstance(old_val, Observable):
                 self.bind()
             else:
-                self._update_target()
+                self._execute_callback()
         except ViewsError as error:
             self.add_error_info(error)
             raise
@@ -64,9 +64,9 @@ class ExpressionBinding(Binding):
             error.add_cause(info[1])
             raise error from info[1]
 
-    def _update_target(self):
+    def _execute_callback(self):
         value = self._expression.execute(self._vars.to_dictionary())
-        self._on_update(value)
+        self._callback(value)
 
     def destroy(self):
         for destroy in self._destroy_functions:
@@ -77,7 +77,7 @@ class ExpressionBinding(Binding):
 def bind_to_expression(context: BindingContext) -> Binding:
     """Binds callback to expression result changes"""
     expr = Expression(context.expression_body)
-    on_update = partial(context.modifier, context.node, context.xml_attr.name)
-    binding = ExpressionBinding(on_update, expr, context.node.node_globals)
+    callback = partial(context.modifier, context.node, context.xml_attr.name)
+    binding = ExpressionBinding(callback, expr, context.node.node_globals)
     binding.bind()
     return binding

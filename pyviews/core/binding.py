@@ -11,7 +11,7 @@ class BindingError(ViewsError):
     TargetUpdateError = 'Error occurred during target update'
 
 
-BindingTarget = Callable[[Any], None]
+BindingCallback = Callable[[Any], None]
 
 
 class Binding(ABC):

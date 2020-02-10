@@ -57,8 +57,8 @@ def expression_binding_fixture(request):
     expression = Expression(
         'str(vm.int_value) + vm.inner_vm.str_value + vm.get_val() + vm.inner_vm.get_val()')
     target_inst = SomeEntity()
-    on_update = partial(setattr, target_inst, 'str_value')
-    binding = ExpressionBinding(on_update, expression, InheritedDict({'vm': view_model}))
+    callback = partial(setattr, target_inst, 'str_value')
+    binding = ExpressionBinding(callback, expression, InheritedDict({'vm': view_model}))
     binding.bind()
 
     request.cls.expression = expression
