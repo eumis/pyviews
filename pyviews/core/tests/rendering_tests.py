@@ -62,18 +62,6 @@ class NodeTests:
         assert actual == value
 
     @staticmethod
-    def test_setattr_sets_own_property():
-        """__setattr__() should set own properties"""
-        node = Node(Mock())
-
-        def setter(*_):
-            pass
-
-        node.attr_setter = setter
-
-        assert node.attr_setter == setter
-
-    @staticmethod
     @mark.parametrize('bindings_count', [1, 3])
     def test_destroy_destroys_bindings(bindings_count):
         """destroy() should destroy all node's bindings"""

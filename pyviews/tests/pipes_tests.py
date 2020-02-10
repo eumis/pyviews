@@ -127,13 +127,12 @@ class GetSetterTests:
 def test_call_set_attr():
     """should call node setter"""
     node = Node(Mock())
-    node_setter = Mock()
-    node.attr_setter = node_setter
+    node.set_attr = Mock()
     key, value = ('key', 'value')
 
     call_set_attr(node, key, value)
 
-    assert node_setter.call_args == call(node, key, value)
+    assert node.set_attr.call_args == call(key, value)
 
 
 @fixture

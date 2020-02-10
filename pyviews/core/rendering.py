@@ -1,6 +1,6 @@
 """Core classes for creation from xml nodes"""
-
-from typing import Any, List, Callable
+from functools import partial
+from typing import Any, List, Callable, cast
 
 from .binding import Binding
 from .observable import InheritedDict
@@ -16,7 +16,7 @@ class Node:
         self._xml_node: XmlNode = xml_node
         self._globals: InheritedDict = InheritedDict() if node_globals is None else node_globals
         self._globals['node'] = self
-        self.attr_setter = setattr
+        self.set_attr: Callable[[Any, str], None] = cast(Callable[[Any, str], None], partial(setattr, self))
         self.on_destroy = lambda node: None
 
     @property
@@ -33,10 +33,6 @@ class Node:
     def children(self) -> List:
         """Returns child nodes"""
         return self._children
-
-    def set_attr(self, key: str, value: Any):
-        """Sets node attribute. Can be customized by attr_setter property"""
-        self.attr_setter(self, key, value)
 
     def add_binding(self, binding: Binding):
         """Stores binding"""
@@ -76,7 +72,7 @@ class InstanceNode(Node):
     def __init__(self, instance: Any, xml_node: XmlNode, node_globals: InheritedDict = None):
         super().__init__(xml_node, node_globals)
         self._instance = instance
-        self.attr_setter = _instance_attr_setter
+        self.set_attr = partial(_instance_attr_setter, self)
 
     @property
     def instance(self):
