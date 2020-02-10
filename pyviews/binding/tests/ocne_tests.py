@@ -13,15 +13,15 @@ from pyviews.core import InheritedDict, XmlAttr
     ('val + 1', {'val': 2}, 3)
 ])
 def test_run_once(expr_body: str, node_globals: dict, expected_value):
-    """run_once() should call passed modifier"""
+    """run_once() should call passed setter"""
     node = Mock(node_globals=InheritedDict(node_globals))
-    modifier, xml_attr = Mock(), XmlAttr('name')
+    setter, xml_attr = Mock(), XmlAttr('name')
 
     run_once(BindingContext({
         'node': node,
         'expression_body': expr_body,
-        'modifier': modifier,
+        'setter': setter,
         'xml_attr': xml_attr
     }))
 
-    assert modifier.call_args == call(node, xml_attr.name, expected_value)
+    assert setter.call_args == call(node, xml_attr.name, expected_value)

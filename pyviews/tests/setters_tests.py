@@ -7,7 +7,7 @@ from injectool import use_container, add_singleton
 from pytest import mark, raises
 
 from pyviews.core import Node, XmlNode, InstanceNode
-from pyviews.modifiers import import_global, set_global, inject_global, call, Args
+from pyviews.setters import import_global, set_global, inject_global, call, Args
 
 
 @mark.parametrize('node, key, value, expected', [
@@ -76,7 +76,7 @@ class CallTests:
         Args([1], key='value', value='other value')
     ])
     def test_calls_node_method(args: Args):
-        """call modifier should call node instance method"""
+        """call setter should call node instance method"""
         node = TestNode()
 
         call(node, 'mocked_method', args)
@@ -98,7 +98,7 @@ class CallTests:
         Args([1], key='value', value='other value')
     ])
     def test_calls_instance_method(args: Args):
-        """call modifier should call node instance method"""
+        """call setter should call node instance method"""
         node = TestInstanceNode()
 
         call(node, 'mocked_method', args)

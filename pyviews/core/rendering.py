@@ -85,4 +85,4 @@ def _instance_attr_setter(node: InstanceNode, key, value):
     setattr(ent, key, value)
 
 
-Modifier = Callable[[Node, str, Any], None]
+Setter = Callable[[Node, str, Any], None]

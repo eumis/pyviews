@@ -2,7 +2,7 @@
 
 from typing import Optional, Union, Callable, NamedTuple
 
-from pyviews.core import BindingError, Node, Modifier, XmlAttr, Binding, InstanceNode
+from pyviews.core import BindingError, Node, Setter, XmlAttr, Binding, InstanceNode
 
 
 class BindingContext(dict):
@@ -27,13 +27,13 @@ class BindingContext(dict):
         self['expression_body'] = value
 
     @property
-    def modifier(self) -> Modifier:
-        """Modifier"""
-        return self.get('modifier', None)
+    def setter(self) -> Setter:
+        """Setter"""
+        return self.get('setter', None)
 
-    @modifier.setter
-    def modifier(self, value: Modifier):
-        self['modifier'] = value
+    @setter.setter
+    def setter(self, value: Setter):
+        self['setter'] = value
 
     @property
     def xml_attr(self) -> XmlAttr:

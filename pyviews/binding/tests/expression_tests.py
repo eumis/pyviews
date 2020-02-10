@@ -67,9 +67,9 @@ class ExpressionBindingTests:
 
 @fixture
 def binding_context_fixture(request):
-    modifier, xml_attr = Mock(), XmlAttr('name')
+    setter, xml_attr = Mock(), XmlAttr('name')
     context = BindingContext({
-        'modifier': modifier,
+        'setter': setter,
         'xml_attr': xml_attr,
         'expression_body': '1+1',
         'node': Mock(node_globals=InheritedDict())
@@ -80,16 +80,16 @@ def binding_context_fixture(request):
 
 @mark.usefixtures('binding_context_fixture')
 class BindToExpressionTests:
-    def test_binds_modifier_to_expression_changes(self):
-        """should bind modifier to expression changes"""
+    def test_binds_setter_to_expression_changes(self):
+        """should bind setter to expression changes"""
         self.context.node = Mock(node_globals=InheritedDict({'value': 1}))
         self.context.expression_body = 'value'
 
         bind_to_expression(self.context)
-        self.context.modifier.reset_mock()
+        self.context.setter.reset_mock()
         self.context.node.node_globals['value'] = 2
 
-        assert self.context.modifier.call_args == call(self.context.node, self.context.xml_attr.name, 2)
+        assert self.context.setter.call_args == call(self.context.node, self.context.xml_attr.name, 2)
 
     def test_returns_binding(self):
         """should return expression binding"""

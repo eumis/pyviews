@@ -73,7 +73,7 @@ def test_bind_inline():
             'value': 1
         })),
         'expression_body': 'bind()}:{value',
-        'modifier': Mock(),
+        'setter': Mock(),
         'xml_attr': XmlAttr('name')
     })
 

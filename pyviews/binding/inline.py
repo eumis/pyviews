@@ -41,7 +41,7 @@ def bind_inline(context: BindingContext) -> InlineBinding:
     (bind_body, value_body) = context.expression_body.split('}:{')
     bind_expr = Expression(bind_body)
     value_expr = Expression(value_body)
-    on_update = partial(context.modifier, context.node, context.xml_attr.name)
+    on_update = partial(context.setter, context.node, context.xml_attr.name)
     binding = InlineBinding(on_update, bind_expr, value_expr, context.node.node_globals)
     binding.bind()
     return binding

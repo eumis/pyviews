@@ -1,4 +1,5 @@
-"""Module with modifiers"""
+"""Module with setters"""
+
 from typing import Any
 
 from injectool import resolve

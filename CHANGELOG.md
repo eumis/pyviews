@@ -10,7 +10,8 @@
 - get_inst_type() renamed to get_type()
 - create_inst() renamed to create_instance()
 - Rendering steps are renamed to pipes. Common pipes module is moved to core
-- Common modifiers module is moved to core
+- Common setters module is moved to core
+- modifier is renamed to setter
 - Removed CompiledExpression class
 - Expression class is moved to compilation package and removed ABC inheritance
 - added execute() function to compilation package
@@ -18,7 +19,7 @@
 - CoreError is renamed to ViewsError
 - removed Node.properties and Property class
 - updated error message for resolving RenderingPipeline
-- added Args class to pass args to call modifier
+- added Args class to pass args to call setter
 - added inline binding
 
 ## 2.3.0
@@ -38,11 +39,11 @@
 
 ## 2.1.1
 
-- changed call modifier
+- changed call setter
 
 ## 2.1.0
 
-- added call modifier
+- added call setter
 - updated modules structure
 - used pytest for unit tests
 - ioc module is moved to separate package [injectool](https://github.com/eumis/injectool)

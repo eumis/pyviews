@@ -24,7 +24,7 @@ def apply_attribute(node: Node, attr: XmlAttr, setter=None):
         binder.bind(binding_type, BindingContext({
             'node': node,
             'expression_body': expr_body,
-            'modifier': setter,
+            'setter': setter,
             'xml_attr': attr
         }))
     else:
@@ -32,14 +32,14 @@ def apply_attribute(node: Node, attr: XmlAttr, setter=None):
 
 
 def get_setter(attr: XmlAttr):
-    """Returns modifier for xml attribute"""
+    """Returns setter for xml attribute"""
     if attr.namespace is None:
         return call_set_attr
     return import_path(attr.namespace)
 
 
 def call_set_attr(node: Node, key: str, value):
-    """Modifier: calls node setter"""
+    """Setter: calls node setter"""
     node.set_attr(key, value)
 
 

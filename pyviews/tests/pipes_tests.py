@@ -8,7 +8,7 @@ from pyviews.binding.expression import bind_to_expression
 from pyviews.binding.once import run_once
 from pyviews.compilation import Expression
 from pyviews.core import XmlAttr, Node, XmlNode
-from pyviews import pipes, modifiers
+from pyviews import pipes, setters
 from pyviews.pipes import apply_attribute, apply_attributes, call_set_attr, get_setter, render_children
 from pyviews.rendering import render
 from pyviews.rendering.common import RenderingContext
@@ -89,7 +89,7 @@ class ApplyAttributeTests:
         binding_context = BindingContext({
             'node': node,
             'xml_attr': xml_attr,
-            'modifier': self.setter_mock,
+            'setter': self.setter_mock,
             'expression_body': expr_body
         })
 
@@ -103,7 +103,7 @@ class GetSetterTests:
     @staticmethod
     @mark.parametrize('setter_path, expected_setter', [
         (None, call_set_attr),
-        (modifiers.__name__ + '.import_global', modifiers.import_global)
+        (setters.__name__ + '.import_global', setters.import_global)
     ])
     def test_returns_setter(setter_path, expected_setter):
         """should return appropriate setter"""
@@ -115,7 +115,7 @@ class GetSetterTests:
     @mark.parametrize('namespace, name', [
         ('', ''),
         ('', 'attr_name'),
-        ('tests.rendering.core_test.some_modifier_not', 'attr_name')
+        ('tests.rendering.core_test.some_setter_not', 'attr_name')
     ])
     def test_raises(namespace, name):
         """should raise ImportError if namespace can''t be imported"""

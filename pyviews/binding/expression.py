@@ -79,7 +79,7 @@ class ExpressionBinding(Binding):
 def bind_to_expression(context: BindingContext) -> Binding:
     """Binds callback to expression result changes"""
     expr = Expression(context.expression_body)
-    callback = partial(context.modifier, context.node, context.xml_attr.name)
+    callback = partial(context.setter, context.node, context.xml_attr.name)
     binding = ExpressionBinding(callback, expr, context.node.node_globals)
     binding.bind()
     return binding

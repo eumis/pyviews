@@ -39,19 +39,19 @@ class BindingContextTests:
         assert self.context.expression_body == value
         assert self.context['expression_body'] == value
 
-    def test_modifier(self):
-        """modifier property should use key 'modifier'"""
+    def test_setter(self):
+        """setter should use key 'setter'"""
 
         def value(_, __, ___):
             pass
 
-        init_value = self.context.modifier
+        init_value = self.context.setter
 
-        self.context.modifier = value
+        self.context.setter = value
 
         assert init_value is None
-        assert self.context.modifier == value
-        assert self.context['modifier'] == value
+        assert self.context.setter == value
+        assert self.context['setter'] == value
 
     def test_xml_attr(self):
         """xml_attr property should use key 'xml_attr'"""
@@ -99,7 +99,7 @@ def _create_binder(binding_type, rules):
 _binding_args = [
     {},
     {'node': Mock()},
-    {'node': Mock(), 'modifier': lambda *args: None}
+    {'node': Mock(), 'setter': lambda *args: None}
 ]
 
 
@@ -124,7 +124,7 @@ class BinderTests:
         """apply() should call bind() for found rule"""
         binder = _create_binder(BINDING_TYPE, rules)
         expected = rules[rule_index]
-        context = BindingContext({'node': Mock(), 'modifier': lambda *args: None})
+        context = BindingContext({'node': Mock(), 'setter': lambda *args: None})
 
         binder.bind(BINDING_TYPE, context)
 
