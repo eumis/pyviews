@@ -1,3 +1,5 @@
+"""Two ways binding"""
+
 from functools import partial
 from re import compile as compile_regex
 from typing import Any

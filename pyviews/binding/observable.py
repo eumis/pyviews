@@ -1,3 +1,5 @@
+"""Observable binding"""
+
 from sys import exc_info
 
 from pyviews.core import Binding, BindingCallback

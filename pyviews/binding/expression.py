@@ -1,3 +1,5 @@
+"""Expression binding"""
+
 from functools import partial
 from sys import exc_info
 from typing import Callable, List, Any

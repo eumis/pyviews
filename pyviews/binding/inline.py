@@ -1,3 +1,5 @@
+"""Inline binding"""
+
 from functools import partial
 
 from pyviews.binding import BindingContext
