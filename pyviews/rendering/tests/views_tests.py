@@ -5,7 +5,7 @@ from pytest import mark, fixture
 
 from pyviews.rendering import views
 from pyviews.rendering.common import RenderingContext
-from pyviews.rendering.iteration import render
+from pyviews.rendering.pipeline import render
 from pyviews.rendering.views import render_view
 
 

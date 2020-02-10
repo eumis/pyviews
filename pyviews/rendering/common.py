@@ -1,4 +1,5 @@
 """Common functionality for rendering package"""
+
 from typing import Union
 
 from pyviews.core import ViewsError, InheritedDict, Node, XmlNode, InstanceNode

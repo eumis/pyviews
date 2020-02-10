@@ -4,7 +4,7 @@ from pytest import mark, raises
 
 from pyviews.code import Code, run_code
 from pyviews.compilation import CompilationError
-from pyviews.core.node import Node
+from pyviews.core.rendering import Node
 from pyviews.core.observable import InheritedDict
 from pyviews.core.xml import XmlNode
 from pyviews.rendering.common import RenderingContext

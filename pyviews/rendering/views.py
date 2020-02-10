@@ -7,8 +7,8 @@ from injectool import resolve, dependency
 
 from pyviews.core import ViewsError, ViewInfo, Node
 from pyviews.core.xml import Parser, XmlNode
-from pyviews.rendering.common import RenderingContext
-from pyviews.rendering.iteration import render
+from .common import RenderingContext
+from .pipeline import render
 
 
 class ViewError(ViewsError):

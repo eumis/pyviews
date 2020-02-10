@@ -2,7 +2,7 @@ from unittest.mock import Mock, call
 
 from pytest import fixture, mark
 
-from pyviews.core.node import Node
+from pyviews.core.rendering import Node
 from pyviews.core.observable import InheritedDict
 from pyviews.core.xml import XmlNode
 

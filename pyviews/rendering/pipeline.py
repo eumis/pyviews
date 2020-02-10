@@ -1,11 +1,12 @@
 """Rendering pipeline. Node creation from xml node, attribute setup and binding creation"""
 from importlib import import_module
 from inspect import signature, Parameter
+from sys import exc_info
 from typing import List, Callable, Union, Type, Tuple, Dict
 
-from injectool import resolve, DependencyError
+from injectool import resolve, DependencyError, dependency
 
-from pyviews.core import Node, InstanceNode, XmlNode
+from pyviews.core import Node, InstanceNode, XmlNode, ViewsError
 from .common import RenderingContext, RenderingError
 
 
@@ -95,3 +96,20 @@ def get_pipeline(xml_node: XmlNode) -> RenderingPipeline:
             render_error = RenderingError('RenderingPipeline is not found')
             render_error.add_info('Used keys to resolve pipeline', f'{key}, {xml_node.namespace}')
             raise render_error from error
+
+
+@dependency
+def render(context: RenderingContext) -> Node:
+    """Renders node from xml node"""
+    try:
+        pipeline = get_pipeline(context.xml_node)
+        return pipeline.run(context)
+    except ViewsError as error:
+        error.add_view_info(context.xml_node.view_info)
+        raise
+    except BaseException:
+        info = exc_info()
+        msg = 'Unknown error occurred during rendering'
+        error = RenderingError(msg, context.xml_node.view_info)
+        error.add_cause(info[1])
+        raise error from info[1]
