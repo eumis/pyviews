@@ -14,7 +14,7 @@ class ExpressionError(ViewsError):
 
 
 EXPRESSION_REGEX = compile_regex(r'([a-zA-Z_]{1,}\:){0,1}\{.*\}')
-ExpressionSource = namedtuple('Expression', ['binding_type', 'code'])
+ParsedExpression = namedtuple('Expression', ['binding_type', 'body'])
 
 
 def is_expression(source: str) -> bool:
@@ -22,7 +22,7 @@ def is_expression(source: str) -> bool:
     return EXPRESSION_REGEX.fullmatch(source) is not None
 
 
-def parse_expression(source: str) -> ExpressionSource:
+def parse_expression(source: str) -> ParsedExpression:
     """Returns tuple with expression type and expression body"""
     if not is_expression(source):
         msg = 'Expression is not valid. Expression should be matched with regular expression: {0}' \
@@ -35,4 +35,4 @@ def parse_expression(source: str) -> ExpressionSource:
         source = source[1:-1]
     else:
         binding_type = 'oneway'
-    return ExpressionSource(binding_type, source[1:-1])
+    return ParsedExpression(binding_type, source[1:-1])

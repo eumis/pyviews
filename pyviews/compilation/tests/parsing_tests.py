@@ -1,5 +1,5 @@
 from pytest import mark
-from pyviews.compilation.parsing import is_expression, parse_expression, ExpressionSource
+from pyviews.compilation.parsing import is_expression, parse_expression, ParsedExpression
 
 
 @mark.parametrize('expr, expected', [
@@ -41,6 +41,6 @@ def test_is_expression(expr: str, expected: bool):
     ('twoways:{to_int:{asdf}}', ('twoways', 'to_int:{asdf}')),
     ('bind:{qwer}:{asdf}', ('bind', 'qwer}:{asdf')),
 ])
-def test_parse_expression(expr: str, expected: ExpressionSource):
+def test_parse_expression(expr: str, expected: ParsedExpression):
     """parse_expression() should return tuple (binding_type, expression body)"""
     assert parse_expression(expr) == expected
