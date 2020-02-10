@@ -1,4 +1,5 @@
 """Rendering pipeline. Node creation from xml node, attribute setup and binding creation"""
+
 from importlib import import_module
 from inspect import signature, Parameter
 from sys import exc_info
@@ -18,10 +19,28 @@ class RenderingPipeline:
         self._create_node: Callable[[RenderingContext], Node] = create_node if create_node else _create_node
 
     def run(self, context: RenderingContext) -> Node:
-        node = self._create_node(context)
-        for pipe in self._pipes:
-            pipe(node, context)
-        return node
+        pipe = None
+        try:
+            node = self._create_node(context)
+            for pipe in self._pipes:
+                pipe(node, context)
+            return node
+        except ViewsError as error:
+            self._add_pipe_info(error, pipe)
+            raise
+        except BaseException:
+            info = exc_info()
+            msg = 'Unknown error occurred during rendering'
+            error = RenderingError(msg, context.xml_node.view_info)
+            error.add_cause(info[1])
+            self._add_pipe_info(error, pipe)
+
+            raise error from info[1]
+
+    def _add_pipe_info(self, error, pipe):
+        error.add_info('Pipe', pipe)
+        if pipe:
+            error.add_info('Pipeline', self)
 
 
 def _create_node(context: RenderingContext) -> Node:

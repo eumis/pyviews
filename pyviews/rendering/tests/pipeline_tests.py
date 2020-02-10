@@ -1,7 +1,7 @@
 from unittest.mock import Mock, call
 
 from injectool import SingletonResolver, add_resolver
-from pytest import mark, fixture, raises
+from pytest import mark, fixture, raises, fail
 
 from pyviews.code import Code
 from pyviews.core import Node, XmlNode, Observable, InstanceNode
@@ -93,16 +93,18 @@ class RenderingPipelineTests:
 
         assert actual == node
 
-    @mark.parametrize('namespace, tag', [
-        ('pyviews.core.node', 'UnknownNode'),
-        ('pyviews.core.unknownModule', 'Node')
-    ])
-    def test_raises_for_invalid_path(self, namespace, tag):
-        """should raise in case module or class cannot be imported"""
-        xml_node = XmlNode(namespace, tag)
+    def test_adds_pipe_info_to_error(self):
+        """should handle errors"""
+        pipe = Mock()
+        pipe.side_effect = Exception()
+        pipeline = RenderingPipeline(pipes=[pipe])
 
-        with raises(RenderingError):
-            self.pipeline.run(RenderingContext({'xml_node': xml_node}))
+        try:
+            pipeline.run(self.context)
+        except RenderingError:
+            pass
+        except BaseException:
+            fail()
 
     @mark.parametrize('namespace, tag, inst_type', [
         ('pyviews.core.observable', 'Observable', Observable),
