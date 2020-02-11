@@ -4,7 +4,7 @@ from sys import exc_info
 from textwrap import dedent
 from traceback import extract_tb
 from pyviews.core import Node
-from pyviews.expression import CompilationError
+from pyviews.expression import ExpressionError
 from pyviews.rendering.common import RenderingContext
 
 
@@ -40,7 +40,7 @@ def run_code(node: Code, context: RenderingContext):
 
 def _get_compilation_error(code, title, cause, line_number):
     msg = '{0}:\n{1}'.format(title, code)
-    error = CompilationError(msg, str(cause))
+    error = ExpressionError(msg, str(cause))
     error.add_cause(cause)
     error.add_info('Line number', line_number)
     return error

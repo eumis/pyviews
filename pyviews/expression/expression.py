@@ -8,19 +8,10 @@ from collections import namedtuple
 
 from injectool import dependency
 
-from pyviews.core import PyViewsError
+from pyviews.expression.error import ExpressionError
 
 _COMPILATION_CACHE = {}
 _CacheItem = namedtuple('CacheItem', ['compiled_code', 'tree'])
-
-
-class CompilationError(PyViewsError):
-    """Error for failed expression compilation"""
-
-    def __init__(self, message, expr: str):
-        super().__init__(message)
-        self.expression: str = expr
-        self.add_info('Expression', expr)
 
 
 class ObjectNode(NamedTuple):
@@ -55,7 +46,7 @@ class Expression:
             code = self._code if self._code.strip(' ') else 'None'
             return compile(code, '<string>', 'eval')
         except SyntaxError as syntax_error:
-            error = CompilationError(syntax_error.msg, self._code)
+            error = ExpressionError(syntax_error.msg, self._code)
             error.add_cause(syntax_error)
             raise error from syntax_error
 
@@ -127,6 +118,6 @@ def execute(expression: Union[Expression, str], parameters: dict = None) -> Any:
         return eval(expression.compiled_code, parameters, {})
     except BaseException:
         info = exc_info()
-        error = CompilationError('Error occurred in expression execution', expression.code)
+        error = ExpressionError('Error occurred in expression execution', expression.code)
         error.add_cause(info[1])
         raise error from info[1]

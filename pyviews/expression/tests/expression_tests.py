@@ -1,7 +1,6 @@
-from injectool import set_container, Container
 from pytest import mark, raises, fixture
 
-from pyviews.expression import Expression, CompilationError
+from pyviews.expression import Expression, ExpressionError
 from pyviews.expression.expression import execute
 
 
@@ -75,5 +74,5 @@ class ExecuteTests:
     ])
     def test_execute_raises(expression):
         """execute() should raise error if expression is invalid"""
-        with raises(CompilationError):
+        with raises(ExpressionError):
             execute(expression)

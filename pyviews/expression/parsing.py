@@ -2,16 +2,8 @@
 
 from re import compile as compile_regex
 from collections import namedtuple
-from pyviews.core import PyViewsError
 
-
-class ExpressionError(PyViewsError):
-    """Error for expression"""
-
-    def __init__(self, message, expression):
-        super().__init__(message)
-        self.add_info('Expression', expression)
-
+from pyviews.expression.error import ExpressionError
 
 EXPRESSION_REGEX = compile_regex(r'([a-zA-Z_]{1,}\:){0,1}\{.*\}')
 

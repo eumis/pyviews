@@ -3,7 +3,7 @@ from unittest.mock import Mock
 from pytest import mark, raises
 
 from pyviews.code import Code, run_code
-from pyviews.expression import CompilationError
+from pyviews.expression import ExpressionError
 from pyviews.core.rendering import Node
 from pyviews.core.observable import InheritedDict
 from pyviews.core.xml import XmlNode
@@ -85,12 +85,12 @@ class CodeTests:
          ''', {})
     ])
     def test_run_raises_error(self, content, globals_dict):
-        """should raise CompilationError for invalid code"""
+        """should raise ExpressionError for invalid code"""
         parent_node = Node(Mock())
         code = self._get_code_node(content)
         context = RenderingContext({'parent_node': parent_node, 'node_globals': InheritedDict(globals_dict)})
 
-        with raises(CompilationError):
+        with raises(ExpressionError):
             run_code(code, context)
 
     @staticmethod
