@@ -55,7 +55,9 @@ def get_expression_callback(expression: Expression, expr_vars: InheritedDict) ->
     return get_global_value_callback(expression, expr_vars)
 
 
-def get_property_expression_callback(expression: Expression, expr_globals: InheritedDict) -> BindingCallback:
+def get_property_expression_callback(expression: Expression,
+                                     expr_globals: InheritedDict) -> BindingCallback:
+    """Returns callback that sets passed value to property from expression """
     var_tree = expression.get_object_tree()
     _validate_property_expression(var_tree, expression.code)
     return partial(_on_property_expression_update, var_tree, expr_globals)
@@ -88,6 +90,7 @@ def _validate_property_expression(var_tree: ObjectNode, source_code: str):
 
 
 def get_global_value_callback(expression: Expression, expr_vars: InheritedDict) -> BindingCallback:
+    """Returns callback that sets passed value to global value"""
     _validate_global_value_expression(expression.get_object_tree(), expression.code)
     return partial(_on_global_value_update, expr_vars, expression.code)
 

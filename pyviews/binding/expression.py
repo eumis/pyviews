@@ -3,7 +3,7 @@
 from functools import partial
 from typing import Callable, List, Any
 
-from pyviews.binding import BindingContext
+from pyviews.binding.binder import BindingContext
 from pyviews.core import Binding, BindingCallback, InheritedDict, Observable, BindingError
 from pyviews.core.error import error_handling
 from pyviews.expression import Expression, ObjectNode, execute
@@ -38,7 +38,8 @@ class ExpressionBinding(Binding):
         try:
             for entry in var_tree.children:
                 inst.observe(entry.key, self._update_callback)
-                self._destroy_functions.append(partial(inst.release, entry.key, self._update_callback))
+                self._destroy_functions.append(
+                    partial(inst.release, entry.key, self._update_callback))
         except KeyError:
             pass
 

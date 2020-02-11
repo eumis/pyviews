@@ -16,9 +16,11 @@ class RenderingPipeline:
 
     def __init__(self, pipes=None, create_node=None):
         self._pipes: List[Callable[[RenderingContext], None]] = pipes if pipes else []
-        self._create_node: Callable[[RenderingContext], Node] = create_node if create_node else _create_node
+        self._create_node: Callable[
+            [RenderingContext], Node] = create_node if create_node else _create_node
 
     def run(self, context: RenderingContext) -> Node:
+        """Runs pipeline"""
         pipe = None
         with error_handling(RenderingError(),
                             lambda e: self._add_pipe_info(e, pipe, context)):
@@ -96,6 +98,7 @@ def _get_kwargs(parameters: list, init_args: dict) -> dict:
 
 
 def get_pipeline(xml_node: XmlNode) -> RenderingPipeline:
+    """Resolves pipeline by namespace and name or by namespace"""
     key = f'{xml_node.namespace}.{xml_node.name}'
     try:
         return resolve(RenderingPipeline, key)

@@ -45,7 +45,8 @@ class PyViewsError(Exception):
 
 
 @contextmanager
-def error_handling(error_to_raise: PyViewsError, add_error_info: Callable[[PyViewsError], None] = None):
+def error_handling(error_to_raise: PyViewsError,
+                   add_error_info: Callable[[PyViewsError], None] = None):
     """handles error and raises PyViewsError with custom error info"""
     add_error_info = add_error_info if add_error_info is not None else _do_nothing
     try:

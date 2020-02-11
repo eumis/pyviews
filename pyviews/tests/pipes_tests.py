@@ -9,7 +9,8 @@ from pyviews.binding.once import run_once
 from pyviews.expression import Expression
 from pyviews.core import XmlAttr, Node, XmlNode
 from pyviews import pipes, setters
-from pyviews.pipes import apply_attribute, apply_attributes, call_set_attr, get_setter, render_children
+from pyviews.pipes import apply_attribute, apply_attributes, call_set_attr, get_setter, \
+    render_children
 from pyviews.rendering import render
 from pyviews.rendering.common import RenderingContext
 
@@ -70,11 +71,10 @@ class ApplyAttributeTests:
     def test_uses_passed_setter(self, xml_attr: XmlAttr, key, value):
         """ should call setter"""
         node = Node(Mock())
-        setter = Mock()
 
-        apply_attribute(node, xml_attr, setter)
+        apply_attribute(node, xml_attr, self.setter_mock)
 
-        assert setter.call_args == call(node, key, value)
+        assert self.setter_mock.call_args == call(node, key, value)
 
     @mark.parametrize('xml_attr, binding_type, expr_body', [
         (XmlAttr('key', '{1}'), 'oneway', '1'),
@@ -159,7 +159,8 @@ class RenderChildrenTests:
 
         render_children(self.node, self.context, lambda x, n, c: (x, n, c))
 
-        assert self.render.call_args_list == [call((xml_node, self.node, self.context)) for xml_node in
+        assert self.render.call_args_list == [call((xml_node, self.node, self.context)) for xml_node
+                                              in
                                               self.xml_node.children]
 
     @mark.parametrize('child_count', [1, 2, 5])
@@ -169,4 +170,4 @@ class RenderChildrenTests:
 
         render_children(self.node, self.context, lambda x, n, c: RenderingContext({'xml_node': x}))
 
-        assert [child.xml_node for child in self.node.children] == [xml_node for xml_node in self.xml_node.children]
+        assert [child.xml_node for child in self.node.children] == self.xml_node.children

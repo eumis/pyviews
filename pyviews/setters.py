@@ -24,6 +24,7 @@ def set_global(node: Node, key: str, value: Any):
 
 
 class Args:
+    """Represents args and kwargs parameters"""
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs

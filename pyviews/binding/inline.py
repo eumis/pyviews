@@ -2,14 +2,16 @@
 
 from functools import partial
 
-from pyviews.binding import BindingContext
+from pyviews.binding.binder import BindingContext
 from pyviews.expression import Expression, execute
 from pyviews.core import Binding, BindingCallback
 from pyviews.core import InheritedDict
 
 
 class InlineBinding(Binding):
-    def __init__(self, callback: BindingCallback, bind_expression: Expression, value_expression: Expression,
+    """Inline binding"""
+    def __init__(self, callback: BindingCallback, bind_expression: Expression,
+                 value_expression: Expression,
                  expr_vars: InheritedDict):
         super().__init__()
         self._callback: BindingCallback = callback

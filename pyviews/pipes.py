@@ -1,3 +1,5 @@
+"""Common rendering pipes"""
+
 from typing import Callable, Union, Any
 
 from injectool import resolve
@@ -43,9 +45,13 @@ def call_set_attr(node: Node, key: str, value):
     node.set_attr(key, value)
 
 
+NodeType = Union[Node, Any]
+RenderingContextType = Union[RenderingContext, Any]
+GetChildContextType = Callable[[XmlNode, NodeType, RenderingContextType], RenderingContext]
+
+
 def render_children(node: Node, context: RenderingContext,
-                    get_child_context: Callable[
-                        [XmlNode, Union[Node, Any], Union[RenderingContext, Any]], RenderingContext]):
+                    get_child_context: GetChildContextType):
     """renders node children"""
     for xml_node in node.xml_node.children:
         child_node = render(get_child_context(xml_node, node, context))

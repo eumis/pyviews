@@ -105,9 +105,6 @@ class Expression:
         """Returns objects tree from expression"""
         return self._object_tree
 
-    def execute(self):
-        pass
-
 
 @dependency
 def execute(expression: Union[Expression, str], parameters: dict = None) -> Any:
