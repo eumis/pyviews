@@ -1,7 +1,7 @@
 """Binding"""
 
 from .binder import Binder, BindingContext
-from .expression import ExpressionBinding, bind_to_expression
+from .expression import ExpressionBinding, bind_setter_to_expression
 from .inline import InlineBinding, bind_inline
 from .observable import ObservableBinding
 from .once import run_once

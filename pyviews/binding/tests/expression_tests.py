@@ -4,7 +4,7 @@ from unittest.mock import Mock, call
 from pytest import fixture, mark
 
 from pyviews.binding import BindingContext
-from pyviews.binding.expression import ExpressionBinding, bind_to_expression
+from pyviews.binding.expression import ExpressionBinding, bind_setter_to_expression
 from pyviews.binding.tests.common import SomeEntity, InnerViewModel, ParentViewModel
 from pyviews.expression import Expression, execute
 from pyviews.core import InheritedDict, XmlAttr
@@ -79,13 +79,13 @@ def binding_context_fixture(request):
 
 
 @mark.usefixtures('binding_context_fixture')
-class BindToExpressionTests:
+class BindSetterToExpressionTests:
     def test_binds_setter_to_expression_changes(self):
         """should bind setter to expression changes"""
         self.context.node = Mock(node_globals=InheritedDict({'value': 1}))
         self.context.expression_body = 'value'
 
-        bind_to_expression(self.context)
+        bind_setter_to_expression(self.context)
         self.context.setter.reset_mock()
         self.context.node.node_globals['value'] = 2
 
@@ -93,6 +93,6 @@ class BindToExpressionTests:
 
     def test_returns_binding(self):
         """should return expression binding"""
-        actual = bind_to_expression(self.context)
+        actual = bind_setter_to_expression(self.context)
 
         assert isinstance(actual, ExpressionBinding)

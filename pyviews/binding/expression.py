@@ -68,7 +68,7 @@ class ExpressionBinding(Binding):
         self._destroy_functions = []
 
 
-def bind_to_expression(context: BindingContext) -> Binding:
+def bind_setter_to_expression(context: BindingContext) -> Binding:
     """Binds callback to expression result changes"""
     expr = Expression(context.expression_body)
     callback = partial(context.setter, context.node, context.xml_attr.name)
