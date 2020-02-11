@@ -3,7 +3,7 @@
 from functools import partial
 
 from pyviews.binding import BindingContext
-from pyviews.compilation import Expression
+from pyviews.compilation import Expression, execute
 from pyviews.core import Binding, BindingCallback
 from pyviews.core import InheritedDict
 
@@ -21,12 +21,12 @@ class InlineBinding(Binding):
 
     def bind(self):
         self.destroy()
-        bind = self._bind_expression.execute(self._expression_vars.to_dictionary())
+        bind = execute(self._bind_expression, self._expression_vars.to_dictionary())
         self._execute_callback()
         self._destroy = bind(self._execute_callback)
 
     def _execute_callback(self):
-        value = self._value_expression.execute(self._expression_vars.to_dictionary())
+        value = execute(self._value_expression, self._expression_vars.to_dictionary())
         self._callback(value)
 
     def destroy(self):

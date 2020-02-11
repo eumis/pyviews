@@ -5,7 +5,7 @@ from sys import exc_info
 from typing import Callable, List, Any
 
 from pyviews.binding import BindingContext
-from pyviews.compilation import Expression, ObjectNode
+from pyviews.compilation import Expression, ObjectNode, execute
 from pyviews.core import Binding, BindingCallback, InheritedDict, Observable, BindingError, ViewsError
 
 
@@ -67,7 +67,7 @@ class ExpressionBinding(Binding):
             raise error from info[1]
 
     def _execute_callback(self):
-        value = self._expression.execute(self._vars.to_dictionary())
+        value = execute(self._expression, self._vars.to_dictionary())
         self._callback(value)
 
     def destroy(self):

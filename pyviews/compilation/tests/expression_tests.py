@@ -1,3 +1,4 @@
+from injectool import set_container, Container
 from pytest import mark, raises, fixture
 
 from pyviews.compilation import Expression, CompilationError
@@ -23,37 +24,6 @@ def object_tree_fixture(request):
 
 @mark.usefixtures('object_tree_fixture')
 class ExpressionTests:
-
-    @staticmethod
-    @mark.parametrize('code, params, expected', [
-        ('', None, None),
-        (' ', {'some_key': 1}, None),
-        ('2 + 2', None, 4),
-        ('some_key', {'some_key': 1}, 1),
-        ('some_key - 1', {'some_key': 1}, 0),
-        ('str(some_key)', {'some_key': 1}, '1'),
-        ('some_key', {'some_key': 'asdf'}, 'asdf'),
-        ('some_key(some_value)', {'some_key': lambda val: val, 'some_value': 'value'}, 'value')
-    ])
-    def test_execute(code, params, expected):
-        """execute() should return expression value"""
-        expression = Expression(code)
-
-        actual = expression.execute(params)
-
-        assert expected == actual
-
-    @staticmethod
-    @mark.parametrize('body', [
-        '2/0',
-        'print(some_variable)'
-    ])
-    def test_execute_raises(body):
-        """execute() should raise error if expression is invalid"""
-        expression = Expression(body)
-
-        with raises(CompilationError):
-            expression.execute()
 
     def test_root(self):
         """get_object_tree() should return objects tree root"""
@@ -82,28 +52,28 @@ class ExpressionTests:
 
 class ExecuteTests:
     @staticmethod
-    @mark.parametrize('code, params, expected', [
+    @mark.parametrize('expression, params, expected', [
         ('', None, None),
-        (' ', {'some_key': 1}, None),
+        (Expression(' '), {'some_key': 1}, None),
         ('2 + 2', None, 4),
-        ('some_key', {'some_key': 1}, 1),
+        (Expression('some_key'), {'some_key': 1}, 1),
         ('some_key - 1', {'some_key': 1}, 0),
-        ('str(some_key)', {'some_key': 1}, '1'),
+        (Expression('str(some_key)'), {'some_key': 1}, '1'),
         ('some_key', {'some_key': 'asdf'}, 'asdf'),
-        ('some_key(some_value)', {'some_key': lambda val: val, 'some_value': 'value'}, 'value')
+        (Expression('some_key(some_value)'), {'some_key': lambda val: val, 'some_value': 'value'}, 'value')
     ])
-    def test_execute(code, params, expected):
+    def test_execute(expression, params, expected):
         """execute() should return expression value"""
-        actual = execute(code, params)
+        actual = execute(expression, params)
 
         assert expected == actual
 
     @staticmethod
-    @mark.parametrize('body', [
+    @mark.parametrize('expression', [
         '2/0',
-        'print(some_variable)'
+        Expression('print(some_variable)')
     ])
-    def test_execute_raises(body):
+    def test_execute_raises(expression):
         """execute() should raise error if expression is invalid"""
         with raises(CompilationError):
-            execute(body)
+            execute(expression)

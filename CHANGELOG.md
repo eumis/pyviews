@@ -21,6 +21,7 @@
 - updated error message for resolving RenderingPipeline
 - added Args class to pass args to call setter
 - added inline binding
+- execute method from Expression is changed to function and can be used as dependency
 
 ## 2.3.0
 

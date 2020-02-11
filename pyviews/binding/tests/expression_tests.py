@@ -6,7 +6,7 @@ from pytest import fixture, mark
 from pyviews.binding import BindingContext
 from pyviews.binding.expression import ExpressionBinding, bind_to_expression
 from pyviews.binding.tests.common import SomeEntity, InnerViewModel, ParentViewModel
-from pyviews.compilation import Expression
+from pyviews.compilation import Expression, execute
 from pyviews.core import InheritedDict, XmlAttr
 
 
@@ -33,7 +33,7 @@ class ExpressionBindingTests:
 
     def test_initialize_target(self):
         """Target should be updated with expression value on Binding.bind() call"""
-        expected = self.expression.execute({'vm': self.view_model})
+        expected = execute(self.expression, {'vm': self.view_model})
 
         assert self.target_inst.str_value == expected
 
@@ -48,7 +48,7 @@ class ExpressionBindingTests:
     def test_expression_changed(self, change):
         """Target should be updated after expression result is changed"""
         change(self.view_model)
-        expected = self.expression.execute({'vm': self.view_model})
+        expected = execute(self.expression, {'vm': self.view_model})
 
         assert self.target_inst.str_value == expected
 

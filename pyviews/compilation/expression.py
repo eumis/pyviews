@@ -3,8 +3,11 @@
 import ast
 from sys import exc_info
 from types import CodeType
-from typing import List, Callable, Any, Iterator, NamedTuple
+from typing import List, Callable, Any, Iterator, NamedTuple, Union
 from collections import namedtuple
+
+from injectool import dependency
+
 from pyviews.core import ViewsError
 
 _COMPILATION_CACHE = {}
@@ -102,22 +105,28 @@ class Expression:
         """Expression source code"""
         return self._code
 
+    @property
+    def compiled_code(self) -> CodeType:
+        """Expression compiled code"""
+        return self._compiled_code
+
     def get_object_tree(self) -> ObjectNode:
         """Returns objects tree from expression"""
         return self._object_tree
 
-    def execute(self, parameters: dict = None) -> Any:
-        """Executes expression with passed parameters and returns result"""
-        try:
-            parameters = {} if parameters is None else parameters
-            return eval(self._compiled_code, parameters, {})
-        except BaseException:
-            info = exc_info()
-            error = CompilationError('Error occurred in expression execution', self._code)
-            error.add_cause(info[1])
-            raise error from info[1]
+    def execute(self):
+        pass
 
 
-def execute(code: str, parameters: dict = None) -> Any:
-    """Executes passed code using Expression class"""
-    return Expression(code).execute(parameters)
+@dependency
+def execute(expression: Union[Expression, str], parameters: dict = None) -> Any:
+    """Executes expression with passed parameters and returns result"""
+    try:
+        expression = expression if isinstance(expression, Expression) else Expression(expression)
+        parameters = {} if parameters is None else parameters
+        return eval(expression.compiled_code, parameters, {})
+    except BaseException:
+        info = exc_info()
+        error = CompilationError('Error occurred in expression execution', expression.code)
+        error.add_cause(info[1])
+        raise error from info[1]
