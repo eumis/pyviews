@@ -6,7 +6,7 @@ from typing import Callable, List, Any
 
 from pyviews.binding import BindingContext
 from pyviews.expression import Expression, ObjectNode, execute
-from pyviews.core import Binding, BindingCallback, InheritedDict, Observable, BindingError, ViewsError
+from pyviews.core import Binding, BindingCallback, InheritedDict, Observable, BindingError, PyViewsError
 
 
 class ExpressionBinding(Binding):
@@ -56,7 +56,7 @@ class ExpressionBinding(Binding):
                 self.bind()
             else:
                 self._execute_callback()
-        except ViewsError as error:
+        except PyViewsError as error:
             self.add_error_info(error)
             raise
         except BaseException:

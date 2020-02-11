@@ -5,13 +5,13 @@ from sys import exc_info
 
 from injectool import resolve, dependency
 
-from pyviews.core import ViewsError, ViewInfo, Node
+from pyviews.core import PyViewsError, ViewInfo, Node
 from pyviews.core.xml import Parser, XmlNode
 from .common import RenderingContext
 from .pipeline import render
 
 
-class ViewError(ViewsError):
+class ViewError(PyViewsError):
     """Common error for parsing exceptions"""
 
 
@@ -21,7 +21,7 @@ def render_view(view_name: str, context: RenderingContext) -> Node:
     try:
         context.xml_node = get_view_root(view_name)
         return render(context)
-    except ViewsError as error:
+    except PyViewsError as error:
         error.add_view_info(ViewInfo(view_name, None))
         raise
     except BaseException:
@@ -52,7 +52,7 @@ def _parse_root(path, view_name):
         error.add_info('View name', view_name)
         error.add_info('Path', path)
         raise error
-    except ViewsError as error:
+    except PyViewsError as error:
         error.add_view_info(ViewInfo(view_name, None))
         raise
     except BaseException:

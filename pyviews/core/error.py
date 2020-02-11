@@ -6,7 +6,7 @@ from collections import namedtuple
 ViewInfo = namedtuple('ViewInfo', ['view', 'line'])
 
 
-class ViewsError(Exception):
+class PyViewsError(Exception):
     """Base error class for custom exceptions"""
 
     def __init__(self, message, view_info: ViewInfo = None):

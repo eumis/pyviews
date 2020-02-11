@@ -3,10 +3,10 @@
 from abc import ABC, abstractmethod
 from typing import Callable, Any
 
-from .error import ViewsError
+from .error import PyViewsError
 
 
-class BindingError(ViewsError):
+class BindingError(PyViewsError):
     """Base error for binding errors"""
     TargetUpdateError = 'Error occurred during target update'
 

@@ -4,7 +4,7 @@ from sys import exc_info
 
 from pyviews.core import Binding, BindingCallback
 from pyviews.core import Observable
-from pyviews.core import ViewsError, BindingError
+from pyviews.core import PyViewsError, BindingError
 
 
 class ObservableBinding(Binding):
@@ -24,7 +24,7 @@ class ObservableBinding(Binding):
     def _update_callback(self, new_val, _):
         try:
             self._callback(new_val)
-        except ViewsError as error:
+        except PyViewsError as error:
             self.add_error_info(error)
             raise
         except BaseException:

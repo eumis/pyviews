@@ -2,10 +2,10 @@
 
 from typing import Union
 
-from pyviews.core import ViewsError, InheritedDict, Node, XmlNode, InstanceNode
+from pyviews.core import PyViewsError, InheritedDict, Node, XmlNode, InstanceNode
 
 
-class RenderingError(ViewsError):
+class RenderingError(PyViewsError):
     """Error for rendering"""
 
 

@@ -8,13 +8,13 @@ from collections import namedtuple
 
 from injectool import dependency
 
-from pyviews.core import ViewsError
+from pyviews.core import PyViewsError
 
 _COMPILATION_CACHE = {}
 _CacheItem = namedtuple('CacheItem', ['compiled_code', 'tree'])
 
 
-class CompilationError(ViewsError):
+class CompilationError(PyViewsError):
     """Error for failed expression compilation"""
 
     def __init__(self, message, expr: str):

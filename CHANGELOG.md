@@ -16,7 +16,7 @@
 - Expression class is moved to compilation package and removed ABC inheritance
 - added execute() function to compilation package
 - removed injection of Expression class
-- CoreError is renamed to ViewsError
+- CoreError is renamed to PyViewsError
 - removed Node.properties and Property class
 - updated error message for resolving RenderingPipeline
 - added Args class to pass args to call setter

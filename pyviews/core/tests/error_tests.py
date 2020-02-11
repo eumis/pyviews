@@ -3,7 +3,7 @@ from typing import List
 
 from pytest import mark
 
-from pyviews.core import ViewsError, ViewInfo
+from pyviews.core import PyViewsError, ViewInfo
 
 
 def _concat(*items):
@@ -27,7 +27,7 @@ class CoreErrorTests:
     ])
     def test_init(message, view_info: ViewInfo, error_output):
         """__init__() should setup message and view info"""
-        error = ViewsError(message, view_info)
+        error = PyViewsError(message, view_info)
 
         assert str(error) == error_output
 
@@ -49,7 +49,7 @@ class CoreErrorTests:
     ])
     def test_add_view_info(view_infos: List[ViewInfo], view_output: str):
         """add_view_info() should add view info line to error output"""
-        error = ViewsError('')
+        error = PyViewsError('')
         expected = _concat('Message: ', view_output)
 
         for info in view_infos:
@@ -65,7 +65,7 @@ class CoreErrorTests:
     ])
     def test_add_info(header, message, info_output: str):
         """add_info() should add info line to error output"""
-        error = ViewsError('')
+        error = PyViewsError('')
         expected = _concat('Message: ', info_output)
 
         error.add_info(header, message)
@@ -79,7 +79,7 @@ class CoreErrorTests:
     ])
     def test_add_cause(cause_error: Exception, cause_output: str):
         """add_cause() should add info about cause error"""
-        error = ViewsError('')
+        error = PyViewsError('')
         expected = _concat('Message: ', cause_output)
 
         error.add_cause(cause_error)

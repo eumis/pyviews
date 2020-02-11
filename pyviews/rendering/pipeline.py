@@ -7,7 +7,7 @@ from typing import List, Callable, Union, Type, Tuple, Dict
 
 from injectool import resolve, DependencyError, dependency
 
-from pyviews.core import Node, InstanceNode, XmlNode, ViewsError
+from pyviews.core import Node, InstanceNode, XmlNode, PyViewsError
 from .common import RenderingContext, RenderingError
 
 
@@ -25,7 +25,7 @@ class RenderingPipeline:
             for pipe in self._pipes:
                 pipe(node, context)
             return node
-        except ViewsError as error:
+        except PyViewsError as error:
             self._add_pipe_info(error, pipe)
             raise
         except BaseException:
@@ -123,7 +123,7 @@ def render(context: RenderingContext) -> Node:
     try:
         pipeline = get_pipeline(context.xml_node)
         return pipeline.run(context)
-    except ViewsError as error:
+    except PyViewsError as error:
         error.add_view_info(context.xml_node.view_info)
         raise
     except BaseException:

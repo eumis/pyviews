@@ -4,7 +4,7 @@ from collections import namedtuple
 from xml.parsers.expat import ParserCreate, ExpatError
 from pyexpat.errors import messages as error_messages
 from injectool import inject
-from .error import ViewsError, ViewInfo
+from .error import PyViewsError, ViewInfo
 
 
 class XmlAttr(NamedTuple):
@@ -25,7 +25,7 @@ class XmlNode(NamedTuple):
     view_info: ViewInfo = None
 
 
-class XmlError(ViewsError):
+class XmlError(PyViewsError):
     """Describes xml parsing error"""
     Unknown_namespace = 'Unknown xml namespace: {0}.'
     Unknown_default_namespace = 'Unknown default xml namespace.'
