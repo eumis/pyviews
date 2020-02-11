@@ -1,12 +1,12 @@
 """Expression binding"""
 
 from functools import partial
-from sys import exc_info
 from typing import Callable, List, Any
 
 from pyviews.binding import BindingContext
+from pyviews.core import Binding, BindingCallback, InheritedDict, Observable, BindingError
+from pyviews.core.error import error_handling
 from pyviews.expression import Expression, ObjectNode, execute
-from pyviews.core import Binding, BindingCallback, InheritedDict, Observable, BindingError, PyViewsError
 
 
 class ExpressionBinding(Binding):
@@ -51,20 +51,11 @@ class ExpressionBinding(Binding):
             return None
 
     def _update_callback(self, new_val, old_val):
-        try:
+        with error_handling(BindingError(BindingError.BindingCallbackError), self.add_error_info):
             if isinstance(new_val, Observable) or isinstance(old_val, Observable):
                 self.bind()
             else:
                 self._execute_callback()
-        except PyViewsError as error:
-            self.add_error_info(error)
-            raise
-        except BaseException:
-            info = exc_info()
-            error = BindingError(BindingError.TargetUpdateError)
-            self.add_error_info(error)
-            error.add_cause(info[1])
-            raise error from info[1]
 
     def _execute_callback(self):
         value = execute(self._expression, self._vars.to_dictionary())

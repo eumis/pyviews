@@ -1,7 +1,9 @@
 """Common core functionality"""
-
+from contextlib import contextmanager
 from os import linesep
 from collections import namedtuple
+from sys import exc_info
+from typing import Callable
 
 ViewInfo = namedtuple('ViewInfo', ['view', 'line'])
 
@@ -40,3 +42,23 @@ class PyViewsError(Exception):
     def add_cause(self, error: BaseException):
         """Adds cause error to error message"""
         self.add_info('Cause error', '{0} - {1}'.format(type(error).__name__, error))
+
+
+@contextmanager
+def error_handling(error_to_raise: PyViewsError, add_error_info: Callable[[PyViewsError], None] = None):
+    """handles error and raises PyViewsError with custom error info"""
+    add_error_info = add_error_info if add_error_info is not None else _do_nothing
+    try:
+        yield
+    except PyViewsError as error:
+        add_error_info(error)
+        raise
+    except BaseException:
+        info = exc_info()
+        add_error_info(error_to_raise)
+        error_to_raise.add_cause(info[1])
+        raise error_to_raise from info[1]
+
+
+def _do_nothing(_):
+    pass

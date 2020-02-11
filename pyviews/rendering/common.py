@@ -2,11 +2,14 @@
 
 from typing import Union
 
-from pyviews.core import PyViewsError, InheritedDict, Node, XmlNode, InstanceNode
+from pyviews.core import PyViewsError, InheritedDict, Node, XmlNode, InstanceNode, ViewInfo
 
 
 class RenderingError(PyViewsError):
     """Error for rendering"""
+
+    def __init__(self, msg: str = None, view_info: ViewInfo = None):
+        super().__init__(msg if msg else 'Unknown rendering error occurred', view_info)
 
 
 class RenderingContext(dict):

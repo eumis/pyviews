@@ -9,6 +9,7 @@ from pyviews.core import PyViewsError, ViewInfo, Node
 from pyviews.core.xml import Parser, XmlNode
 from .common import RenderingContext
 from .pipeline import render
+from ..core.error import error_handling
 
 
 class ViewError(PyViewsError):
@@ -18,17 +19,10 @@ class ViewError(PyViewsError):
 @dependency
 def render_view(view_name: str, context: RenderingContext) -> Node:
     """Renders view"""
-    try:
+    with error_handling(ViewError('Unknown error occurred during rendering'),
+                        lambda e: e.add_view_info(ViewInfo(view_name, None))):
         context.xml_node = get_view_root(view_name)
         return render(context)
-    except PyViewsError as error:
-        error.add_view_info(ViewInfo(view_name, None))
-        raise
-    except BaseException:
-        info = exc_info()
-        error = ViewError('Unknown error occurred during rendering', ViewInfo(view_name, None))
-        error.add_cause(info[1])
-        raise error from info[1]
 
 
 _XML_CACHE = {}

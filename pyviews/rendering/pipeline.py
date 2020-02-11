@@ -2,13 +2,13 @@
 
 from importlib import import_module
 from inspect import signature, Parameter
-from sys import exc_info
 from typing import List, Callable, Union, Type, Tuple, Dict
 
 from injectool import resolve, DependencyError, dependency
 
-from pyviews.core import Node, InstanceNode, XmlNode, PyViewsError
+from pyviews.core import Node, InstanceNode, XmlNode
 from .common import RenderingContext, RenderingError
+from ..core.error import error_handling, PyViewsError
 
 
 class RenderingPipeline:
@@ -20,27 +20,18 @@ class RenderingPipeline:
 
     def run(self, context: RenderingContext) -> Node:
         pipe = None
-        try:
+        with error_handling(RenderingError(),
+                            lambda e: self._add_pipe_info(e, pipe, context)):
             node = self._create_node(context)
             for pipe in self._pipes:
                 pipe(node, context)
             return node
-        except PyViewsError as error:
-            self._add_pipe_info(error, pipe)
-            raise
-        except BaseException:
-            info = exc_info()
-            msg = 'Unknown error occurred during rendering'
-            error = RenderingError(msg, context.xml_node.view_info)
-            error.add_cause(info[1])
-            self._add_pipe_info(error, pipe)
 
-            raise error from info[1]
-
-    def _add_pipe_info(self, error, pipe):
-        error.add_info('Pipe', pipe)
+    def _add_pipe_info(self, error: PyViewsError, pipe, context: RenderingContext):
+        error.add_view_info(context.xml_node.view_info)
+        error.add_info('Pipeline', self)
         if pipe:
-            error.add_info('Pipeline', self)
+            error.add_info('Pipe', pipe)
 
 
 def _create_node(context: RenderingContext) -> Node:
@@ -120,15 +111,7 @@ def get_pipeline(xml_node: XmlNode) -> RenderingPipeline:
 @dependency
 def render(context: RenderingContext) -> Node:
     """Renders node from xml node"""
-    try:
+    with error_handling(RenderingError(),
+                        lambda e: e.add_view_info(context.xml_node.view_info)):
         pipeline = get_pipeline(context.xml_node)
         return pipeline.run(context)
-    except PyViewsError as error:
-        error.add_view_info(context.xml_node.view_info)
-        raise
-    except BaseException:
-        info = exc_info()
-        msg = 'Unknown error occurred during rendering'
-        error = RenderingError(msg, context.xml_node.view_info)
-        error.add_cause(info[1])
-        raise error from info[1]

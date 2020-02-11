@@ -4,7 +4,7 @@ from injectool import SingletonResolver, add_resolver
 from pytest import mark, fixture, raises, fail
 
 from pyviews.code import Code
-from pyviews.core import Node, XmlNode, Observable, InstanceNode
+from pyviews.core import Node, XmlNode, Observable, InstanceNode, ViewInfo
 from pyviews.rendering.common import RenderingContext, RenderingError
 from pyviews.rendering.pipeline import RenderingPipeline, get_pipeline, create_instance, get_type, render
 
@@ -61,7 +61,7 @@ class InstWithKwargs:
 
 @fixture
 def pipeline_fixture(request):
-    xml_node = XmlNode('pyviews.core', 'Node')
+    xml_node = XmlNode('pyviews.core', 'Node', view_info=ViewInfo('test', 1))
     request.cls.context = RenderingContext({'xml_node': xml_node})
     request.cls.pipeline = RenderingPipeline()
 
@@ -82,14 +82,13 @@ class RenderingPipelineTests:
         assert isinstance(node, node_type)
         assert node.xml_node == context.xml_node
 
-    @staticmethod
-    def test_creates_node_using_passed_method():
+    def test_creates_node_using_passed_method(self):
         """should create node using namespace as module and tag name as node class name"""
-        create_node, node, context = Mock(), Mock(), RenderingContext()
-        create_node.side_effect = lambda ctx: node if ctx == context else None
+        create_node, node = Mock(), Mock()
+        create_node.side_effect = lambda ctx: node if ctx == self.context else None
         pipeline = RenderingPipeline(create_node=create_node)
 
-        actual = pipeline.run(context)
+        actual = pipeline.run(self.context)
 
         assert actual == node
 

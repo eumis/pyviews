@@ -1,10 +1,9 @@
 """Observable binding"""
 
-from sys import exc_info
-
 from pyviews.core import Binding, BindingCallback
 from pyviews.core import Observable
-from pyviews.core import PyViewsError, BindingError
+from pyviews.core import BindingError
+from pyviews.core.error import error_handling
 
 
 class ObservableBinding(Binding):
@@ -22,17 +21,8 @@ class ObservableBinding(Binding):
         self._callback(getattr(self._observable, self._property))
 
     def _update_callback(self, new_val, _):
-        try:
+        with error_handling(BindingError(BindingError.BindingCallbackError), self.add_error_info):
             self._callback(new_val)
-        except PyViewsError as error:
-            self.add_error_info(error)
-            raise
-        except BaseException:
-            info = exc_info()
-            error = BindingError(BindingError.TargetUpdateError)
-            self.add_error_info(error)
-            error.add_cause(info[1])
-            raise error from info[1]
 
     def destroy(self):
         self._observable.release(self._property, self._update_callback)

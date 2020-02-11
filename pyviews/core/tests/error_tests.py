@@ -1,9 +1,11 @@
 from os import linesep
 from typing import List
+from unittest.mock import Mock, call
 
-from pytest import mark
+from pytest import mark, fail
 
 from pyviews.core import PyViewsError, ViewInfo
+from pyviews.core.error import error_handling
 
 
 def _concat(*items):
@@ -11,7 +13,7 @@ def _concat(*items):
     return linesep + linesep.join(items) + linesep
 
 
-class CoreErrorTests:
+class PyViewsErrorTests:
     @staticmethod
     @mark.parametrize('message, view_info, error_output', [
         ('', None, _concat('Message: ')),
@@ -85,3 +87,47 @@ class CoreErrorTests:
         error.add_cause(cause_error)
 
         assert str(error) == expected
+
+
+class ErrorHandlingTests:
+    """error_handling_tests"""
+
+    @staticmethod
+    def test_raises_passed_error():
+        """should handle errors and raise passed error"""
+        error = PyViewsError('test message')
+        try:
+            with error_handling(error):
+                raise ValueError('test value error')
+        except PyViewsError as actual:
+            assert actual == error
+        except BaseException:
+            fail()
+
+    @staticmethod
+    def test_adds_info_to_error():
+        """should add info to PyViewsError"""
+        add_info_callback = Mock()
+        error = PyViewsError('test message')
+        try:
+            with error_handling(error, add_info_callback):
+                raise ValueError('test value error')
+        except PyViewsError:
+            assert add_info_callback.call_args == call(error)
+        except BaseException:
+            fail()
+
+    @staticmethod
+    def test_reraises_pyviews_error():
+        """should handle PyViewsError, add info and reraise"""
+        add_info_callback = Mock()
+        error = PyViewsError('new error')
+        handled_error = PyViewsError('handled error')
+        try:
+            with error_handling(error, add_info_callback):
+                raise handled_error
+        except PyViewsError as actual:
+            assert actual == handled_error
+            assert add_info_callback.call_args == call(handled_error)
+        except BaseException:
+            fail()

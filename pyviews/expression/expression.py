@@ -1,13 +1,13 @@
 """Expression eval implementation"""
 
 import ast
-from sys import exc_info
+from collections import namedtuple
 from types import CodeType
 from typing import List, Callable, Any, Iterator, NamedTuple, Union
-from collections import namedtuple
 
 from injectool import dependency
 
+from pyviews.core.error import error_handling
 from pyviews.expression.error import ExpressionError
 
 _COMPILATION_CACHE = {}
@@ -112,12 +112,8 @@ class Expression:
 @dependency
 def execute(expression: Union[Expression, str], parameters: dict = None) -> Any:
     """Executes expression with passed parameters and returns result"""
-    try:
+    with error_handling(ExpressionError('Error occurred in expression execution'),
+                        lambda e: e.add_expression_info(expression.code)):
         expression = expression if isinstance(expression, Expression) else Expression(expression)
         parameters = {} if parameters is None else parameters
         return eval(expression.compiled_code, parameters, {})
-    except BaseException:
-        info = exc_info()
-        error = ExpressionError('Error occurred in expression execution', expression.code)
-        error.add_cause(info[1])
-        raise error from info[1]
