@@ -3,7 +3,7 @@ from typing import Callable, Union, Any
 from injectool import resolve
 
 from pyviews.binding import Binder, BindingContext
-from pyviews.compilation import is_expression, parse_expression
+from pyviews.expression import is_expression, parse_expression
 from pyviews.core import Node, XmlAttr, import_path, XmlNode
 from pyviews.rendering import RenderingContext, render
 

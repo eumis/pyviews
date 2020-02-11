@@ -1,5 +1,5 @@
 from pytest import mark
-from pyviews.compilation.parsing import is_expression, parse_expression, ParsedExpression
+from pyviews.expression.parsing import is_expression, parse_expression, ParsedExpression
 
 
 @mark.parametrize('expr, expected', [

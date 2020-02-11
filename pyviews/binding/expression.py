@@ -5,7 +5,7 @@ from sys import exc_info
 from typing import Callable, List, Any
 
 from pyviews.binding import BindingContext
-from pyviews.compilation import Expression, ObjectNode, execute
+from pyviews.expression import Expression, ObjectNode, execute
 from pyviews.core import Binding, BindingCallback, InheritedDict, Observable, BindingError, ViewsError
 
 

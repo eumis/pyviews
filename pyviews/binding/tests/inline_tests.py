@@ -6,7 +6,7 @@ from pytest import fixture, mark
 from pyviews.binding import BindingContext, InlineBinding
 from pyviews.binding.inline import bind_inline
 from pyviews.binding.tests.common import InnerViewModel
-from pyviews.compilation import Expression
+from pyviews.expression import Expression
 from pyviews.core import InheritedDict, XmlAttr, BindingCallback
 
 

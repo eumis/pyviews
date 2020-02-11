@@ -5,7 +5,7 @@ from pytest import fixture, mark, raises
 from pyviews.binding import ExpressionBinding, ObservableBinding
 from pyviews.binding.tests.common import InnerViewModel, ParentViewModel
 from pyviews.binding.twoways import TwoWaysBinding, get_property_expression_callback, get_global_value_callback
-from pyviews.compilation import Expression
+from pyviews.expression import Expression
 from pyviews.core import InheritedDict, BindingError
 
 

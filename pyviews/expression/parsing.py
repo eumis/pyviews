@@ -14,12 +14,14 @@ class ExpressionError(ViewsError):
 
 
 EXPRESSION_REGEX = compile_regex(r'([a-zA-Z_]{1,}\:){0,1}\{.*\}')
-ParsedExpression = namedtuple('Expression', ['binding_type', 'body'])
 
 
 def is_expression(source: str) -> bool:
     """Return true if passed value is expression"""
     return EXPRESSION_REGEX.fullmatch(source) is not None
+
+
+ParsedExpression = namedtuple('Expression', ['binding_type', 'body'])
 
 
 def parse_expression(source: str) -> ParsedExpression:

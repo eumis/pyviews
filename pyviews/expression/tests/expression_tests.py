@@ -1,8 +1,8 @@
 from injectool import set_container, Container
 from pytest import mark, raises, fixture
 
-from pyviews.compilation import Expression, CompilationError
-from pyviews.compilation.expression import execute
+from pyviews.expression import Expression, CompilationError
+from pyviews.expression.expression import execute
 
 
 @fixture

@@ -1,7 +1,7 @@
 """Once binding"""
 
 from pyviews.binding import BindingContext
-from pyviews.compilation import execute
+from pyviews.expression import execute
 
 
 def run_once(context: BindingContext):

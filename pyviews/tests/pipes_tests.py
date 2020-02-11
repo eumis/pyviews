@@ -6,7 +6,7 @@ from pytest import fixture, mark, raises
 from pyviews.binding import Binder, BindingContext
 from pyviews.binding.expression import bind_to_expression
 from pyviews.binding.once import run_once
-from pyviews.compilation import Expression
+from pyviews.expression import Expression
 from pyviews.core import XmlAttr, Node, XmlNode
 from pyviews import pipes, setters
 from pyviews.pipes import apply_attribute, apply_attributes, call_set_attr, get_setter, render_children

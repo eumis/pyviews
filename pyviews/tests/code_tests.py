@@ -3,7 +3,7 @@ from unittest.mock import Mock
 from pytest import mark, raises
 
 from pyviews.code import Code, run_code
-from pyviews.compilation import CompilationError
+from pyviews.expression import CompilationError
 from pyviews.core.rendering import Node
 from pyviews.core.observable import InheritedDict
 from pyviews.core.xml import XmlNode

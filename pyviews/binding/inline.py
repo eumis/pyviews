@@ -3,7 +3,7 @@
 from functools import partial
 
 from pyviews.binding import BindingContext
-from pyviews.compilation import Expression, execute
+from pyviews.expression import Expression, execute
 from pyviews.core import Binding, BindingCallback
 from pyviews.core import InheritedDict
 
@@ -37,7 +37,6 @@ class InlineBinding(Binding):
 
 def bind_inline(context: BindingContext) -> InlineBinding:
     """should create InlineBinding using binding context"""
-
     (bind_body, value_body) = context.expression_body.split('}:{')
     bind_expr = Expression(bind_body)
     value_expr = Expression(value_body)
