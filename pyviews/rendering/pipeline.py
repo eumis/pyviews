@@ -22,8 +22,7 @@ class RenderingPipeline:
     def run(self, context: RenderingContext) -> Node:
         """Runs pipeline"""
         pipe = None
-        with error_handling(RenderingError(),
-                            lambda e: self._add_pipe_info(e, pipe, context)):
+        with error_handling(RenderingError, lambda e: self._add_pipe_info(e, pipe, context)):
             node = self._create_node(context)
             for pipe in self._pipes:
                 pipe(node, context)
@@ -114,7 +113,6 @@ def get_pipeline(xml_node: XmlNode) -> RenderingPipeline:
 @dependency
 def render(context: RenderingContext) -> Node:
     """Renders node from xml node"""
-    with error_handling(RenderingError(),
-                        lambda e: e.add_view_info(context.xml_node.view_info)):
+    with error_handling(RenderingError, lambda e: e.add_view_info(context.xml_node.view_info)):
         pipeline = get_pipeline(context.xml_node)
         return pipeline.run(context)

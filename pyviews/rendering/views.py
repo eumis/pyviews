@@ -51,6 +51,6 @@ def _parse_root(path, view_name):
         raise
     except BaseException:
         info = exc_info()
-        error = ViewError('Unknown error occured during parsing xml', ViewInfo(view_name, None))
+        error = ViewError('Unknown error occurred during parsing xml', ViewInfo(view_name, None))
         error.add_cause(info[1])
         raise error from info[1]

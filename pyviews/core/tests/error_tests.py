@@ -4,8 +4,7 @@ from unittest.mock import Mock, call
 
 from pytest import mark, fail
 
-from pyviews.core import PyViewsError, ViewInfo
-from pyviews.core.error import error_handling
+from pyviews.core import PyViewsError, ViewInfo, error_handling
 
 
 def _concat(*items):
@@ -89,6 +88,11 @@ class PyViewsErrorTests:
         assert str(error) == expected
 
 
+class TestError(PyViewsError):
+    def __init__(self):
+        super().__init__('message')
+
+
 class ErrorHandlingTests:
     """error_handling_tests"""
 
@@ -101,6 +105,18 @@ class ErrorHandlingTests:
                 raise ValueError('test value error')
         except PyViewsError as actual:
             assert actual == error
+        except BaseException:
+            fail()
+
+    @staticmethod
+    def test_raises_error_of_passed_type():
+        """should handle errors and raise passed error"""
+        error_type = TestError
+        try:
+            with error_handling(TestError):
+                raise ValueError('test value error')
+        except PyViewsError as actual:
+            assert isinstance(actual, error_type)
         except BaseException:
             fail()
 

@@ -8,7 +8,9 @@ from .error import PyViewsError
 
 class BindingError(PyViewsError):
     """Base error for binding errors"""
-    BindingCallbackError = 'Error occurred during binding callback'
+
+    def __init__(self, message: str = None):
+        super().__init__(message if message else 'Error occurred during binding callback')
 
 
 BindingCallback = Callable[[Any], None]

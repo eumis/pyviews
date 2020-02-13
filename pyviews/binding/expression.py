@@ -5,7 +5,7 @@ from typing import Callable, List, Any
 
 from pyviews.binding.binder import BindingContext
 from pyviews.core import Binding, BindingCallback, InheritedDict, Observable, BindingError
-from pyviews.core.error import error_handling
+from pyviews.core import error_handling
 from pyviews.expression import Expression, ObjectNode, execute
 
 
@@ -52,7 +52,7 @@ class ExpressionBinding(Binding):
             return None
 
     def _update_callback(self, new_val, old_val):
-        with error_handling(BindingError(BindingError.BindingCallbackError), self.add_error_info):
+        with error_handling(BindingError, self.add_error_info):
             if isinstance(new_val, Observable) or isinstance(old_val, Observable):
                 self.bind()
             else:

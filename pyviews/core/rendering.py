@@ -16,8 +16,7 @@ class Node:
         self._xml_node: XmlNode = xml_node
         self._globals: InheritedDict = InheritedDict() if node_globals is None else node_globals
         self._globals['node'] = self
-        self.set_attr: Callable[[Any, str], None] = cast(Callable[[Any, str], None],
-                                                         partial(setattr, self))
+        self.set_attr: Callable[[str, Any], None] = partial(setattr, self)
         self.on_destroy = lambda node: None
 
     @property
