@@ -6,7 +6,7 @@ from injectool import resolve
 
 from pyviews.binding import Binder, BindingContext
 from pyviews.expression import is_expression, parse_expression
-from pyviews.core import Node, XmlAttr, import_path, XmlNode
+from pyviews.core import Node, XmlAttr, import_path, XmlNode, Setter
 from pyviews.rendering import RenderingContext, render
 
 
@@ -33,7 +33,7 @@ def apply_attribute(node: Node, attr: XmlAttr, setter=None):
         setter(node, attr.name, attr.value)
 
 
-def get_setter(attr: XmlAttr):
+def get_setter(attr: XmlAttr) -> Setter:
     """Returns setter for xml attribute"""
     if attr.namespace is None:
         return call_set_attr
