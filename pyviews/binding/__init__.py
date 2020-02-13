@@ -5,5 +5,4 @@ from .expression import ExpressionBinding, bind_setter_to_expression
 from .inline import InlineBinding, bind_inline
 from .observable import ObservableBinding
 from .once import run_once
-from .twoways import TwoWaysBinding, get_expression_callback, get_property_expression_callback, \
-    get_global_value_callback
+from .twoways import TwoWaysBinding, get_expression_callback

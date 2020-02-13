@@ -1,33 +1,20 @@
-from functools import partial
+from unittest.mock import Mock
 
 from pytest import fixture, mark, raises
 
-from pyviews.binding import ExpressionBinding, ObservableBinding
 from pyviews.binding.tests.common import InnerViewModel, ParentViewModel
-from pyviews.binding.twoways import TwoWaysBinding, get_property_expression_callback, get_global_value_callback
-from pyviews.expression import Expression
+from pyviews.binding.twoways import TwoWaysBinding, get_expression_callback
 from pyviews.core import InheritedDict, BindingError
+from pyviews.expression import Expression, execute
 
 
 @fixture
 def two_ways_fixture(request):
-    observable_inst = InnerViewModel(1, '1')
-    expr_inst = InnerViewModel(1, '1')
+    one, two = Mock(), Mock()
+    binding = TwoWaysBinding(one, two)
 
-    expr_globals = InheritedDict({'vm': expr_inst})
-    expression = Expression('vm.int_value')
-
-    on_update = partial(setattr, observable_inst, 'int_value')
-    one_binding = ExpressionBinding(on_update, expression, expr_globals)
-
-    expr_target = get_property_expression_callback(expression, expr_globals)
-    two_binding = ObservableBinding(expr_target, observable_inst, 'int_value')
-
-    binding = TwoWaysBinding(one_binding, two_binding)
-    binding.bind()
-
-    request.cls.observable_inst = observable_inst
-    request.cls.expr_inst = expr_inst
+    request.cls.one = one
+    request.cls.two = two
     request.cls.binding = binding
 
 
@@ -35,102 +22,56 @@ def two_ways_fixture(request):
 class TwoWaysBindingTests:
     """TwoWaysBinding tests using ExpressionBinding and ObservableBinding"""
 
-    def test_expression_binding(self):
-        """Observable property should be bound to expression"""
-        new_value = self.expr_inst.int_value + 5
+    def test_bind(self):
+        """should bind both bindings"""
+        self.binding.bind()
 
-        self.expr_inst.int_value = new_value
+        assert self.one.bind.called and self.two.bind.called
 
-        assert self.observable_inst.int_value == new_value
-
-    def test_observable_binding(self):
-        """Property from expression should be bound to observable property"""
-        new_value = self.observable_inst.int_value + 5
-
-        self.observable_inst.int_value = new_value
-
-        assert self.expr_inst.int_value == new_value
-
-    def test_expression_binding_destroy(self):
-        """Expression binding should be destroyed"""
+    def test_destroy(self):
+        """should bind both bindings"""
         self.binding.destroy()
-        old_value = self.observable_inst.int_value
-        new_expr_value = old_value + 5
 
-        self.expr_inst.int_value = new_expr_value
-
-        assert self.observable_inst.int_value == old_value
-
-    def test_observable_binding_destroy(self):
-        """Observable binding should be destroyed"""
-        self.binding.destroy()
-        old_value = self.expr_inst.int_value
-        new_observable_value = old_value + 5
-
-        self.observable_inst.int_value = new_observable_value
-
-        assert self.expr_inst.int_value == old_value
+        assert self.one.destroy.called and self.two.destroy.called
 
 
-@fixture(params=[
-    ('vm.int_value', False),
-    ('vm.inner_vm.int_value', True)
-])
-def expression_target_fixture(request):
-    code, is_inner = request.param
-
-    inner = InnerViewModel(1, '1')
-    parent = ParentViewModel(1, inner)
-    expression = Expression(code)
-    expr_globals = InheritedDict({'vm': parent})
-
-    request.cls.binding_callback = get_property_expression_callback(expression, expr_globals)
-    request.cls.target_vm = inner if is_inner else parent
-
-
-@mark.usefixtures('expression_target_fixture')
 class GetPropertyExpressionCallbackTests:
     """get_property_expression_callback() tests"""
 
     @staticmethod
-    @mark.parametrize('expression', ['vm', 'vm.int_value + val'])
+    @mark.parametrize('expression', ['', '[vm, 2]', 'vm.int_value + val'])
     def test_raises(expression):
         """Should raise BindingError if expression is not property expression"""
         with raises(BindingError):
-            get_property_expression_callback(Expression(expression), InheritedDict())
+            get_expression_callback(Expression(expression), InheritedDict())
 
-    def test_change(self):
-        """PropertyExpressionTarget.on_change should update target property"""
-        new_val = self.target_vm.int_value + 5
-
-        self.binding_callback(new_val)
-
-        assert self.target_vm.int_value == new_val
-
-
-@fixture
-def expr_globals_fixture(request):
-    request.cls.expr_globals = InheritedDict({'one': 1})
-
-
-@mark.usefixtures('expr_globals_fixture')
-class GetGlobalValueCallbackTests:
-    """get_global_value_callback() tests"""
-
-    @mark.parametrize('expression', [
-        'vm.int_value',
-        'vm + val'
+    @staticmethod
+    @mark.parametrize('expression_body, value, globals_dict', [
+        ('vm.int_value', 10, {'vm': ParentViewModel(0, InnerViewModel(0, ''))}),
+        ('vm.inner_vm.int_value', 134, {'vm': ParentViewModel(0, InnerViewModel(0, ''))}),
+        ('vm.inner_vm.str_value', 'value', {'vm': ParentViewModel(0, InnerViewModel(0, ''))}),
+        ('vm.inner_vm', InnerViewModel(50, 'a'), {'vm': ParentViewModel(0, InnerViewModel(0, ''))})
     ])
-    def test_raises(self, expression):
-        """Should raise BindingError for invalid expression"""
-        with raises(BindingError):
-            get_global_value_callback(Expression(expression), self.expr_globals)
+    def test_callback_updates_property(expression_body, value, globals_dict):
+        """returned callback should update target property"""
+        expression, global_vars = Expression(expression_body), InheritedDict(globals_dict)
+        callback = get_expression_callback(expression, global_vars)
 
-    def test_change(self):
-        """GlobalValueExpressionTarget.on_change should update target property"""
-        callback = get_global_value_callback(Expression("vm"), self.expr_globals)
-        new_val = 25
+        callback(value)
 
-        callback(new_val)
+        assert execute(expression, global_vars.to_dictionary()) == value
 
-        assert self.expr_globals['vm'] == new_val
+    @staticmethod
+    @mark.parametrize('key, value', [
+        ('int_value', 10),
+        ('vm', InnerViewModel(50, 'a')),
+        ('str_value', 'some value')
+    ])
+    def test_callback_updates_global_value(key, value):
+        """returned callback should update target property"""
+        global_vars = InheritedDict({key: None})
+        callback = get_expression_callback(Expression(key), global_vars)
+
+        callback(value)
+
+        assert global_vars[key] == value
