@@ -1,5 +1,6 @@
 """Xml parsing"""
 
+# pylint:disable=wrong-import-order
 from collections import namedtuple
 from pyexpat.errors import messages as error_messages
 from typing import List, Tuple, NamedTuple

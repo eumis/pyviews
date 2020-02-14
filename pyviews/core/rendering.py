@@ -1,6 +1,7 @@
 """Core classes for creation from xml nodes"""
+
 from functools import partial
-from typing import Any, List, Callable, cast
+from typing import Any, List, Callable
 
 from .binding import Binding
 from .observable import InheritedDict
@@ -16,6 +17,7 @@ class Node:
         self._xml_node: XmlNode = xml_node
         self._globals: InheritedDict = InheritedDict() if node_globals is None else node_globals
         self._globals['node'] = self
+        # noinspection PyTypeChecker
         self.set_attr: Callable[[str, Any], None] = partial(setattr, self)
         self.on_destroy = lambda node: None
 

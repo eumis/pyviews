@@ -26,6 +26,7 @@ class ExpressionBinding(Binding):
         self._execute_callback()
 
     def _create_dependencies(self, inst, var_tree: ObjectNode):
+        observable_key = self._get_
         if isinstance(inst, Observable):
             self._subscribe_for_changes(inst, var_tree)
 
@@ -52,7 +53,7 @@ class ExpressionBinding(Binding):
             return None
 
     def _update_callback(self, new_val, old_val):
-        with error_handling(BindingError, self.add_error_info):
+        with error_handling(BindingError, lambda e: None):
             if isinstance(new_val, Observable) or isinstance(old_val, Observable):
                 self.bind()
             else:

@@ -8,7 +8,7 @@ from typing import List, Callable, Any, Iterator, NamedTuple, Union
 from injectool import dependency
 
 from pyviews.core import error_handling
-from pyviews.expression import ExpressionError
+from pyviews.expression.error import ExpressionError
 
 _COMPILATION_CACHE = {}
 _CacheItem = namedtuple('CacheItem', ['compiled_code', 'tree'])

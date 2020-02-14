@@ -19,7 +19,7 @@ class ObservableBinding(Binding):
         self._callback(getattr(self._observable, self._property))
 
     def _update_callback(self, new_val, _):
-        with error_handling(BindingError, self.add_error_info):
+        with error_handling(BindingError, lambda e: None):
             self._callback(new_val)
 
     def destroy(self):

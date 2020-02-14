@@ -34,9 +34,3 @@ class ParentViewModel(ObservableEntity):
 
     def get_val(self):
         return self._val
-
-
-class SomeEntity:
-    def __init__(self):
-        self.int_value = 1
-        self.str_value = 'str'

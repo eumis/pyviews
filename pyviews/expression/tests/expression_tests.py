@@ -41,11 +41,17 @@ class ExpressionTests:
         assert sorted([e.key for e in self.vm_node.children]) == sorted(['vm', 'str_value', 'get'])
 
     def test_empty_children(self):
-        """get_object_tree(): object node should not have children if there are not properties used in expression"""
+        """
+        get_object_tree(): object node should not have children
+        if there are no properties used in expression
+        """
         assert [e.key for e in self.vm_node_str.children] == []
 
     def test_property_children(self):
-        """get_object_tree(): object node should have children if there are its properties used in expression"""
+        """
+        get_object_tree(): object node should have children
+        if there are its properties used in expression
+        """
         assert sorted([e.key for e in self.vm_node_vm.children]) == sorted(['int_value', 'str_value'])
 
 
@@ -59,7 +65,8 @@ class ExecuteTests:
         ('some_key - 1', {'some_key': 1}, 0),
         (Expression('str(some_key)'), {'some_key': 1}, '1'),
         ('some_key', {'some_key': 'asdf'}, 'asdf'),
-        (Expression('some_key(some_value)'), {'some_key': lambda val: val, 'some_value': 'value'}, 'value')
+        (Expression('some_key(some_value)'), {'some_key': lambda val: val, 'some_value': 'value'},
+         'value')
     ])
     def test_execute(expression, params, expected):
         """execute() should return expression value"""
