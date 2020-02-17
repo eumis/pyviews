@@ -4,7 +4,8 @@ from functools import partial
 from typing import Callable, List, Any
 
 from pyviews.binding.binder import BindingContext
-from pyviews.core import Binding, BindingCallback, InheritedDict, Observable, BindingError
+from pyviews.core import Binding, BindingCallback, InheritedDict, Observable, BindingError, \
+    PyViewsError
 from pyviews.core import error_handling
 from pyviews.expression import Expression, ObjectNode, execute
 
@@ -26,7 +27,6 @@ class ExpressionBinding(Binding):
         self._execute_callback()
 
     def _create_dependencies(self, inst, var_tree: ObjectNode):
-        observable_key = self._get_
         if isinstance(inst, Observable):
             self._subscribe_for_changes(inst, var_tree)
 
@@ -53,11 +53,16 @@ class ExpressionBinding(Binding):
             return None
 
     def _update_callback(self, new_val, old_val):
-        with error_handling(BindingError, lambda e: None):
+        with error_handling(BindingError, self._add_error_info):
             if isinstance(new_val, Observable) or isinstance(old_val, Observable):
                 self.bind()
             else:
                 self._execute_callback()
+
+    def _add_error_info(self, error: PyViewsError):
+        error.add_info('Binding', self)
+        error.add_info('Expression', self._expression.code)
+        error.add_info('Callback', self._callback)
 
     def _execute_callback(self):
         value = execute(self._expression, self._vars.to_dictionary())
