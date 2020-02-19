@@ -3,27 +3,26 @@
 ## Dev
 
 - updated injectool up to 2.0.1
-- run_steps() function is moved to RenderingPipeline as run() method
-- create_node() function is part of RenderingPipeline
 - RenderingPipeline is resolved by xml namespace and tag
-- render() returns observable
-- get_inst_type() renamed to get_type()
-- create_inst() renamed to create_instance()
+- create_node() function is part of RenderingPipeline
+- run_steps() function is moved to RenderingPipeline as run() method
 - Rendering steps are renamed to pipes. Common pipes module is moved to core
-- Common setters module is moved to core
-- modifier is renamed to setter
-- Removed CompiledExpression class
-- Expression class is moved to compilation package and removed ABC inheritance
-- added execute() function to compilation package
-- removed injection of Expression class
-- CoreError is renamed to PyViewsError
 - removed Node.properties and Property class
-- updated error message for resolving RenderingPipeline
-- added Args class to pass args to call setter
-- added inline binding
-- execute method from Expression is changed to function and can be used as dependency
+- Node.set_attr method is removed. Node.attr_setter property is renamed to set_attr
 - "compilation" package is renamed to "expression"
+- Expression class is moved to compilation package and removed ABC inheritance
+- removed injection of Expression class
+- Removed CompiledExpression class
+- execute method from Expression is changed to function and can be used as dependency
+- modifier is renamed to setter
+- Common setters module is moved to core
+- added Args class to pass args to call setter
+- BindingRule class is changed to tuple
+- BindingTarget class is removed. BindingCallback is used instead.
+- Added inline binding
+- CoreError is renamed to PyViewsError
 - added error_handling() function
+- Changed error output format
 
 ## 2.3.0
 
