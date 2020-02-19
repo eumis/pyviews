@@ -38,11 +38,6 @@ class Observable:
 class ObservableEntity(Observable):
     """Observable general object"""
 
-    #
-    # def __init__(self):
-    #     super().__init__()
-    #     super().__setattr__('_callbacks', {})
-
     def __setattr__(self, key, value):
         if key in self.__dict__:
             old_val = getattr(self, key, None)
