@@ -10,7 +10,6 @@ Include/
 Lib/
 pip-selfcheck.json
 pyvenv.cfg
-.vscode/.ropeproject/
-.idea/dictionaries/
-.idea/workspace.xml
+.vscode
+.idea
 Pipfile.lock
