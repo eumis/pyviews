@@ -10,7 +10,7 @@ def import_path(path):
     except ImportError:
         return _import_module_entry(path)
     except BaseException as error:
-        raise ImportError(path) from error
+        raise ImportError(path)
 
 
 def _import_module_entry(path):
@@ -19,7 +19,7 @@ def _import_module_entry(path):
         module = import_module(module)
         return module.__dict__[name]
     except BaseException as error:
-        raise ImportError(path) from error
+        raise ImportError(path)
 
 
 def _split_by_last_dot(expr):

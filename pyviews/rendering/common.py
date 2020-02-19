@@ -8,8 +8,8 @@ from pyviews.core import PyViewsError, InheritedDict, Node, XmlNode, InstanceNod
 class RenderingError(PyViewsError):
     """Error for rendering"""
 
-    def __init__(self, msg: str = None, view_info: ViewInfo = None):
-        super().__init__(msg if msg else 'Unknown rendering error occurred', view_info)
+    def __init__(self, message: str = None, view_info: ViewInfo = None):
+        super().__init__(message=message, view_info=view_info)
 
 
 class RenderingContext(dict):

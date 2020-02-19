@@ -16,7 +16,7 @@ def apply_attributes(node: Node, *_):
         apply_attribute(node, attr)
 
 
-def apply_attribute(node: Node, attr: XmlAttr, setter=None):
+def apply_attribute(node: Node, attr: XmlAttr, setter: Setter = None):
     """Maps xml attribute to instance node property and setups bindings"""
     setter = get_setter(attr) if setter is None else setter
     stripped_value = attr.value.strip() if attr.value else ''

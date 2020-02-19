@@ -41,6 +41,6 @@ def run_code(node: Code, context: RenderingContext):
 def _get_compilation_error(code, title, cause, line_number):
     msg = '{0}:\n{1}'.format(title, code)
     error = ExpressionError(msg, str(cause))
-    error.add_cause(cause)
+    error.cause_error = cause
     error.add_info('Line number', line_number)
     return error

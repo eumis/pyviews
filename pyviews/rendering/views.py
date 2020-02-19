@@ -19,7 +19,7 @@ class ViewError(PyViewsError):
 @dependency
 def render_view(view_name: str, context: RenderingContext) -> Node:
     """Renders view"""
-    with error_handling(ViewError('Unknown error occurred during rendering'),
+    with error_handling(ViewError,
                         lambda e: e.add_view_info(ViewInfo(view_name, None))):
         context.xml_node = get_view_root(view_name)
         return render(context)
@@ -52,5 +52,5 @@ def _parse_root(path, view_name):
     except BaseException:
         info = exc_info()
         error = ViewError('Unknown error occurred during parsing xml', ViewInfo(view_name, None))
-        error.add_cause(info[1])
+        error.cause_error = info[1]
         raise error from info[1]

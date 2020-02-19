@@ -10,7 +10,7 @@ class BindingError(PyViewsError):
     """Base error for binding errors"""
 
     def __init__(self, message: str = None):
-        super().__init__(message if message else 'Error occurred during binding callback')
+        super().__init__(message=message)
 
 
 BindingCallback = Callable[[Any], None]

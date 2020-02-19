@@ -47,7 +47,7 @@ class Expression:
             return compile(code, '<string>', 'eval')
         except SyntaxError as syntax_error:
             error = ExpressionError(syntax_error.msg, self._code)
-            error.add_cause(syntax_error)
+            error.cause_error = syntax_error
             raise error from syntax_error
 
     def _build_object_tree(self) -> ObjectNode:
