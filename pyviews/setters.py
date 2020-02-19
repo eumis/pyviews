@@ -1,6 +1,6 @@
 """Module with setters"""
 
-from typing import Any
+from typing import Any, NamedTuple, Iterable
 
 from injectool import resolve
 
@@ -23,11 +23,15 @@ def set_global(node: Node, key: str, value: Any):
     node.node_globals[key] = value
 
 
-class Args:
+class Args(NamedTuple):
     """Represents args and kwargs parameters"""
-    def __init__(self, *args, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
+    args: Iterable
+    kwargs: dict
+
+
+def call_args(*args_, **kwargs) -> Args:
+    """Returns Args tuple from parameters"""
+    return Args(args_, kwargs)
 
 
 def call(node: (Node, InstanceNode), key: str, value: Args):

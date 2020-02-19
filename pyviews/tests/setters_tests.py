@@ -7,7 +7,7 @@ from injectool import use_container, add_singleton
 from pytest import mark, raises
 
 from pyviews.core import Node, XmlNode, InstanceNode
-from pyviews.setters import import_global, set_global, inject_global, call, Args
+from pyviews.setters import import_global, set_global, inject_global, call, Args, call_args
 
 
 @mark.parametrize('node, key, value, expected', [
@@ -63,17 +63,17 @@ class TestInstanceNode(InstanceNode):
 class CallTests:
     @staticmethod
     @mark.parametrize('args', [
-        Args(None),
-        Args([]),
-        Args(()),
-        Args("value"),
-        Args(1),
-        Args([1]),
-        Args(None),
-        Args(1, "value"),
-        Args(1, "value", {}),
-        Args(1, "value", key='value'),
-        Args([1], key='value', value='other value')
+        call_args(None),
+        call_args([]),
+        call_args(()),
+        call_args("value"),
+        call_args(1),
+        call_args([1]),
+        call_args(None),
+        call_args(1, "value"),
+        call_args(1, "value", {}),
+        call_args(1, "value", key='value'),
+        call_args([1], key='value', value='other value')
     ])
     def test_calls_node_method(args: Args):
         """call setter should call node instance method"""
@@ -85,17 +85,17 @@ class CallTests:
 
     @staticmethod
     @mark.parametrize('args', [
-        Args(None),
-        Args([]),
-        Args(()),
-        Args("value"),
-        Args(1),
-        Args([1]),
-        Args(None),
-        Args(1, "value"),
-        Args(1, "value", {}),
-        Args(1, "value", key='value'),
-        Args([1], key='value', value='other value')
+        call_args(None),
+        call_args([]),
+        call_args(()),
+        call_args("value"),
+        call_args(1),
+        call_args([1]),
+        call_args(None),
+        call_args(1, "value"),
+        call_args(1, "value", {}),
+        call_args(1, "value", key='value'),
+        call_args([1], key='value', value='other value')
     ])
     def test_calls_instance_method(args: Args):
         """call setter should call node instance method"""
@@ -112,14 +112,14 @@ class CallTests:
     ])
     def test_raises_if_method_not_found(node: Node, method: str):
         with raises(AttributeError):
-            call(node, method, Args())
+            call(node, method, call_args())
 
     @staticmethod
     def test_uses_node_method_first():
         node = TestInstanceNode()
         node.mocked_method = Mock()
 
-        call(node, 'mocked_method', Args())
+        call(node, 'mocked_method', call_args())
 
         assert node.mocked_method.called
         assert not node.instance.mocked_method.called
