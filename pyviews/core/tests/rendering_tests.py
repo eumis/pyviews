@@ -4,7 +4,7 @@ from pytest import fixture, mark
 
 from pyviews.core.rendering import Node
 from pyviews.core.observable import InheritedDict
-from pyviews.core.xml import XmlNode
+from pyviews.core import XmlNode
 
 
 @fixture
