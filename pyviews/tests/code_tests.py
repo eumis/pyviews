@@ -3,6 +3,7 @@ from unittest.mock import Mock
 from pytest import mark, raises
 
 from pyviews.code import Code, run_code
+from pyviews.core import ViewInfo
 from pyviews.expression import ExpressionError
 from pyviews.core.rendering import Node
 from pyviews.core.observable import InheritedDict
@@ -95,5 +96,5 @@ class CodeTests:
 
     @staticmethod
     def _get_code_node(content):
-        xml_node = XmlNode('namespace', 'name', content)
+        xml_node = XmlNode('namespace', 'name', content, view_info=ViewInfo('test', 5))
         return Code(xml_node)
