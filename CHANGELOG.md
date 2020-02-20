@@ -23,6 +23,7 @@
 - CoreError is renamed to PyViewsError
 - added error_handling() function
 - Changed error output format
+- removed predefined namespaces
 
 ## 2.3.0
 
