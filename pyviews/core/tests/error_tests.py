@@ -1,7 +1,7 @@
 from os import linesep
 from unittest.mock import Mock, call
 
-from pytest import fail
+from pytest import fixture, mark, raises
 
 from pyviews.core import PyViewsError, ViewInfo, error_handling
 
@@ -53,57 +53,46 @@ class PyViewsErrorTests:
         assert str(error) == expected
 
 
+@fixture
+def error_fixture(request):
+    request.cls.error = PyViewsError('test error')
+    request.cls.add_error_info = Mock()
+
+
+@mark.usefixtures('error_fixture')
 class ErrorHandlingTests:
     """error_handling_tests"""
 
-    @staticmethod
-    def test_raises_passed_error():
+    def test_raises_passed_error(self):
         """should handle errors and raise passed error"""
-        error = PyViewsError('test message')
-        try:
-            with error_handling(error):
+        with raises(PyViewsError) as actual:
+            with error_handling(self.error):
                 raise ValueError('test value error')
-        except PyViewsError as actual:
-            assert actual == error
-        except BaseException:
-            fail()
+
+        assert actual.value == self.error
 
     @staticmethod
     def test_raises_error_of_passed_type():
         """should handle errors and raise passed error"""
-        error_type = TestError
-        try:
+        with raises(TestError):
             with error_handling(TestError):
                 raise ValueError('test value error')
-        except PyViewsError as actual:
-            assert isinstance(actual, error_type)
-        except BaseException:
-            fail()
 
-    @staticmethod
-    def test_adds_info_to_error():
+    def test_adds_info_to_error(self):
         """should add info to PyViewsError"""
-        add_info_callback = Mock()
-        error = PyViewsError('test message')
-        try:
-            with error_handling(error, add_info_callback):
+        with raises(PyViewsError):
+            with error_handling(self.error, self.add_error_info):
                 raise ValueError('test value error')
-        except PyViewsError:
-            assert add_info_callback.call_args == call(error)
-        except BaseException:
-            fail()
 
-    @staticmethod
-    def test_reraises_pyviews_error():
+        assert self.add_error_info.call_args == call(self.error)
+
+    def test_reraises_pyviews_error(self):
         """should handle PyViewsError, add info and reraise"""
-        add_info_callback = Mock()
-        error = PyViewsError('new error')
         handled_error = PyViewsError('handled error')
-        try:
-            with error_handling(error, add_info_callback):
+        with raises(PyViewsError) as actual:
+            with error_handling(self.error, self.add_error_info):
                 raise handled_error
-        except PyViewsError as actual:
-            assert actual == handled_error
-            assert add_info_callback.call_args == call(handled_error)
-        except BaseException:
-            fail()
+        actual_error = actual.value
+
+        assert actual_error == handled_error
+        assert self.add_error_info.call_args == call(handled_error)
