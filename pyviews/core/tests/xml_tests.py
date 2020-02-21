@@ -12,7 +12,7 @@ def _parse(xml_string):
         return Parser().parse(xml_file)
 
 
-def _get_child(root: XmlNode, level):
+def _get_child(root: XmlNode, level: int):
     i = 0
     node = root
     while i < level:
@@ -23,17 +23,19 @@ def _get_child(root: XmlNode, level):
 
 class ParsingTests:
 
+    @staticmethod
     @mark.parametrize('xml_string, expected', [
         ('<r xmlns="nsp"/>', 'nsp'),
         ('<r xmlns="nsp" xmlns:h="h"/>', 'nsp'),
         ('<h:r xmlns="nsp" xmlns:h="h"/>', 'h')
     ])
-    def test_namespace_definition(self, xml_string, expected):
+    def test_namespace_definition(xml_string, expected):
         """namespaces should be parsed"""
         root = _parse(xml_string)
 
         assert expected == root.namespace
 
+    @staticmethod
     @mark.parametrize('xml_string, expected, child_level', [
         ('<r xmlns="nsp"><c1 /></r>', 'nsp', 1),
         ('<r xmlns="nsp" xmlns:h="h"><c1 /></r>', 'nsp', 1),
@@ -43,7 +45,7 @@ class ParsingTests:
         ('<r xmlns="nsp" xmlns:h="h"><c1><c2/></c1></r>', 'nsp', 2),
         ('<r xmlns="nsp" xmlns:h="h"><c1><h:c2/></c1></r>', 'h', 2)
     ])
-    def test_parent_namespace_definition(self, xml_string, expected, child_level):
+    def test_parent_namespace_definition(xml_string, expected, child_level):
         """child namespaces should be parsed"""
         root = _parse(xml_string)
         child = _get_child(root, child_level)
@@ -70,6 +72,7 @@ class ParsingTests:
             else:
                 self._assert_right_children(child, child_structure)
 
+    @staticmethod
     @mark.parametrize('xml_string, expected, level', [
         ("<r xmlns='n' xmlns:m='nsp' k='{1}' m:k='v' m:a='value'/>",
          [XmlAttr('k', '{1}'), XmlAttr('k', 'v', 'nsp'), XmlAttr('a', 'value', 'nsp')],
@@ -81,7 +84,7 @@ class ParsingTests:
          [XmlAttr('k', '{1}'), XmlAttr('k', 'v', 'nsp'), XmlAttr('a', 'value', 'nsp')],
          2)
     ])
-    def test_attribute_parsing(self, xml_string, expected, level):
+    def test_attribute_parsing(xml_string, expected, level):
         """should parse attributes"""
         root = _parse(xml_string)
         parsed_attrs = _get_child(root, level).attrs
@@ -93,6 +96,7 @@ class ParsingTests:
             assert attr.value == parsed_attr.value
             assert attr.namespace == parsed_attr.namespace
 
+    @staticmethod
     @mark.parametrize('xml_string', [
         "<r />",
         "<nsp:r xmlns='n' />",
@@ -104,7 +108,7 @@ class ParsingTests:
                     <c2></c2>
                 </c1>
             </r>
-          ''',
+        ''',
         '''
             <r xmlns='n'>
                 <c1>
@@ -113,7 +117,7 @@ class ParsingTests:
             </r>
           '''
     ])
-    def test_raises_for_bad_xml(self, xml_string):
+    def test_raises_for_bad_xml(xml_string):
         """should raise XmlError for bad formed xml"""
         with raises(XmlError):
             _parse(xml_string)
