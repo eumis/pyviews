@@ -19,14 +19,11 @@ ParsedExpression = namedtuple('Expression', ['binding_type', 'body'])
 def parse_expression(source: str) -> ParsedExpression:
     """Returns tuple with expression type and expression body"""
     if not is_expression(source):
-        msg = 'Expression is not valid. Expression should be matched with regular expression: {0}' \
-            .format(EXPRESSION_REGEX)
-        raise ExpressionError(msg, source)
+        raise ExpressionError('Expression is not valid', source)
     if not source.startswith('{'):
-        [binding_type, source] = source.split(':', 1)
+        binding_type, source = source.split(':', 1)
     elif source.startswith('{{') and source.endswith('}}'):
-        binding_type = 'twoways'
-        source = source[1:-1]
+        binding_type, source = 'twoways', source[1:-1]
     else:
         binding_type = 'oneway'
     return ParsedExpression(binding_type, source[1:-1])

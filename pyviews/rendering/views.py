@@ -1,7 +1,6 @@
 """View logic"""
 
 from os.path import join
-from sys import exc_info
 
 from injectool import resolve, dependency
 
@@ -46,11 +45,3 @@ def _parse_root(path, view_name):
         error.add_info('View name', view_name)
         error.add_info('Path', path)
         raise error
-    except PyViewsError as error:
-        error.add_view_info(ViewInfo(view_name, None))
-        raise
-    except BaseException:
-        info = exc_info()
-        error = ViewError('Unknown error occurred during parsing xml', ViewInfo(view_name, None))
-        error.cause_error = info[1]
-        raise error from info[1]
