@@ -85,9 +85,8 @@ class Parser:
     def _get_namespace_and_name(self, full_name: str, use_default=False) -> Tuple[str, str]:
         if ':' in full_name:
             return self._split(full_name)
-        else:
-            namespace = self._get_default_namespace() if use_default else None
-            return namespace, full_name
+        namespace = self._get_default_namespace() if use_default else None
+        return namespace, full_name
 
     def _split(self, full_name: str) -> Tuple[str, str]:
         parts = full_name.split(':')
