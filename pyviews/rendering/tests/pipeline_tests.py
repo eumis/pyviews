@@ -1,307 +1,283 @@
-from unittest.mock import Mock, call, patch
+from unittest.mock import Mock, call
 
-from injectool import add_singleton, SingletonResolver, add_resolver, add_function_resolver
-from pytest import mark, fixture, raises
+from injectool import SingletonResolver, add_resolver
+from pytest import mark, fixture, raises, fail
 
-from pyviews.binding import Binder, OnceRule, OnewayRule
-from pyviews.binding.binder import BindingContext
-from pyviews.compilation import CompiledExpression
-from pyviews.core import XmlAttr, Node, InstanceNode, Expression, InheritedDict
-from pyviews.rendering import modifiers, create_node
-from pyviews.rendering import pipeline
-from pyviews.rendering.common import RenderingError, RenderingContext
-from pyviews.rendering.pipeline import RenderingPipeline, render_children, render
-from pyviews.rendering.pipeline import apply_attribute, apply_attributes
-from pyviews.rendering.pipeline import call_set_attr, get_setter
-from pyviews.rendering.pipeline import run_steps, get_pipeline
+from pyviews.code import Code
+from pyviews.core import Node, XmlNode, Observable, InstanceNode, ViewInfo
+from pyviews.rendering.common import RenderingContext, RenderingError
+from pyviews.rendering.pipeline import RenderingPipeline, get_pipeline, create_instance, get_type, render
+
+
+class Inst:
+    def __init__(self, xml_node, parent_node):
+        self.xml_node = xml_node
+        self.parent_node = parent_node
+
+    def __eq__(self, other):
+        return self.xml_node == other.xml_node and self.parent_node == other.parent_node
+
+
+class InstReversed:
+    def __init__(self, parent_node, xml_node):
+        self.xml_node = xml_node
+        self.parent_node = parent_node
+
+    def __eq__(self, other):
+        return self.xml_node == other.xml_node and self.parent_node == other.parent_node
+
+
+class SecondInst:
+    def __init__(self, xml_node, parent_node=None):
+        self.xml_node = xml_node
+        self.parent_node = parent_node
+
+    def __eq__(self, other):
+        return self.xml_node == other.xml_node and self.parent_node == other.parent_node
+
+
+class ThirdInst:
+    def __init__(self, xml_node=None, parent_node=None):
+        self.xml_node = xml_node
+        self.parent_node = parent_node
+
+    def __eq__(self, other):
+        return self.xml_node == other.xml_node and self.parent_node == other.parent_node
+
+
+class FourthInst:
+    def __init__(self, xml_node, *_, parent_node=None, **__):
+        self.xml_node = xml_node
+        self.parent_node = parent_node
+
+    def __eq__(self, other):
+        return self.xml_node == other.xml_node and self.parent_node == other.parent_node
+
+
+class InstWithKwargs:
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
 
 
 @fixture
-def render_node_fixture(request):
-    xml_node = Mock()
-    node = Mock()
-    create_node_mock = Mock(return_value=node)
-    add_singleton(create_node, create_node_mock)
-
-    rendering_pipeline = RenderingPipeline(steps=[])
-    add_singleton(RenderingPipeline, rendering_pipeline)
-
-    context = RenderingContext()
-    context.node_globals = InheritedDict()
-
-    request.cls.xml_node = xml_node
-    request.cls.node = node
-    request.cls.create_node = create_node_mock
-    request.cls.context = context
-    request.cls.pipeline = rendering_pipeline
+def pipeline_fixture(request):
+    xml_node = XmlNode('pyviews.core', 'Node', view_info=ViewInfo('test', 1))
+    request.cls.context = RenderingContext({'xml_node': xml_node})
+    request.cls.pipeline = RenderingPipeline()
 
 
-@mark.usefixtures('container_fixture', 'render_node_fixture')
-class RenderTests:
-    """render tests"""
+@mark.usefixtures('container_fixture', 'pipeline_fixture')
+class RenderingPipelineTests:
+    @mark.parametrize('namespace, tag, node_type, init_args', [
+        ('pyviews.core', 'Node', Node, {}),
+        ('pyviews.code', 'Code', Code, {'parent_node': Node(XmlNode('', ''))})
+    ])
+    def test_creates_node(self, namespace, tag, node_type, init_args):
+        """should create node using namespace as module and tag name as node class name"""
+        context = RenderingContext(init_args)
+        context.xml_node = XmlNode(namespace, tag)
 
-    def test_returns_created_node(self):
-        """should return create_node"""
-        actual = render(self.xml_node, self.context)
+        node = self.pipeline.run(context)
 
-        assert self.create_node.call_args == call(self.xml_node, self.context)
-        assert actual == self.node
+        assert isinstance(node, node_type)
+        assert node.xml_node == context.xml_node
 
-    @mark.parametrize('steps_count', [1, 2, 5])
-    def test_runs_pipeline(self, steps_count):
-        """should run pipeline steps"""
+    def test_creates_node_using_passed_method(self):
+        """should create node using namespace as module and tag name as node class name"""
+        create_node, node = Mock(), Mock()
+        create_node.side_effect = lambda ctx: node if ctx == self.context else None
+        pipeline = RenderingPipeline(create_node=create_node)
 
-        self.pipeline.steps.extend([Mock() for _ in range(steps_count)])
+        actual = pipeline.run(self.context)
 
-        render(self.xml_node, self.context)
+        assert actual == node
 
-        for step in self.pipeline.steps:
-            assert step.call_args == call(self.node, self.context)
+    def test_adds_pipe_info_to_error(self):
+        """should handle errors"""
+        pipe = Mock()
+        pipe.side_effect = Exception()
+        pipeline = RenderingPipeline(pipes=[pipe])
+
+        try:
+            pipeline.run(self.context)
+        except RenderingError:
+            pass
+        except BaseException:
+            fail()
+
+    @mark.parametrize('namespace, tag, inst_type', [
+        ('pyviews.core.observable', 'Observable', Observable),
+        (__name__, 'InstWithKwargs', InstWithKwargs)
+    ])
+    def test_creates_instance_node(self, namespace, tag, inst_type):
+        """should create instance and wrap it with InstanceNode"""
+        xml_node = XmlNode(namespace, tag)
+
+        node = self.pipeline.run(RenderingContext({'xml_node': xml_node}))
+
+        assert isinstance(node, InstanceNode)
+        assert isinstance(node.instance, inst_type)
+
+    @mark.parametrize('pipes_count', [0, 1, 5])
+    def test_calls_pipes(self, pipes_count):
+        """Should call pipes"""
+        pipes = [Mock() for _ in range(pipes_count)]
+        pipeline = RenderingPipeline(pipes=pipes)
+
+        node = pipeline.run(self.context)
+
+        for pipe in pipes:
+            assert pipe.call_args == call(node, self.context)
 
 
-@mark.parametrize('steps_count, args', [
-    (0, {'one': 1}),
-    (1, {'one': 1}),
-    (3, {'one': 1, 'two': 'value'})
+class GetTypeTests:
+    """get_type() function tests"""
+
+    @staticmethod
+    @mark.parametrize('xml_node, expected', [
+        (XmlNode(__name__, 'Inst'), Inst),
+        (XmlNode('pyviews.core.observable', 'Observable'), Observable),
+        (XmlNode(__name__, 'SecondInst'), SecondInst),
+        (XmlNode('pyviews.core', 'Node'), Node)
+    ])
+    def test_returns_type(xml_node, expected):
+        """should return type or module for xml_node"""
+        actual = get_type(xml_node)
+
+        assert actual == expected
+
+    @staticmethod
+    @mark.parametrize('xml_node', [
+        (XmlNode(__name__, 'UnknownType')),
+        (XmlNode('pyviews.core.observable', 'SomeClass')),
+        (XmlNode('pyviews.some_module.node', 'Node'))
+    ])
+    def test_raises_for_not_existing_type(xml_node):
+        """should raise RenderingError for type failed to import"""
+        with raises(RenderingError):
+            get_type(xml_node)
+
+
+class CreateInstanceTests:
+    """create_instance() function tests"""
+
+    @staticmethod
+    @mark.parametrize('inst_type, init_args, expected', [
+        (Inst, {'xml_node': 1, 'parent_node': 'node'}, Inst(1, 'node')),
+        (InstReversed, {'xml_node': 1, 'parent_node': 'node'}, InstReversed('node', 1)),
+        (SecondInst, {'xml_node': 1, 'parent_node': 'node'}, SecondInst(1, parent_node='node')),
+        (SecondInst, {'xml_node': 1}, SecondInst(1)),
+        (ThirdInst, {'xml_node': 1, 'parent_node': 'node'}, ThirdInst(xml_node=1, parent_node='node')),
+        (ThirdInst, {}, ThirdInst())
+    ])
+    def test_returns_instance(inst_type, init_args, expected):
+        """should create and return instance of passed type"""
+        actual = create_instance(inst_type, RenderingContext(init_args))
+
+        assert actual == expected
+
+    @staticmethod
+    @mark.parametrize('inst_type, init_args', [
+        (Inst, {}),
+        (Inst, {'xml_node': 1}),
+        (Inst, {'parent_node': 'node'}),
+        (InstReversed, {'xml_node': 1}),
+        (InstReversed, {'parent_node': 'node'}),
+        (SecondInst, {}),
+        (SecondInst, {'parent_node': 'node'})
+    ])
+    def test_raises_if_context_misses_argument(inst_type, init_args):
+        """should raise RenderingError if there are no required arguments"""
+        with raises(RenderingError):
+            create_instance(inst_type, RenderingContext(init_args))
+
+
+@mark.parametrize('inst_type, init_args', [
+    (Inst, {'xml_node': 1, 'parent_node': 'node'}),
+    (InstReversed, {'xml_node': 1, 'parent_node': 'node'}),
+    (SecondInst, {'xml_node': 1, 'parent_node': 'node'}),
+    (ThirdInst, {'xml_node': 1, 'parent_node': 'node'})
 ])
-def test_run_steps(steps_count, args):
-    """should call all steps in pipeline"""
-    node = Node(Mock())
-    steps = [Mock() for _ in range(steps_count)]
-    rendering_pipeline = RenderingPipeline(steps=steps)
-    context = RenderingContext(args)
+def test_create_inst(inst_type, init_args):
+    """should create and return instance of passed type"""
+    inst = create_instance(inst_type, RenderingContext(init_args))
 
-    run_steps(node, rendering_pipeline, context)
-
-    for step in steps:
-        assert step.call_args == call(node, context)
+    assert isinstance(inst, inst_type)
 
 
-@mark.usefixtures('container_fixture')
+@fixture
+def get_pipeline_fixture(request):
+    request.cls.resolver = SingletonResolver()
+    add_resolver(RenderingPipeline, request.cls.resolver)
+    request.cls.pipeline = RenderingPipeline()
+
+
+@mark.usefixtures('container_fixture', 'get_pipeline_fixture')
 class GetPipelineTests:
     """get_pipeline() tests"""
 
-    @staticmethod
-    def test_returns_default_setup():
-        """should return default setup"""
-        render_pipeline = RenderingPipeline()
-        add_singleton(RenderingPipeline, render_pipeline)
-        node = Node(Mock())
-
-        actual_setup = get_pipeline(node)
-
-        assert actual_setup == render_pipeline
-
-    @staticmethod
-    @mark.parametrize('node_type, node', [
-        (Node, Node(Mock())),
-        (InstanceNode, InstanceNode(Mock(), Mock()))
+    @mark.parametrize('xml_node, key', [
+        (XmlNode('pyviews.core.node', 'Node'), 'pyviews.core.node.Node'),
+        (XmlNode('pyviews.core.node', 'Node'), 'pyviews.core.node'),
+        (XmlNode('pyviews.core.observable', 'Observable'), 'pyviews.core.observable.Observable'),
+        (XmlNode('pyviews.core.observable', 'Observable'), 'pyviews.core.observable')
     ])
-    def test_should_return_setup_by_node_type(node_type, node):
-        """should return setup by node type"""
-        render_pipeline = RenderingPipeline()
-        add_resolver(RenderingPipeline, SingletonResolver(render_pipeline, node_type))
+    def test_resolves_pipeline_by_xml_node_namespace_and_name(self, xml_node, key):
+        """should resolve RenderingPipeline using namespace.name or namespace"""
+        self.resolver.set_value(self.pipeline, key)
 
-        actual_setup = get_pipeline(node)
+        actual = get_pipeline(xml_node)
 
-        assert actual_setup == render_pipeline
+        assert actual == self.pipeline
 
-    class OtherInstanceNode(InstanceNode):
-        """Class for get_pipeline_tests"""
+    def test_resolves_by_name_first(self):
+        """should try resolve by namespace.name first"""
+        name_pipeline, namespace_pipeline = RenderingPipeline(), RenderingPipeline()
+        xml_node = XmlNode('pyviews.core.node', 'Node')
+        self.resolver.set_value(namespace_pipeline, xml_node.namespace)
+        self.resolver.set_value(name_pipeline, f'{xml_node.namespace}.{xml_node.name}')
 
-    @staticmethod
-    @mark.parametrize('node', [
-        (InstanceNode(XmlAttr('name'), Mock())),
-        (OtherInstanceNode(XmlAttr('name'), Mock()))
-    ])
-    def test_returns_setup_by_instance_type(node: InstanceNode):
-        """get_pipeline should return setup by instance type"""
-        render_pipeline = RenderingPipeline()
-        add_resolver(RenderingPipeline, SingletonResolver(render_pipeline, node.instance.__class__))
+        actual = get_pipeline(xml_node)
 
-        actual_setup = get_pipeline(node)
-
-        assert actual_setup == render_pipeline
+        assert actual == name_pipeline
 
     @staticmethod
-    def test_steps_order():
-        """should try get in order: by instance, by node type, default"""
-        inst_setup = RenderingPipeline()
-        type_setup = RenderingPipeline()
-        def_setup = RenderingPipeline()
-
-        inst_node = Mock()
-        inst_node.instance = Mock()
-        cases = [
-            (InstanceNode(XmlAttr(''), Mock()), inst_setup),
-            (InstanceNode(Mock(), Mock()), type_setup),
-            (inst_node, def_setup)
-        ]
-
-        resolver = SingletonResolver(def_setup)
-        resolver.set_value(type_setup, Node)
-        resolver.set_value(type_setup, InstanceNode)
-        resolver.set_value(inst_setup, XmlAttr)
-        add_resolver(RenderingPipeline, resolver)
-
-        for node, expected_setup in cases:
-            actual_setup = get_pipeline(node)
-
-            assert actual_setup == expected_setup
-
-    @staticmethod
-    def test_raises():
-        """should throw error in case pipeline is not registered"""
-        node = Node(Mock())
+    def test_raises_rendering_error_for_missed_pipeline():
+        """should raise RenderingError if pipeline is not found"""
         with raises(RenderingError):
-            get_pipeline(node)
+            get_pipeline(XmlNode('pyviews.core.node', 'Node'))
 
 
 @fixture
-def apply_attribute_fixture(request):
-    setter_mock = Mock()
-    get_setter_mock = Mock()
-    get_setter_mock.side_effect = lambda attr: setter_mock
-    request.cls.setter_mock = setter_mock
-    with patch(pipeline.__name__ + '.get_setter', get_setter_mock) as patched:
-        binder = Binder()
-        binder.add_rule('once', OnceRule())
-        binder.add_rule('oneway', OnewayRule())
-        add_singleton(Binder, binder)
-        add_function_resolver(Expression, lambda c, p=None: CompiledExpression(p))
-        yield patched
-
-
-@mark.usefixtures('container_fixture', 'apply_attribute_fixture')
-class ApplyAttributeTests:
-    """apply_attribute() tests"""
-
-    @mark.parametrize('xml_attr, key, value', [
-        (XmlAttr('key', 'value'), 'key', 'value'),
-        (XmlAttr('', 'value'), '', 'value'),
-        (XmlAttr('one', '{1}'), 'one', 1),
-        (XmlAttr('one', 'once:{1 + 1}'), 'one', 2)
-    ])
-    def test_calls_setter(self, xml_attr: XmlAttr, key, value):
-        """ should call setter"""
-        node = Node(Mock())
-
-        apply_attribute(node, xml_attr)
-
-        assert self.setter_mock.call_args == call(node, key, value)
-
-    @mark.parametrize('xml_attr, binding_type, expr_body', [
-        (XmlAttr('key', '{1}'), 'oneway', '1'),
-        (XmlAttr('one', 'oneway:{1 + 1}'), 'oneway', '1 + 1'),
-        (XmlAttr('one', 'twoways:{vm.prop}'), 'twoways', 'vm.prop')
-    ])
-    def test_applies_binding(self, xml_attr, binding_type, expr_body):
-        """should apply binding"""
-        node = Node(Mock())
-        binder = Mock()
-        add_singleton(Binder, binder)
-        binding_context = BindingContext({
-            'node': node,
-            'xml_attr': xml_attr,
-            'modifier': self.setter_mock,
-            'expression_body': expr_body
-        })
-
-        apply_attribute(node, xml_attr)
-        assert binder.apply.call_args == call(binding_type, binding_context)
-
-    @staticmethod
-    @patch(pipeline.__name__ + '.apply_attribute')
-    def test_apply_every_attribute(apply_attribute_mock):
-        """should call apply_attribute for every attribute"""
-        xml_node = Mock()
-        xml_node.attrs = [Mock(), Mock()]
-        node = Node(xml_node)
-        context = RenderingContext()
-
-        apply_attributes(node, context)
-
-        calls = [call(node, attr) for attr in xml_node.attrs]
-        assert apply_attribute_mock.call_args_list == calls
-
-
-class GetSetterTests:
-    """get_setter() tests"""
-
-    @staticmethod
-    def test_default_setter():
-        """should call node setter"""
-        node = Node(Mock())
-        node_setter = Mock()
-        node.attr_setter = node_setter
-        key, value = ('key', 'value')
-
-        call_set_attr(node, key, value)
-
-        assert node_setter.call_args == call(node, key, value)
-
-    @staticmethod
-    @mark.parametrize('setter_path, expected_setter', [
-        (None, call_set_attr),
-        (modifiers.__name__ + '.import_global', modifiers.import_global)
-    ])
-    def test_returns_setter(setter_path, expected_setter):
-        """should return appropriate setter"""
-        actual_setter = get_setter(XmlAttr('', namespace=setter_path))
-
-        assert actual_setter == expected_setter
-
-    @staticmethod
-    @mark.parametrize('namespace, name', [
-        ('', ''),
-        ('', 'attr_name'),
-        ('tests.rendering.core_test.some_modifier_not', 'attr_name')
-    ])
-    def test_raises(namespace, name):
-        """should raise ImportError if namespace can''t be imported"""
-        with raises(ImportError):
-            xml_attr = XmlAttr(name, '', namespace)
-            get_setter(xml_attr)
-
-
-@fixture
-def render_children_fixture(request):
-    xml_node = Mock(children=[])
-    node = Mock(xml_node=xml_node)
-    render_mock = Mock()
-    add_singleton(render, render_mock)
-    context = RenderingContext()
-    context.node_globals = InheritedDict()
+def render_fixture(request):
+    xml_node = XmlNode('pyviews.core.node', 'Node')
+    pipeline = RenderingPipeline()
+    pipeline_resolver = SingletonResolver()
+    pipeline_resolver.set_value(pipeline, f'{xml_node.namespace}.{xml_node.name}')
+    add_resolver(RenderingPipeline, pipeline_resolver)
 
     request.cls.xml_node = xml_node
-    request.cls.node = node
-    request.cls.context = context
-    request.cls.render = render_mock
+    request.cls.pipeline = pipeline
+    request.cls.pipeline_resolver = pipeline_resolver
+    request.cls.context = RenderingContext({'xml_node': xml_node})
 
 
-@mark.usefixtures('container_fixture', 'render_children_fixture')
-class RenderChildrenTests:
-    """render_children() tests"""
+@mark.usefixtures('container_fixture', 'render_fixture')
+class RenderTests:
+    def _set_pipeline(self, xml_node, pipeline):
+        self.pipeline_resolver.set_value(pipeline, f'{xml_node.namespace}.{xml_node.name}')
 
-    @mark.parametrize('child_count', [1, 2, 5])
-    def test_renders_child(self, child_count):
-        """should render all xml children"""
-        self.xml_node.children = [Mock() for _ in range(child_count)]
+    @mark.parametrize('namespace, tag, node_type, init_args', [
+        ('pyviews.core', 'Node', Node, {}),
+        ('pyviews.code', 'Code', Code, {'parent_node': Node(XmlNode('', ''))})
+    ])
+    def test_runs_pipeline(self, namespace, tag, node_type, init_args):
+        """should run pipeline and return node created by pipeline"""
+        context = RenderingContext(init_args)
+        context.xml_node = XmlNode(namespace, tag)
+        self._set_pipeline(context.xml_node, RenderingPipeline())
 
-        render_children(self.node, self.context)
+        node = render(context)
 
-        actual_calls = [call(child, self.context) for child in self.xml_node.children]
-        assert self.render.call_args_list == actual_calls
-
-    @mark.parametrize('child_count', [1, 2, 5])
-    def test_adds_child_to_node(self, child_count):
-        """should render all xml children"""
-        self.xml_node.children = [Mock() for _ in range(child_count)]
-        actual = []
-        self.node.add_child = Mock()
-        self.node.add_child.side_effect = actual.append
-        self.render.side_effect = lambda xml_n, ctx: xml_n
-
-        render_children(self.node, self.context)
-
-        assert actual == self.xml_node.children
+        assert isinstance(node, node_type)
+        assert node.xml_node == context.xml_node

@@ -3,7 +3,8 @@
 from sys import exc_info
 from textwrap import dedent
 from traceback import extract_tb
-from pyviews.core import Node, CompilationError
+from pyviews.core import Node, XmlNode, ViewInfo
+from pyviews.expression import ExpressionError
 from pyviews.rendering.common import RenderingContext
 
 
@@ -22,24 +23,27 @@ def run_code(node: Code, context: RenderingContext):
     try:
         globs = context.node_globals.to_dictionary()
         exec(dedent(code), globs)
-        definitions = [(key, value) for key, value in globs.items()
-                       if key != '__builtins__' and key not in context.node_globals]
-        for key, value in definitions:
-            context.parent_node.node_globals[key] = value
+        _update_context(globs, context)
     except SyntaxError as err:
-        error = _get_compilation_error(code, 'Invalid syntax', err, err.lineno)
+        error = _get_error(node.xml_node, err, err.lineno)
         raise error from err
-    except:
+    except BaseException:
         info = exc_info()
-        cause = info[1]
-        line_number = extract_tb(info[2])[-1][1]
-        error = _get_compilation_error(code, 'Code execution is failed', cause, line_number)
+        cause, line_number = info[1], extract_tb(info[2])[-1][1]
+        error = _get_error(node.xml_node, cause, line_number)
         raise error from cause
 
 
-def _get_compilation_error(code, title, cause, line_number):
-    msg = '{0}:\n{1}'.format(title, code)
-    error = CompilationError(msg, str(cause))
-    error.add_cause(cause)
-    error.add_info('Line number', line_number)
+def _update_context(globs: dict, context: RenderingContext):
+    definitions = [(key, value) for key, value in globs.items()
+                   if key != '__builtins__' and key not in context.node_globals]
+    for key, value in definitions:
+        context.parent_node.node_globals[key] = value
+
+
+def _get_error(xml_node: XmlNode, cause: BaseException, line_number: int) -> ExpressionError:
+    error = ExpressionError()
+    error.cause_error = cause
+    error.add_view_info(ViewInfo('<Code>', line_number))
+    error.add_view_info(xml_node.view_info)
     return error

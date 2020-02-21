@@ -1,11 +1,15 @@
 """Common functionality for rendering package"""
+
 from typing import Union
 
-from pyviews.core import CoreError, InheritedDict, Node, XmlNode, InstanceNode
+from pyviews.core import PyViewsError, InheritedDict, Node, XmlNode, InstanceNode, ViewInfo
 
 
-class RenderingError(CoreError):
+class RenderingError(PyViewsError):
     """Error for rendering"""
+
+    def __init__(self, message: str = None, view_info: ViewInfo = None):
+        super().__init__(message=message, view_info=view_info)
 
 
 class RenderingContext(dict):

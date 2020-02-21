@@ -1,21 +1,31 @@
 """Expression eval implementation"""
 
 import ast
-from sys import exc_info
-from typing import List, Callable, Any, Iterator
 from collections import namedtuple
-from pyviews.core import Expression, ObjectNode, CompilationError
+from types import CodeType
+from typing import List, Callable, Any, Iterator, NamedTuple, Union
+
+from injectool import dependency
+
+from pyviews.core import error_handling
+from pyviews.expression.error import ExpressionError
 
 _COMPILATION_CACHE = {}
 _CacheItem = namedtuple('CacheItem', ['compiled_code', 'tree'])
 
 
-class CompiledExpression(Expression):
+class ObjectNode(NamedTuple):
+    """Entry of object in expression"""
+    key: str
+    children: List['ObjectNode']
+
+
+class Expression:
     """Parses and executes expression."""
 
     def __init__(self, code):
-        super().__init__(code)
-        self._compiled_code: ast.AST
+        self._code: str = code
+        self._compiled_code: CodeType
         self._object_tree: ObjectNode
         if not self._init_from_cache():
             self._compiled_code = self._compile()
@@ -31,13 +41,13 @@ class CompiledExpression(Expression):
             return False
         return True
 
-    def _compile(self) -> ast.AST:
+    def _compile(self) -> CodeType:
         try:
             code = self._code if self._code.strip(' ') else 'None'
             return compile(code, '<string>', 'eval')
         except SyntaxError as syntax_error:
-            error = CompilationError(syntax_error.msg, self._code)
-            error.add_cause(syntax_error)
+            error = ExpressionError(syntax_error.msg, self._code)
+            error.cause_error = syntax_error
             raise error from syntax_error
 
     def _build_object_tree(self) -> ObjectNode:
@@ -81,17 +91,26 @@ class CompiledExpression(Expression):
         item = _CacheItem(self._compiled_code, self._object_tree)
         _COMPILATION_CACHE[self._code] = item
 
+    @property
+    def code(self) -> str:
+        """Expression source code"""
+        return self._code
+
+    @property
+    def compiled_code(self) -> CodeType:
+        """Expression compiled code"""
+        return self._compiled_code
+
     def get_object_tree(self) -> ObjectNode:
         """Returns objects tree from expression"""
         return self._object_tree
 
-    def execute(self, parameters: dict = None) -> Any:
-        """Executes expression with passed parameters and returns result"""
-        try:
-            parameters = {} if parameters is None else parameters
-            return eval(self._compiled_code, parameters, {})
-        except BaseException:
-            info = exc_info()
-            error = CompilationError('Error occurred in expression execution', self.code)
-            error.add_cause(info[1])
-            raise error from info[1]
+
+@dependency
+def execute(expression: Union[Expression, str], parameters: dict = None) -> Any:
+    """Executes expression with passed parameters and returns result"""
+    with error_handling(ExpressionError('Error occurred in expression execution'),
+                        lambda e: e.add_expression_info(expression.code)):
+        expression = expression if isinstance(expression, Expression) else Expression(expression)
+        parameters = {} if parameters is None else parameters
+        return eval(expression.compiled_code, parameters, {})

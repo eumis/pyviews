@@ -1,28 +1,23 @@
 """Classes used for binding"""
 
 from abc import ABC, abstractmethod
+from typing import Callable, Any
 
-from .error import CoreError
+from .error import PyViewsError
 
 
-class BindingError(CoreError):
+class BindingError(PyViewsError):
     """Base error for binding errors"""
-    TargetUpdateError = 'Error occurred during target update'
+
+    def __init__(self, message: str = None):
+        super().__init__(message=message)
 
 
-class BindingTarget(ABC):
-    """Target for changes, applied when binding has triggered changes"""
-
-    @abstractmethod
-    def on_change(self, value):
-        """Called to apply changes"""
+BindingCallback = Callable[[Any], None]
 
 
 class Binding(ABC):
     """Binds BindingTarget to changes"""
-
-    def __init__(self):
-        self.add_error_info = lambda error: None
 
     @abstractmethod
     def bind(self):

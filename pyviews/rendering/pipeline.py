@@ -1,113 +1,113 @@
 """Rendering pipeline. Node creation from xml node, attribute setup and binding creation"""
-from sys import exc_info
-from typing import Optional, NamedTuple, List, Callable, Union
-from injectool import DependencyError, resolve, dependency
 
-from pyviews.binding import Binder
-from pyviews.binding.binder import BindingContext
-from pyviews.core import XmlNode, XmlAttr, CoreError
-from pyviews.core import Node, InstanceNode, import_path
-from pyviews.compilation import is_expression, parse_expression
-from .node import create_node
-from .common import RenderingError, RenderingContext
+from importlib import import_module
+from inspect import signature, Parameter
+from typing import List, Callable, Union, Type, Tuple, Dict, Any
+
+from injectool import resolve, DependencyError, dependency
+
+from pyviews.core import Node, InstanceNode, XmlNode
+from .common import RenderingContext, RenderingError
+from ..core.error import error_handling, PyViewsError
+
+Pipe = Callable[[RenderingContext], None]
 
 
-class RenderingPipeline(NamedTuple):
-    """Contains data, logic used for render steps"""
+class RenderingPipeline:
+    """Creates and renders node"""
 
-    steps: List[Callable[[Union[Node, InstanceNode], RenderingContext], None]] = []
+    def __init__(self, pipes=None, create_node=None):
+        self._pipes: List[Pipe] = pipes if pipes else []
+        self._create_node: Callable[
+            [RenderingContext], Node] = create_node if create_node else _create_node
+
+    def run(self, context: RenderingContext) -> Node:
+        """Runs pipeline"""
+        pipe = None
+        with error_handling(RenderingError, lambda e: self._add_pipe_info(e, pipe, context)):
+            node = self._create_node(context)
+            for pipe in self._pipes:
+                pipe(node, context)
+            return node
+
+    @staticmethod
+    def _add_pipe_info(error: PyViewsError, pipe: Pipe, context: RenderingContext):
+        error.add_view_info(context.xml_node.view_info)
+        if pipe:
+            try:
+                next(info for info in error.infos if info.startswith('Pipe'))
+            except StopIteration:
+                error.add_info('Pipe', pipe)
+
+
+def _create_node(context: RenderingContext) -> Node:
+    inst_type = get_type(context.xml_node)
+    inst = create_instance(inst_type, context)
+    if not isinstance(inst, Node):
+        inst = InstanceNode(inst, context.xml_node, context.node_globals)
+    return inst
+
+
+def get_type(xml_node: XmlNode) -> Type:
+    """Returns instance type for xml node"""
+    (module_path, class_name) = (xml_node.namespace, xml_node.name)
+    try:
+        return import_module(module_path).__dict__[class_name]
+    except (KeyError, ImportError, ModuleNotFoundError):
+        message = f'Import "{module_path}.{class_name}" is failed.'
+        raise RenderingError(message, xml_node.view_info)
+
+
+def create_instance(instance_type: Type, context: Union[RenderingContext, dict]):
+    """Creates class instance with args"""
+    args, kwargs = _get_init_args(instance_type, context)
+    return instance_type(*args, **kwargs)
+
+
+def _get_init_args(inst_type: Type, values: dict) -> Tuple[List, Dict]:
+    """Returns tuple with args and kwargs to pass it to inst_type constructor"""
+    try:
+        parameters = signature(inst_type).parameters.values()
+        args = _get_positional_args(parameters, values)
+        kwargs = _get_optional_args(parameters, values)
+    except KeyError as key_error:
+        msg_format = 'parameter with key "{0}" is not found in node args'
+        raise RenderingError(msg_format.format(key_error.args[0]))
+    return args, kwargs
+
+
+def _get_positional_args(parameters: List[Parameter], param_values: dict) -> List[Any]:
+    keys = [p.name for p in parameters
+            if p.kind in [Parameter.POSITIONAL_ONLY, Parameter.POSITIONAL_OR_KEYWORD]
+            and p.default == Parameter.empty]
+    return [param_values[key] for key in keys]
+
+
+def _get_optional_args(parameters: List[Parameter], param_values: dict) -> dict:
+    keys = [p.name for p in parameters
+            if p.kind in [Parameter.KEYWORD_ONLY, Parameter.POSITIONAL_OR_KEYWORD]
+            and p.default != Parameter.empty
+            and p.name in param_values]
+    return {key: param_values[key] for key in keys}
+
+
+def get_pipeline(xml_node: XmlNode) -> RenderingPipeline:
+    """Resolves pipeline by namespace and name or by namespace"""
+    key = f'{xml_node.namespace}.{xml_node.name}'
+    try:
+        return resolve(RenderingPipeline, key)
+    except DependencyError:
+        try:
+            return resolve(RenderingPipeline, xml_node.namespace)
+        except DependencyError as error:
+            render_error = RenderingError('RenderingPipeline is not found')
+            render_error.add_info('Used keys to resolve pipeline', f'{key}, {xml_node.namespace}')
+            raise render_error from error
 
 
 @dependency
-def render(xml_node: XmlNode, context: RenderingContext) -> Node:
+def render(context: RenderingContext) -> Node:
     """Renders node from xml node"""
-    try:
-        node = create_node(xml_node, context)
-        pipeline = get_pipeline(node)
-        run_steps(node, pipeline, context)
-        return node
-    except CoreError as error:
-        error.add_view_info(xml_node.view_info)
-        raise
-    except BaseException:
-        info = exc_info()
-        msg = 'Unknown error occurred during rendering'
-        error = RenderingError(msg, xml_node.view_info)
-        error.add_cause(info[1])
-        raise error from info[1]
-
-
-def get_pipeline(node: Node) -> RenderingPipeline:
-    """Gets rendering pipeline for passed node"""
-    pipeline = _get_registered_pipeline(node)
-    if pipeline is None:
-        msg = _get_pipeline_error_message(node)
-        raise RenderingError(msg)
-    return pipeline
-
-
-def _get_registered_pipeline(node: Node) -> Optional[RenderingPipeline]:
-    params = [node.__class__, None]
-    if isinstance(node, InstanceNode):
-        params = [node.instance.__class__] + params
-    for param in params:
-        try:
-            return resolve(RenderingPipeline, param)
-        except (DependencyError, AttributeError):
-            pass
-    return None
-
-
-def _get_pipeline_error_message(node: Node) -> str:
-    if isinstance(node, InstanceNode):
-        return 'RenderingPipeline is not found for {0} with instance {1}' \
-            .format(node.__class__, node.instance.__class__)
-    return 'RenderingPipeline is not found for {0}'.format(node.__class__)
-
-
-def run_steps(node: Node, pipeline: RenderingPipeline, context: RenderingContext):
-    """Runs instance node rendering steps"""
-    for step in pipeline.steps:
-        step(node, context)
-
-
-def apply_attributes(node: Node, _: RenderingContext):
-    """Rendering step: applies xml attributes to instance node and setups bindings"""
-    for attr in node.xml_node.attrs:
-        apply_attribute(node, attr)
-
-
-def apply_attribute(node: Node, attr: XmlAttr):
-    """Maps xml attribute to instance node property and setups bindings"""
-    setter = get_setter(attr)
-    stripped_value = attr.value.strip() if attr.value else ''
-    if is_expression(stripped_value):
-        (binding_type, expr_body) = parse_expression(stripped_value)
-        binder = resolve(Binder)
-        binder.apply(binding_type, BindingContext({
-            'node': node,
-            'expression_body': expr_body,
-            'modifier': setter,
-            'xml_attr': attr
-        }))
-    else:
-        setter(node, attr.name, attr.value)
-
-
-def get_setter(attr: XmlAttr):
-    """Returns modifier for xml attribute"""
-    if attr.namespace is None:
-        return call_set_attr
-    return import_path(attr.namespace)
-
-
-def call_set_attr(node: Node, key: str, value):
-    """Modifier: calls node setter"""
-    node.set_attr(key, value)
-
-
-def render_children(node: Node, child_context: RenderingContext):
-    """renders node children"""
-    for xml_node in node.xml_node.children:
-        child = render(xml_node, child_context)
-        node.add_child(child)
+    with error_handling(RenderingError, lambda e: e.add_view_info(context.xml_node.view_info)):
+        pipeline = get_pipeline(context.xml_node)
+        return pipeline.run(context)

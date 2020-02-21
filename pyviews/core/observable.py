@@ -1,6 +1,6 @@
 """Observable implementations"""
 
-from typing import Callable, Any
+from typing import Callable, Any, Union
 
 
 class Observable:
@@ -30,16 +30,13 @@ class Observable:
     def release(self, key: str, callback: Callable[[Any, Any], None]):
         """Releases callback from key changes"""
         try:
-            self._callbacks[key].remove(callback)
+            self._callbacks[key] = [c for c in self._callbacks[key] if c != callback]
         except (KeyError, ValueError):
             pass
 
 
 class ObservableEntity(Observable):
     """Observable general object"""
-
-    def __init__(self):
-        super().__setattr__('_callbacks', {})
 
     def __setattr__(self, key, value):
         if key in self.__dict__:
@@ -59,7 +56,7 @@ class ObservableEntity(Observable):
 class InheritedDict(Observable):
     """Dictionary that pulls value from parent if doesn't have own"""
 
-    def __init__(self, source=None):
+    def __init__(self, source: Union[dict, 'InheritedDict'] = None):
         super().__init__()
         self._parent = None
         self._container = {}
@@ -87,11 +84,6 @@ class InheritedDict(Observable):
         self._container[key] = value
         self._notify(key, value, old_value)
 
-    def _parent_changed(self, key, value, old_value):
-        if key in self._own_keys:
-            return
-        self._set_value(key, value, old_value)
-
     def __len__(self):
         return len(self._container)
 
@@ -109,6 +101,11 @@ class InheritedDict(Observable):
         self._parent = parent
         self._parent.observe_all(self._parent_changed)
 
+    def _parent_changed(self, key, value, old_value):
+        if key in self._own_keys:
+            return
+        self._set_value(key, value, old_value)
+
     def observe_all(self, callback: Callable[[str, Any, Any], None]):
         """Subscribes to all keys changes"""
         self._all_callbacks.append(callback)
@@ -125,7 +122,7 @@ class InheritedDict(Observable):
 
     def release_all(self, callback: Callable[[str, Any, Any], None]):
         """Releases callback from all keys changes"""
-        self._all_callbacks.remove(callback)
+        self._all_callbacks = [c for c in self._all_callbacks if c != callback]
 
     def to_dictionary(self) -> dict:
         """Returns all values as dict"""

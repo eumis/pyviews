@@ -1,34 +1,27 @@
 """View logic"""
 
 from os.path import join
-from sys import exc_info
 
 from injectool import resolve, dependency
 
-from pyviews.core import CoreError, ViewInfo, Node
+from pyviews.core import PyViewsError, ViewInfo, Node
 from pyviews.core.xml import Parser, XmlNode
-from .pipeline import render
 from .common import RenderingContext
+from .pipeline import render
+from ..core.error import error_handling
 
 
-class ViewError(CoreError):
+class ViewError(PyViewsError):
     """Common error for parsing exceptions"""
 
 
 @dependency
 def render_view(view_name: str, context: RenderingContext) -> Node:
     """Renders view"""
-    try:
-        xml_root = get_view_root(view_name)
-        return render(xml_root, context)
-    except CoreError as error:
-        error.add_view_info(ViewInfo(view_name, None))
-        raise
-    except BaseException:
-        info = exc_info()
-        error = ViewError('Unknown error occurred during rendering', ViewInfo(view_name, None))
-        error.add_cause(info[1])
-        raise error from info[1]
+    with error_handling(ViewError,
+                        lambda e: e.add_view_info(ViewInfo(view_name, None))):
+        context.xml_node = get_view_root(view_name)
+        return render(context)
 
 
 _XML_CACHE = {}
@@ -52,11 +45,3 @@ def _parse_root(path, view_name):
         error.add_info('View name', view_name)
         error.add_info('Path', path)
         raise error
-    except CoreError as error:
-        error.add_view_info(ViewInfo(view_name, None))
-        raise
-    except BaseException:
-        info = exc_info()
-        error = ViewError('Unknown error occured during parsing xml', ViewInfo(view_name, None))
-        error.add_cause(info[1])
-        raise error from info[1]

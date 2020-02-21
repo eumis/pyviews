@@ -1,6 +1,6 @@
 """Plugin to disable certain messages for test modules"""
 
-from collections import Callable  # pylint:disable=no-name-in-module
+from typing import Callable
 
 from pylint.lint import PyLinter
 
@@ -20,7 +20,8 @@ def register(linter: PyLinter):
     msg_ids = _get_msg_ids(linter)
     base = linter.add_one_message
     linter.add_one_message = lambda *args: \
-        add_one_message(*args, linter=linter, base=base, msg_ids=msg_ids)  # pylint:disable=no-value-for-parameter
+        add_one_message(*args, linter=linter, base=base,
+                        msg_ids=msg_ids)  # pylint:disable=no-value-for-parameter
 
 
 def _get_msg_ids(linter: PyLinter):
