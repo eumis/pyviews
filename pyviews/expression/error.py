@@ -1,4 +1,5 @@
 """Expression errors"""
+from typing import Generator
 
 from pyviews.core import PyViewsError
 
@@ -16,3 +17,7 @@ class ExpressionError(PyViewsError):
         """Adds info about expression to error"""
         self.expression = expression
         self.add_info('Expression', expression)
+
+    def _get_error(self) -> Generator[str, None, None]:
+        yield from super()._get_error()
+        yield self._format_info('Expression', self.expression)
