@@ -24,7 +24,10 @@ class PyViewsError(Exception):
 
     def add_info(self, header: str, message: Any):
         """Adds "header: message" line to error message"""
-        self.infos.append(self._format_info(header, str(message)))
+        try:
+            next(info for info in self.infos if info.startswith(header))
+        except StopIteration:
+            self.infos.append(self._format_info(header, str(message)))
 
     @staticmethod
     def _format_info(header: str, message: str):

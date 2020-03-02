@@ -41,6 +41,31 @@ class PyViewsErrorTests:
         assert str(error) == expected
 
     @staticmethod
+    def test_same_info_output():
+        error = TestError()
+
+        error.add_info('Info', 'info message')
+        error.add_info('Info', 'info message')
+
+        error.add_info('Event', 'some event')
+        error.add_info('Event', 'other event')
+
+        obj1, obj2 = object(), object()
+        error.add_info('Object', obj1)
+        error.add_info('Object', obj2)
+
+        expected = f'{linesep}' \
+                   f'Info ------------------------------------------------------------------------------------------------{linesep}' \
+                   f'Info: info message{linesep}' \
+                   f'Event: some event{linesep}' \
+                   f'Object: {obj1}{linesep}' \
+                   f'{linesep}' \
+                   f'TestError -------------------------------------------------------------------------------------------{linesep}' \
+                   f'{linesep}' \
+                   f'View info -------------------------------------------------------------------------------------------'
+        assert str(error) == expected
+
+    @staticmethod
     def test_empty_output():
         error = TestError()
 

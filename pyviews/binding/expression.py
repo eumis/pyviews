@@ -23,7 +23,8 @@ class ExpressionBinding(Binding):
     def bind(self):
         self.destroy()
         objects_tree = self._expression.get_object_tree()
-        self._create_dependencies(self._vars, objects_tree)
+        with error_handling(BindingError, self._add_error_info):
+            self._create_dependencies(self._vars, objects_tree)
         self._execute_callback()
 
     def _create_dependencies(self, inst, var_tree: ObjectNode):
