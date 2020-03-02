@@ -1,6 +1,6 @@
 # Changelog
 
-## Dev
+## 3.0.0
 
 - updated injectool up to 2.0.1
 - RenderingPipeline is resolved by xml namespace and tag
