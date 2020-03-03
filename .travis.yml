@@ -11,7 +11,7 @@ install:
 # command to run tests
 script:
   - pipenv run coverage run -m pytest
-  - pipenv run coverage xml
+  - pipenv run coverage xml --omit "*/tests/*"
 after_success:
   - java -jar codacy-coverage-reporter-assembly.jar report -l Python -r coverage.xml
 deploy:
