@@ -2,9 +2,9 @@
 
 from importlib import import_module
 from inspect import signature, Parameter
-from typing import List, Callable, Union, Type, Tuple, Dict, Any
+from typing import List, Callable, Union, Type, Tuple, Dict, Any, cast
 
-from injectool import resolve, DependencyError, dependency
+from injectool import resolve, DependencyError, dependency, SingletonResolver, get_container
 
 from pyviews.core import Node, InstanceNode, XmlNode
 from .common import RenderingContext, RenderingError
@@ -111,3 +111,11 @@ def render(context: RenderingContext) -> Node:
     with error_handling(RenderingError, lambda e: e.add_view_info(context.xml_node.view_info)):
         pipeline = get_pipeline(context.xml_node)
         return pipeline.run(context)
+
+
+def use_pipeline(pipeline: RenderingPipeline, class_path: str, resolver: SingletonResolver = None):
+    """Adds rendering pipeline for class path"""
+    if resolver is None:
+        container = get_container()
+        resolver = cast(SingletonResolver, container.get_resolver(RenderingPipeline))
+    resolver.set_value(pipeline, class_path)

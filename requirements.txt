@@ -1,0 +1,5 @@
+injectool
+-e .
+pytest
+pylint
+coverage
