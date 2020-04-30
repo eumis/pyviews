@@ -1,5 +1,10 @@
 # Changelog
 
+## Dev
+
+- added use_rendering() and use_pipeline()
+- added use_binding()
+
 ## 3.0.0
 
 - updated injectool up to 2.0.1
