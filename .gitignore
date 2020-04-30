@@ -14,3 +14,4 @@ pyvenv.cfg
 .idea
 Pipfile.lock
 .coverage
+venv/

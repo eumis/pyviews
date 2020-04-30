@@ -6,7 +6,7 @@ from pytest import mark, fixture, raises, fail
 from pyviews.code import Code
 from pyviews.core import Node, XmlNode, Observable, InstanceNode, ViewInfo
 from pyviews.rendering.common import RenderingContext, RenderingError
-from pyviews.rendering.pipeline import RenderingPipeline, get_pipeline, create_instance, get_type, render
+from pyviews.rendering.pipeline import RenderingPipeline, get_pipeline, create_instance, get_type, render, use_pipeline
 
 
 class Inst:
@@ -281,3 +281,25 @@ class RenderTests:
 
         assert isinstance(node, node_type)
         assert node.xml_node == context.xml_node
+
+
+@mark.usefixtures('container_fixture')
+class UsePipelineTests:
+    @mark.parametrize('class_path', ['package.module.class', 'package.module'])
+    def test_adds_pipeline_to_passed_resolver(self, class_path: str):
+        """should add pipeline to passed resolver"""
+        resolver, pipeline = SingletonResolver(), RenderingPipeline()
+
+        use_pipeline(pipeline, class_path, resolver)
+
+        assert resolver.resolve(self.container, class_path) == pipeline
+
+    @mark.parametrize('class_path', ['package.module.class', 'package.module'])
+    def test_adds_pipeline_to_resolver_from_container(self, class_path: str):
+        """should add pipeline to passed resolver"""
+        resolver, pipeline = SingletonResolver(), RenderingPipeline()
+        add_resolver(RenderingPipeline, resolver)
+
+        use_pipeline(pipeline, class_path)
+
+        assert resolver.resolve(self.container, class_path) == pipeline
