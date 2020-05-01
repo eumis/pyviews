@@ -1,6 +1,6 @@
 # Changelog
 
-## Dev
+## 3.0.1
 
 - added use_rendering() and use_pipeline()
 - added use_binding()
