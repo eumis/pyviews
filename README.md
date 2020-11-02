@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/eumis/pyviews.svg?branch=dev)](https://travis-ci.com/eumis/pyviews)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/5d7529f3dcd7402091fc7118dbdf111f)](https://www.codacy.com/gh/eumis/pyviews/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=eumis/pyviews&amp;utm_campaign=Badge_Grade)
-[![Codacy Badge](https://api.codacy.com/project/badge/Coverage/3a54b574ca574c10b4200be17c4eb029)](https://www.codacy.com/manual/eumis/pyviews?utm_source=github.com&utm_medium=referral&utm_content=eumis/pyviews&utm_campaign=Badge_Coverage)
+[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/5d7529f3dcd7402091fc7118dbdf111f)](https://www.codacy.com/gh/eumis/pyviews/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=eumis/pyviews&amp;utm_campaign=Badge_Coverage)
 [![image](https://img.shields.io/pypi/v/pyviews.svg)](https://python.org/pypi/pyviews)
 [![image](https://img.shields.io/pypi/pyversions/pyviews.svg)](https://python.org/pypi/pyviews)
 [![image](https://img.shields.io/pypi/l/pyviews.svg)](https://python.org/pypi/pyviews)
