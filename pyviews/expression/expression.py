@@ -109,8 +109,9 @@ class Expression:
 @dependency
 def execute(expression: Union[Expression, str], parameters: dict = None) -> Any:
     """Executes expression with passed parameters and returns result"""
+    code = expression.code if isinstance(expression, Expression) else expression
     with error_handling(ExpressionError('Error occurred in expression execution'),
-                        lambda e: e.add_expression_info(expression.code)):
+                        lambda e: e.add_expression_info(code)):
         expression = expression if isinstance(expression, Expression) else Expression(expression)
         parameters = {} if parameters is None else parameters
         return eval(expression.compiled_code, parameters, {})
