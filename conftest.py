@@ -10,5 +10,6 @@ def pytest_configure(config):  # pylint: disable=unused-argument
 def container_fixture(request):
     """runs test in own dependency container"""
     with use_container() as container:
-        request.cls.container = container
+        if request.cls:
+            request.cls.container = container
         yield container
