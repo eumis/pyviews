@@ -1,23 +1,11 @@
 """Contains methods for node setups creation"""
 from typing import Any
 
-from injectool import dependency
-
 from pyviews.core import Node, XmlNode
-from pyviews.pipes import render_children, apply_attributes
-from pyviews.rendering import RenderingPipeline, render, RenderingContext
 from pyviews.core.observable import InheritedDict, Observable
+from pyviews.pipes import render_children, apply_attributes
+from pyviews.rendering import RenderingPipeline, render, RenderingContext, get_child_context
 from pyviews.rendering.views import render_view
-
-
-@dependency
-def get_container_child_context(xml_node: XmlNode, parent_node: 'Container',
-                                _: RenderingContext) -> RenderingContext:
-    return RenderingContext({
-        'parent_node': parent_node,
-        'node_globals': InheritedDict(parent_node.node_globals),
-        'xml_node': xml_node
-    })
 
 
 class Container(Node):
@@ -34,7 +22,7 @@ def get_container_pipeline() -> RenderingPipeline:
 
 def render_container_children(node, context: RenderingContext):
     """Renders container children"""
-    render_children(node, context, get_container_child_context)
+    render_children(node, context, get_child_context)
 
 
 class View(Container, Observable):
@@ -69,7 +57,7 @@ def get_view_pipeline() -> RenderingPipeline:
 def render_view_content(node: View, context: RenderingContext):
     """Finds view by name attribute and renders it as view node child"""
     if node.name:
-        child_context = get_container_child_context(node.xml_node, node, context)
+        child_context = get_child_context(node.xml_node, node, context)
         content = render_view(node.name, child_context)
         node.add_child(content)
 
@@ -129,7 +117,7 @@ def _render_for_children(node: For, items: list, context: RenderingContext, inde
 
 def _get_for_child_args(xml_node: XmlNode, index: int, item: Any,
                         parent_node: For, context: RenderingContext):
-    child_context = get_container_child_context(xml_node, parent_node, context)
+    child_context = get_child_context(xml_node, parent_node, context)
     child_globals = child_context.node_globals
     child_globals['index'] = index
     child_globals['item'] = item
@@ -213,7 +201,7 @@ def get_if_pipeline() -> RenderingPipeline:
 def render_if(node: If, context: RenderingContext):
     """Renders children nodes if condition is true"""
     if node.condition:
-        render_children(node, context, get_container_child_context)
+        render_children(node, context, get_child_context)
 
 
 def rerender_on_condition_change(node: If, context: RenderingContext):
