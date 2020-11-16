@@ -2,6 +2,8 @@
 
 from typing import Union
 
+from injectool import dependency
+
 from pyviews.core import PyViewsError, InheritedDict, Node, XmlNode, InstanceNode, ViewInfo
 
 
@@ -41,3 +43,14 @@ class RenderingContext(dict):
     @xml_node.setter
     def xml_node(self, value: XmlNode):
         self['xml_node'] = value
+
+
+@dependency
+def get_child_context(xml_node: XmlNode, parent_node: Node,
+                      _: RenderingContext) -> RenderingContext:
+    """Return"""
+    return RenderingContext({
+        'parent_node': parent_node,
+        'node_globals': InheritedDict(parent_node.node_globals),
+        'xml_node': xml_node
+    })

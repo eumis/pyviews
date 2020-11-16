@@ -4,6 +4,7 @@
 ## Dev
 
 - added containers(Container, View, If, For)
+- added presenter
 
 ## 3.0.1
 

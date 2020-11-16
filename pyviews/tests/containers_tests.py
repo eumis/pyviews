@@ -6,7 +6,7 @@ from pyviews.core import Node, XmlNode, InheritedDict
 from pyviews.rendering import render, RenderingContext
 from pyviews.rendering.views import render_view
 
-from pyviews import containers
+from pyviews.rendering import common
 from pyviews.containers import Container, render_container_children
 from pyviews.containers import View, render_view_content, rerender_on_view_change
 from pyviews.containers import For, render_for_items, rerender_on_items_change
@@ -19,7 +19,7 @@ def test_render_container_children(nodes_count):
     """should render all xml children for every item"""
     render_mock = Mock()
     add_singleton(render, render_mock)
-    with patch(containers.__name__ + '.InheritedDict') as inherited_dict_mock:
+    with patch(common.__name__ + '.InheritedDict') as inherited_dict_mock:
         inherited_dict_mock.side_effect = lambda p: {'source': p} if p else p
         xml_node = Mock(children=[Mock() for _ in range(nodes_count)])
         node = Container(xml_node)
