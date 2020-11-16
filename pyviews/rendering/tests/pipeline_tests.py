@@ -100,8 +100,22 @@ class RenderingPipelineTests:
 
         try:
             pipeline.run(self.context)
-        except RenderingError:
-            pass
+        except RenderingError as err:
+            assert f'Pipe: {pipe}' in err.infos
+        except BaseException:
+            fail()
+
+    @mark.parametrize('name', [None, '', 'pipeline'])
+    def test_adds_pipeline_name_to_error(self, name):
+        """should handle errors"""
+        pipe = Mock()
+        pipe.side_effect = Exception()
+        pipeline = RenderingPipeline(name=name, pipes=[pipe])
+
+        try:
+            pipeline.run(self.context)
+        except RenderingError as err:
+            assert f'Pipeline: {name}' in err.infos
         except BaseException:
             fail()
 

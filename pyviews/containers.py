@@ -17,7 +17,7 @@ def get_container_pipeline() -> RenderingPipeline:
     return RenderingPipeline(pipes=[
         apply_attributes,
         render_container_children
-    ])
+    ], name='container pipeline')
 
 
 def render_container_children(node, context: RenderingContext):
@@ -51,7 +51,7 @@ def get_view_pipeline() -> RenderingPipeline:
         apply_attributes,
         render_view_content,
         rerender_on_view_change
-    ])
+    ], name='view pipeline')
 
 
 def render_view_content(node: View, context: RenderingContext):
@@ -98,7 +98,7 @@ def get_for_pipeline() -> RenderingPipeline:
         apply_attributes,
         render_for_items,
         rerender_on_items_change
-    ])
+    ], name='for pipeline')
 
 
 def render_for_items(node: For, context: RenderingContext):
@@ -195,7 +195,7 @@ def get_if_pipeline() -> RenderingPipeline:
         apply_attributes,
         render_if,
         rerender_on_condition_change
-    ])
+    ], name='if pipeline')
 
 
 def render_if(node: If, context: RenderingContext):

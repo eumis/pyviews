@@ -10,16 +10,17 @@ from pyviews.core import Node, InstanceNode, XmlNode
 from .common import RenderingContext, RenderingError
 from ..core.error import error_handling, PyViewsError
 
-Pipe = Callable[[RenderingContext], None]
+Pipe = Callable[[Union[RenderingContext, Any]], None]
+CreateNode = Callable[[Union[RenderingContext, Any]], Node]
 
 
 class RenderingPipeline:
     """Creates and renders node"""
 
-    def __init__(self, pipes=None, create_node=None):
+    def __init__(self, pipes: List[Pipe] = None, create_node: CreateNode = None, name: str = None):
+        self._name: str = name
         self._pipes: List[Pipe] = pipes if pipes else []
-        self._create_node: Callable[
-            [RenderingContext], Node] = create_node if create_node else _create_node
+        self._create_node: CreateNode = create_node if create_node else _create_node
 
     def run(self, context: RenderingContext) -> Node:
         """Runs pipeline"""
@@ -30,14 +31,14 @@ class RenderingPipeline:
                 pipe(node, context)
             return node
 
-    @staticmethod
-    def _add_pipe_info(error: PyViewsError, pipe: Pipe, context: RenderingContext):
+    def _add_pipe_info(self, error: PyViewsError, pipe: Pipe, context: RenderingContext):
         error.add_view_info(context.xml_node.view_info)
         if pipe:
             try:
                 next(info for info in error.infos if info.startswith('Pipe'))
             except StopIteration:
                 error.add_info('Pipe', pipe)
+                error.add_info('Pipeline', self._name)
 
 
 def _create_node(context: RenderingContext) -> Node:
