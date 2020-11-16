@@ -5,6 +5,7 @@
 
 - added containers(Container, View, If, For)
 - added presenter
+- added pipeline name to display in error info
 
 ## 3.0.1
 

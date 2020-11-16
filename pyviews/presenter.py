@@ -46,7 +46,7 @@ def get_presenter_pipeline() -> RenderingPipeline:
         add_presenter_to_globals,
         render_presenter_children,
         call_on_rendered
-    ], create_node=create_presenter_node)
+    ], create_node=create_presenter_node, name='presenter pipeline')
 
 
 def add_presenter_to_globals(node: PresenterNode, _: RenderingContext):
