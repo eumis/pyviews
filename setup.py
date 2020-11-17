@@ -16,7 +16,7 @@ def setup_package():
         long_description_content_type='text/markdown',
         url='https://github.com/eumis/pyviews',
         author='eumis(Eugen Misievich)',
-        author_email='misievich@gmail.com',
+        author_email='eug.mis@protonmail.com',
         license='MIT',
         classifiers=[
             #   2 - Pre-Alpha
