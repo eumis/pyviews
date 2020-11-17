@@ -2,15 +2,15 @@
 
 from importlib import import_module
 from inspect import signature, Parameter
-from typing import List, Callable, Union, Type, Tuple, Dict, Any, cast
+from typing import List, Callable, Union, Type, Tuple, Dict, Any, cast, Collection
 
 from injectool import resolve, DependencyError, dependency, SingletonResolver, get_container
 
 from pyviews.core import Node, InstanceNode, XmlNode
-from .common import RenderingContext, RenderingError
+from .common import RenderingContext, RenderingError, use_context
 from ..core.error import error_handling, PyViewsError
 
-Pipe = Callable[[Union[RenderingContext, Any]], None]
+Pipe = Callable[[Node, Union[RenderingContext, Any]], None]
 CreateNode = Callable[[Union[RenderingContext, Any]], Node]
 
 
@@ -24,12 +24,13 @@ class RenderingPipeline:
 
     def run(self, context: RenderingContext) -> Node:
         """Runs pipeline"""
-        pipe = None
-        with error_handling(RenderingError, lambda e: self._add_pipe_info(e, pipe, context)):
-            node = self._create_node(context)
-            for pipe in self._pipes:
-                pipe(node, context)
-            return node
+        pipe: Pipe = None
+        with use_context(context):
+            with error_handling(RenderingError, lambda e: self._add_pipe_info(e, pipe, context)):
+                node = self._create_node(context)
+                for pipe in self._pipes:
+                    pipe(node, context)
+                return node
 
     def _add_pipe_info(self, error: PyViewsError, pipe: Pipe, context: RenderingContext):
         error.add_view_info(context.xml_node.view_info)
@@ -68,7 +69,7 @@ def create_instance(instance_type: Type, context: Union[RenderingContext, dict])
 def _get_init_args(inst_type: Type, values: dict) -> Tuple[List, Dict]:
     """Returns tuple with args and kwargs to pass it to inst_type constructor"""
     try:
-        parameters = signature(inst_type).parameters.values()
+        parameters = list(signature(inst_type).parameters.values())
         args = _get_positional_args(parameters, values)
         kwargs = _get_optional_args(parameters, values)
     except KeyError as key_error:
@@ -77,7 +78,7 @@ def _get_init_args(inst_type: Type, values: dict) -> Tuple[List, Dict]:
     return args, kwargs
 
 
-def _get_positional_args(parameters: List[Parameter], param_values: dict) -> List[Any]:
+def _get_positional_args(parameters: Collection[Parameter], param_values: dict) -> List[Any]:
     keys = [p.name for p in parameters
             if p.kind in [Parameter.POSITIONAL_ONLY, Parameter.POSITIONAL_OR_KEYWORD]
             and p.default == Parameter.empty]
