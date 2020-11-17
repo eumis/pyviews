@@ -5,13 +5,13 @@ from typing import Callable, Union, Any
 from injectool import resolve
 
 from pyviews.binding import Binder, BindingContext
-from pyviews.expression import is_expression, parse_expression
 from pyviews.core import Node, XmlAttr, import_path, XmlNode, Setter
+from pyviews.expression import is_expression, parse_expression
 from pyviews.rendering import RenderingContext, render
 
 
-def apply_attributes(node: Node, *_):
-    """Rendering step: applies xml attributes to instance node and setups bindings"""
+def apply_attributes(node: Node, _: RenderingContext):
+    """Rendering pipe: applies xml attributes to instance node and setups bindings"""
     for attr in node.xml_node.attrs:
         apply_attribute(node, attr)
 

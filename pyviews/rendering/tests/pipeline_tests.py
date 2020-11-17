@@ -5,7 +5,7 @@ from pytest import mark, fixture, raises, fail
 
 from pyviews.code import Code
 from pyviews.core import Node, XmlNode, Observable, InstanceNode, ViewInfo
-from pyviews.rendering.common import RenderingContext, RenderingError
+from pyviews.rendering.common import RenderingContext, RenderingError, get_rendering_context
 from pyviews.rendering.pipeline import RenderingPipeline, get_pipeline, create_instance, get_type, render, use_pipeline
 
 
@@ -142,6 +142,16 @@ class RenderingPipelineTests:
 
         for pipe in pipes:
             assert pipe.call_args == call(node, self.context)
+
+    def test_sets_current_rendering_context(self):
+        """should set current rendering context"""
+        actual = Mock()
+        pipes = [lambda *_: setattr(actual, 'value', get_rendering_context())]
+        pipeline = RenderingPipeline(pipes=pipes)
+
+        pipeline.run(self.context)
+
+        assert actual.value == self.context
 
 
 class GetTypeTests:
