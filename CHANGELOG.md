@@ -1,5 +1,8 @@
 # Changelog
 
+## Dev
+
+- added BindingNode
 
 ## 3.1.0
 
@@ -44,8 +47,8 @@
 - **args are changed to BindingContext for binding
 - ObjectNode is changed to named tuple
 - XmlNode and XmlAttr are changed to named tuples
-- RenderingPipeline is changed to  tuple 
-- pyviews.core.rendering module is removed  
+- RenderingPipeline is changed to tuple
+- pyviews.core.rendering module is removed
 - create_node and render dependencies are moved to pyviews.rendering
 
 ## 2.2.0
