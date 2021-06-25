@@ -3,6 +3,7 @@
 ## Dev
 
 - added BindingNode
+- added inject binding
 
 ## 3.1.0
 
