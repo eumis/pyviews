@@ -34,3 +34,4 @@ class UseBindingTests:
         assert 'once' in binder._rules
         assert 'oneway' in binder._rules
         assert 'inline' in binder._rules
+        assert 'inject' in binder._rules
