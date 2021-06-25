@@ -2,7 +2,7 @@
 from contextlib import contextmanager
 from contextvars import ContextVar
 from functools import wraps
-from typing import Union
+from typing import Union, TypeVar
 
 from injectool import dependency
 
@@ -45,6 +45,9 @@ class RenderingContext(dict):
     @xml_node.setter
     def xml_node(self, value: XmlNode):
         self['xml_node'] = value
+
+
+RenderingContextType = TypeVar('RenderingContextType', bound=RenderingContext)
 
 
 @dependency

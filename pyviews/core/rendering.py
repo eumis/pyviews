@@ -1,7 +1,7 @@
 """Core classes for creation from xml nodes"""
 
 from functools import partial
-from typing import Any, List, Callable
+from typing import Any, List, Callable, TypeVar
 
 from .binding import Binding
 from .observable import InheritedDict
@@ -87,4 +87,5 @@ def _instance_attr_setter(node: InstanceNode, key, value):
     setattr(ent, key, value)
 
 
+NodeType = TypeVar('NodeType', bound=Node)
 Setter = Callable[[Node, str, Any], None]

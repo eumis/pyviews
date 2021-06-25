@@ -9,8 +9,9 @@ from injectool import resolve, DependencyError, dependency, SingletonResolver, g
 from pyviews.core import Node, InstanceNode, XmlNode
 from .common import RenderingContext, RenderingError, use_context
 from ..core.error import error_handling, PyViewsError
+from ..core.rendering import NodeType
 
-Pipe = Callable[[Node, Union[RenderingContext, Any]], None]
+Pipe = Callable[[NodeType, Union[RenderingContext, Any]], None]
 CreateNode = Callable[[Union[RenderingContext, Any]], Node]
 
 
@@ -24,7 +25,7 @@ class RenderingPipeline:
 
     def run(self, context: RenderingContext) -> Node:
         """Runs pipeline"""
-        pipe: Pipe = None
+        pipe: Union[Pipe, None] = None
         with use_context(context):
             with error_handling(RenderingError, lambda e: self._add_pipe_info(e, pipe, context)):
                 node = self._create_node(context)

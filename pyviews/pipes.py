@@ -1,13 +1,15 @@
 """Common rendering pipes"""
 
-from typing import Callable, Union, Any
+from typing import Callable
 
 from injectool import resolve
 
 from pyviews.binding import Binder, BindingContext
 from pyviews.core import Node, XmlAttr, import_path, XmlNode, Setter
+from pyviews.core.rendering import NodeType
 from pyviews.expression import is_expression, parse_expression
 from pyviews.rendering import RenderingContext, render
+from pyviews.rendering.common import RenderingContextType
 
 
 def apply_attributes(node: Node, _: RenderingContext):
@@ -45,8 +47,6 @@ def call_set_attr(node: Node, key: str, value):
     node.set_attr(key, value)
 
 
-NodeType = Union[Node, Any]
-RenderingContextType = Union[RenderingContext, Any]
 GetChildContextType = Callable[[XmlNode, NodeType, RenderingContextType], RenderingContext]
 
 
