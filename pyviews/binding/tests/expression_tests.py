@@ -13,52 +13,110 @@ from pyviews.core import InheritedDict, XmlAttr
 def expression_binding_fixture(request):
     inner_vm = InnerViewModel(0, 'inner str')
     view_model = ParentViewModel(0, inner_vm)
-    expression = Expression(
-        'str(vm.int_value + vm.int_value)'
-        ' + vm.inner_vm.str_value + vm.inner_vm.str_value'
-        ' + vm.get_val() + vm.inner_vm.get_val()')
-    callback, global_vars = Mock(), InheritedDict({'vm': view_model})
-    binding = ExpressionBinding(callback, expression, global_vars)
-    binding.bind()
+    callback = Mock()
 
-    request.cls.expression = expression
     request.cls.view_model = view_model
     request.cls.callback = callback
-    request.cls.binding = binding
-    request.cls.global_vars = global_vars
 
 
 @mark.usefixtures('expression_binding_fixture')
 class ExpressionBindingTests:
     """ExpressionBinding tests"""
 
-    def test_initialize_target(self):
-        """Target should be updated with expression value on Binding.bind() call"""
-        expected = execute(self.expression, self.global_vars.to_dictionary())
+    def _bind(self, expression: Expression, global_vars: InheritedDict) -> ExpressionBinding:
+        binding = ExpressionBinding(self.callback, expression, global_vars)
+        binding.bind()
 
-        assert self.callback.call_args_list == [call(expected)]
+        return binding
 
-    @mark.parametrize('change', [
-        lambda gl: setattr(gl['vm'], 'int_value', 3),
-        lambda gl: setattr(gl['vm'].inner_vm, 'str_value', 'new str value'),
-        lambda gl: setattr(gl['vm'], 'inner_vm', InnerViewModel(50, 'new inner value')),
-        lambda gl: setattr(gl['vm'].inner_vm, 'str_value', 'new str value'),
-        lambda gl: gl['vm'].set_val('asdf'),
-        lambda gl: gl['vm'].inner_vm.set_val('asdf')
+    @mark.parametrize('source, global_dict', [
+        ('vm', {'vm': InnerViewModel(0, '')}),
+        ('vm.int_value', {'vm': InnerViewModel(2, '')}),
+        ('vm.str_value', {'vm': InnerViewModel(2, 'asdf')}),
+        ('(vm.int_value, parent.inner_vm.int_value)', {
+            'vm': InnerViewModel(2, 'asdf'),
+            'parent': ParentViewModel(0, InnerViewModel(0, ''))
+        }),
     ])
-    def test_expression_changed(self, change):
-        """Target should be updated after expression result is changed"""
-        change(self.global_vars)
-        expected = execute(self.expression, self.global_vars.to_dictionary())
+    def test_initialize_target(self, source: str, global_dict: dict):
+        """Target should be updated with expression value on Binding.bind() call"""
+        expression = Expression(source)
 
+        self._bind(expression, InheritedDict(global_dict))
+
+        expected = execute(expression, global_dict)
+        assert self.callback.call_args == call(expected)
+
+    @mark.parametrize('source, global_dict, change', [
+        ('vm.int_value', {'vm': InnerViewModel(0, '')},
+         lambda gl: setattr(gl['vm'], 'int_value', 3)),
+        ('vm.inner_vm.int_value', {'vm': ParentViewModel(0, InnerViewModel(0, ''))},
+         lambda gl: setattr(gl['vm'], 'inner_vm', InnerViewModel(5, 'updated'))),
+        ('vm.inner_vm.str_value', {'vm': ParentViewModel(0, InnerViewModel(0, ''))},
+         lambda gl: setattr(gl['vm'].inner_vm, 'str_value', 'asdf')
+         ),
+        ('(vm.int_value, parent.inner_vm.int_value)',
+         {'vm': InnerViewModel(0, ''),
+          'parent': ParentViewModel(0, InnerViewModel(0, ''))},
+         lambda gl: setattr(gl['parent'].inner_vm, 'int_value', 3)
+         ),
+        ('(vm.str_value, str(parent.inner_vm.int_value))',
+         {'vm': InnerViewModel(0, ''),
+          'parent': ParentViewModel(0, InnerViewModel(0, ''))},
+         lambda gl: setattr(gl['parent'].inner_vm, 'int_value', 3)
+         ),
+        ('vms[0].int_value', {'vms': [InnerViewModel(0, '')]},
+         lambda gl: setattr(gl['vms'][0], 'int_value', 3)
+         ),
+        ('vms[0].get_val()', {'vms': [InnerViewModel(0, '')]},
+         lambda gl: gl['vms'][0].set_val(3)
+         )
+    ])
+    def test_expression_changed(self, source: str, global_dict: dict, change):
+        """Target should be updated after expression result is changed"""
+        expression = Expression(source)
+        global_vars = InheritedDict(global_dict)
+        self._bind(expression, global_vars)
+
+        change(global_vars)
+
+        expected = execute(expression, global_vars.to_dictionary())
         assert self.callback.call_args_list[1:] == [call(expected)]
 
-    def test_destroy(self):
+    @mark.parametrize('source, global_dict, change', [
+        ('vm.int_value', {'vm': InnerViewModel(0, '')},
+         lambda gl: setattr(gl['vm'], 'int_value', 3)),
+        ('vm.inner_vm.int_value', {'vm': ParentViewModel(0, InnerViewModel(0, ''))},
+         lambda gl: setattr(gl['vm'], 'inner_vm', InnerViewModel(5, 'updated'))),
+        ('vm.inner_vm.str_value', {'vm': ParentViewModel(0, InnerViewModel(0, ''))},
+         lambda gl: setattr(gl['vm'].inner_vm, 'str_value', 'asdf')
+         ),
+        ('(vm.int_value, parent.inner_vm.int_value)',
+         {'vm': InnerViewModel(0, ''),
+          'parent': ParentViewModel(0, InnerViewModel(0, ''))},
+         lambda gl: setattr(gl['parent'].inner_vm, 'int_value', 3)
+         ),
+        ('(vm.str_value, str(parent.inner_vm.int_value))',
+         {'vm': InnerViewModel(0, ''),
+          'parent': ParentViewModel(0, InnerViewModel(0, ''))},
+         lambda gl: setattr(gl['parent'].inner_vm, 'int_value', 3)
+         ),
+        ('vms[0].int_value', {'vms': [InnerViewModel(0, '')]},
+         lambda gl: setattr(gl['vms'][0], 'int_value', 3)
+         ),
+        ('vms[0].get_val()', {'vms': [InnerViewModel(0, '')]},
+         lambda gl: gl['vms'][0].set_val(3)
+         )
+    ])
+    def test_destroy(self, source: str, global_dict: dict, change):
         """Destroy should stop handling expression changes and update target"""
+        expression = Expression(source)
+        global_vars = InheritedDict(global_dict)
+        binding = self._bind(expression, global_vars)
         self.callback.reset_mock()
-        self.binding.destroy()
-        self.view_model.int_value = self.view_model.int_value + 1
-        self.view_model.inner_vm.str_value = self.view_model.inner_vm.str_value + "changes"
+
+        binding.destroy()
+        change(global_vars)
 
         assert not self.callback.called
 
@@ -87,7 +145,8 @@ class BindSetterToExpressionTests:
         self.context.setter.reset_mock()
         self.context.node.node_globals['value'] = 2
 
-        assert self.context.setter.call_args == call(self.context.node, self.context.xml_attr.name, 2)
+        assert self.context.setter.call_args == call(self.context.node, self.context.xml_attr.name,
+                                                     2)
 
     def test_returns_binding(self):
         """should return expression binding"""

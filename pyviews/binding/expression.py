@@ -28,31 +28,20 @@ class ExpressionBinding(Binding):
         if execute_callback:
             self._execute_callback()
 
-    def _create_dependencies(self, inst, var_tree: ObjectNode):
+    def _create_dependencies(self, inst: Any, var_tree: ObjectNode):
         if isinstance(inst, Observable):
-            self._subscribe_for_changes(inst, var_tree)
+            try:
+                for entry in var_tree.children:
+                    inst.observe(entry.key, self._update_callback)
+                    self._destroy_functions.append(
+                        partial(inst.release, entry.key, self._update_callback))
+            except KeyError:
+                pass
 
         for entry in var_tree.children:
-            child_inst = self._get_child(inst, entry.key)
+            child_inst = entry.get_value(entry, inst)
             if child_inst is not None:
                 self._create_dependencies(child_inst, entry)
-
-    def _subscribe_for_changes(self, inst: Observable, var_tree):
-        try:
-            for entry in var_tree.children:
-                inst.observe(entry.key, self._update_callback)
-                self._destroy_functions.append(
-                    partial(inst.release, entry.key, self._update_callback))
-        except KeyError:
-            pass
-
-    @staticmethod
-    def _get_child(inst: Any, key: str) -> Any:
-        try:
-            return inst[key] if isinstance(inst, InheritedDict) \
-                else getattr(inst, key)
-        except KeyError:
-            return None
 
     def _update_callback(self, new_val, old_val):
         with error_handling(BindingError, self._add_error_info):

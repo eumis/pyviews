@@ -2,8 +2,9 @@
 
 import ast
 from collections import namedtuple
+from functools import partial
 from types import CodeType
-from typing import List, Callable, Any, Iterator, NamedTuple, Union
+from typing import List, Callable, Any, NamedTuple, Union, Set, Dict, Tuple
 
 from injectool import dependency
 
@@ -12,12 +13,25 @@ from pyviews.expression.error import ExpressionError
 
 _COMPILATION_CACHE = {}
 _CacheItem = namedtuple('CacheItem', ['compiled_code', 'tree'])
+_AST_CLASSES = {ast.Name, ast.Attribute, ast.Subscript}
+_KEYS = {
+    ast.Name: lambda n: n.id,
+    ast.Attribute: lambda n: n.attr,
+    ast.Subscript: lambda n: n.slice.value.value
+}
+GetValue = Callable[[Any, Any], None]
+_GET_VALUE = {
+    ast.Name: lambda node, inst: inst.get(node.key),
+    ast.Attribute: lambda node, inst: getattr(inst, node.key),
+    ast.Subscript: lambda node, inst: inst[node.key]
+}
 
 
 class ObjectNode(NamedTuple):
     """Entry of object in expression"""
     key: str
     children: List['ObjectNode']
+    get_value: GetValue
 
 
 class Expression:
@@ -52,40 +66,38 @@ class Expression:
 
     def _build_object_tree(self) -> ObjectNode:
         ast_root = ast.parse(self._code)
-        ast_nodes = list(ast.walk(ast_root))
-        children = list(self._get_children(ast_nodes, self._is_child))
-        return ObjectNode('root', children)
+        ast_nodes = {n for n in ast.walk(ast_root) if n.__class__ in _AST_CLASSES}
+        return ObjectNode('root', list(self._create_nodes(ast_nodes, self._is_name)),
+                          _GET_VALUE[ast.Subscript])
 
     @staticmethod
-    def _is_child(ast_node: ast.AST) -> bool:
+    def _is_name(ast_node: ast.AST) -> bool:
         return isinstance(ast_node, ast.Name)
 
-    def _get_children(self, ast_nodes: List[ast.AST], is_child: Callable[[ast.AST], bool]) \
-            -> Iterator[ObjectNode]:
-        ast_children = [n for n in ast_nodes if is_child(n)]
+    def _create_nodes(self, ast_nodes: Set[ast.AST], selected: Callable[[ast.AST], bool]) \
+            -> List[ObjectNode]:
+        selected_ast_nodes = {n for n in ast_nodes if selected(n)}
+        ast_nodes = ast_nodes.difference(selected_ast_nodes)
 
-        grouped = self._group_by_key(ast_children)
-
-        for key, key_nodes in grouped.items():
-            children = self._get_children(ast_nodes,
-                                          lambda n, nds=key_nodes: self._is_attribute(n, nds))
-            yield ObjectNode(key, list(children))
-
-    @staticmethod
-    def _is_attribute(ast_node: ast.AST, key_nodes: dict) -> bool:
-        return isinstance(ast_node, ast.Attribute) and ast_node.value in key_nodes
+        grouped = self._group_duplicates(selected_ast_nodes).items()
+        return [ObjectNode(key, self._create_nodes(ast_nodes, partial(self._is_child, nodes[0])),
+                           nodes[1])
+                for key, nodes in grouped]
 
     @staticmethod
-    def _group_by_key(ast_nodes) -> dict:
-        try:
-            grouped_by_id = {node.id: [] for node in ast_nodes}
-            for ast_child in ast_nodes:
-                grouped_by_id[ast_child.id].append(ast_child)
-        except AttributeError:
-            grouped_by_id = {node.attr: [] for node in ast_nodes}
-            for ast_child in ast_nodes:
-                grouped_by_id[ast_child.attr].append(ast_child)
-        return grouped_by_id
+    def _is_child(key_nodes: set, ast_node: ast.AST) -> bool:
+        return not isinstance(ast_node, ast.Name) and ast_node.value in key_nodes
+
+    @staticmethod
+    def _group_duplicates(ast_nodes: Set[ast.AST]) -> Dict[str, Tuple[Set[ast.AST], GetValue]]:
+        result = {}
+        for ast_node in ast_nodes:
+            key = _KEYS[ast_node.__class__](ast_node)
+            if key not in result:
+                result[key] = ({ast_node}, _GET_VALUE[ast_node.__class__])
+            else:
+                result[key][0].add(ast_node)
+        return result
 
     def _store_to_cache(self):
         item = _CacheItem(self._compiled_code, self._object_tree)
