@@ -37,13 +37,7 @@ class ExpressionBinding(Binding):
 
     def _create_dependencies(self, inst: Any, var_tree: ObjectNode):
         if isinstance(inst, Observable):
-            try:
-                for entry in var_tree.children:
-                    inst.observe(entry.key, self._update_callback)
-                    self._destroy_functions.append(
-                        partial(inst.release, entry.key, self._update_callback))
-            except KeyError:
-                pass
+            self._subscribe_for_changes(inst, var_tree)
 
         for entry in var_tree.children:
             key = execute(entry.key, self._vars.to_dictionary()) \
@@ -51,6 +45,15 @@ class ExpressionBinding(Binding):
             child_inst = _GET_VALUE[entry.type](inst, key)
             if child_inst is not None:
                 self._create_dependencies(child_inst, entry)
+
+    def _subscribe_for_changes(self, inst: Any, var_tree: ObjectNode):
+        try:
+            for entry in var_tree.children:
+                inst.observe(entry.key, self._update_callback)
+                self._destroy_functions.append(
+                    partial(inst.release, entry.key, self._update_callback))
+        except KeyError:
+            pass
 
     def _update_callback(self, new_val, old_val):
         with error_handling(BindingError, self._add_error_info):
