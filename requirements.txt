@@ -3,3 +3,4 @@ injectool
 pytest
 pylint
 coverage
+contextvars;python_version<'3.7'

@@ -18,17 +18,21 @@ ROOT = 'root'
 ENTRY = 'entry'
 ATTRIBUTE = 'attribute'
 INDEX = 'index'
-_KEYS = {
-    ast.Name: lambda n: n.id,
-    ast.Attribute: lambda n: n.attr,
-    ast.Subscript: lambda n: n.slice.value.value
-    if isinstance(n.slice.value, ast.Constant) else _get_attr_expression(n.slice.value)
-}
+
 _TYPES = {
     ast.Name: ENTRY,
     ast.Attribute: ATTRIBUTE,
     ast.Subscript: INDEX
 }
+
+
+def _get_index_value(ast_node: ast.Subscript):
+    ast_node = ast_node.slice.value if isinstance(ast_node.slice, ast.Index) else ast_node.slice
+    if isinstance(ast_node, ast.Constant):
+        return ast_node.value
+    if isinstance(ast_node, ast.Num):
+        return ast_node.n
+    return _get_attr_expression(ast_node)
 
 
 def _get_attr_expression(ast_node: Union[ast.Name, ast.Attribute]) -> 'Expression':
@@ -37,6 +41,13 @@ def _get_attr_expression(ast_node: Union[ast.Name, ast.Attribute]) -> 'Expressio
         result = f'.{ast_node.attr}{result}'
         ast_node = ast_node.value
     return Expression(f'{ast_node.id}{result}')
+
+
+_KEYS = {
+    ast.Name: lambda n: n.id,
+    ast.Attribute: lambda n: n.attr,
+    ast.Subscript: _get_index_value
+}
 
 
 class ObjectNode(NamedTuple):
