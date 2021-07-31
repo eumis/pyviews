@@ -68,8 +68,17 @@ class ExpressionBindingTests:
         ('vms[0].int_value', {'vms': [InnerViewModel(0, '')]},
          lambda gl: setattr(gl['vms'][0], 'int_value', 3)
          ),
-        ('vms[0].get_val()', {'vms': [InnerViewModel(0, '')]},
-         lambda gl: gl['vms'][0].set_val(3)
+        ('vms[ivm.int_value].int_value', {
+            'vms': [InnerViewModel(0, ''), InnerViewModel(1, '')],
+            'ivm': InnerViewModel(0, '')
+        },
+         lambda gl: setattr(gl['vms'][0], 'int_value', 3)
+         ),
+        ('vms[ivm.int_value].int_value', {
+            'vms': [InnerViewModel(0, ''), InnerViewModel(1, '')],
+            'ivm': InnerViewModel(0, '')
+        },
+         lambda gl: setattr(gl['ivm'], 'int_value', 1)
          )
     ])
     def test_expression_changed(self, source: str, global_dict: dict, change):
@@ -104,8 +113,17 @@ class ExpressionBindingTests:
         ('vms[0].int_value', {'vms': [InnerViewModel(0, '')]},
          lambda gl: setattr(gl['vms'][0], 'int_value', 3)
          ),
-        ('vms[0].get_val()', {'vms': [InnerViewModel(0, '')]},
-         lambda gl: gl['vms'][0].set_val(3)
+        ('vms[ivm.int_value].int_value', {
+            'vms': [InnerViewModel(0, ''), InnerViewModel(1, '')],
+            'ivm': InnerViewModel(0, '')
+        },
+         lambda gl: setattr(gl['vms'][0], 'int_value', 3)
+         ),
+        ('vms[ivm.int_value].int_value', {
+            'vms': [InnerViewModel(0, ''), InnerViewModel(1, '')],
+            'ivm': InnerViewModel(0, '')
+        },
+         lambda gl: setattr(gl['ivm'], 'int_value', 1)
          )
     ])
     def test_destroy(self, source: str, global_dict: dict, change):

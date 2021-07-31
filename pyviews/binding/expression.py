@@ -8,6 +8,13 @@ from pyviews.core import Binding, BindingCallback, InheritedDict, Observable, Bi
     PyViewsError
 from pyviews.core import error_handling
 from pyviews.expression import Expression, ObjectNode, execute
+from pyviews.expression.expression import ENTRY, ATTRIBUTE, INDEX
+
+_GET_VALUE = {
+    ENTRY: lambda inst, key: inst.get(key),
+    ATTRIBUTE: getattr,
+    INDEX: lambda inst, key: inst[key]
+}
 
 
 class ExpressionBinding(Binding):
@@ -39,7 +46,9 @@ class ExpressionBinding(Binding):
                 pass
 
         for entry in var_tree.children:
-            child_inst = entry.get_value(entry, inst)
+            key = execute(entry.key, self._vars.to_dictionary()) \
+                if isinstance(entry.key, Expression) else entry.key
+            child_inst = _GET_VALUE[entry.type](inst, key)
             if child_inst is not None:
                 self._create_dependencies(child_inst, entry)
 
