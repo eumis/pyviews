@@ -8,6 +8,13 @@ from pyviews.core import Binding, BindingCallback, InheritedDict, Observable, Bi
     PyViewsError
 from pyviews.core import error_handling
 from pyviews.expression import Expression, ObjectNode, execute
+from pyviews.expression.expression import ENTRY, ATTRIBUTE, INDEX
+
+_GET_VALUE = {
+    ENTRY: lambda inst, key: inst.get(key),
+    ATTRIBUTE: getattr,
+    INDEX: lambda inst, key: inst[key]
+}
 
 
 class ExpressionBinding(Binding):
@@ -28,16 +35,18 @@ class ExpressionBinding(Binding):
         if execute_callback:
             self._execute_callback()
 
-    def _create_dependencies(self, inst, var_tree: ObjectNode):
+    def _create_dependencies(self, inst: Any, var_tree: ObjectNode):
         if isinstance(inst, Observable):
             self._subscribe_for_changes(inst, var_tree)
 
         for entry in var_tree.children:
-            child_inst = self._get_child(inst, entry.key)
+            key = execute(entry.key, self._vars.to_dictionary()) \
+                if isinstance(entry.key, Expression) else entry.key
+            child_inst = _GET_VALUE[entry.type](inst, key)
             if child_inst is not None:
                 self._create_dependencies(child_inst, entry)
 
-    def _subscribe_for_changes(self, inst: Observable, var_tree):
+    def _subscribe_for_changes(self, inst: Observable, var_tree: ObjectNode):
         try:
             for entry in var_tree.children:
                 inst.observe(entry.key, self._update_callback)
@@ -45,14 +54,6 @@ class ExpressionBinding(Binding):
                     partial(inst.release, entry.key, self._update_callback))
         except KeyError:
             pass
-
-    @staticmethod
-    def _get_child(inst: Any, key: str) -> Any:
-        try:
-            return inst[key] if isinstance(inst, InheritedDict) \
-                else getattr(inst, key)
-        except KeyError:
-            return None
 
     def _update_callback(self, new_val, old_val):
         with error_handling(BindingError, self._add_error_info):
