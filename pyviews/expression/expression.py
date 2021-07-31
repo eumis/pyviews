@@ -79,25 +79,25 @@ class Expression:
     def _build_object_tree(self) -> ObjectNode:
         ast_root = ast.parse(self._code)
         ast_nodes = {n for n in ast.walk(ast_root) if n.__class__ in _AST_CLASSES}
-        return ObjectNode('root', ROOT, list(self._create_nodes(ast_nodes, self._is_name)))
+        return ObjectNode('root', ROOT, self._create_nodes(ast_nodes, self._is_name))
 
     @staticmethod
     def _is_name(ast_node: ast.AST) -> bool:
         return isinstance(ast_node, ast.Name)
 
-    def _create_nodes(self, ast_nodes: Set[ast.AST], selected: Callable[[ast.AST], bool]) \
+    def _create_nodes(self, ast_nodes: Set[ast.AST], filter: Callable[[ast.AST], bool]) \
             -> List[ObjectNode]:
-        selected_ast_nodes = {n for n in ast_nodes if selected(n)}
-        ast_nodes = ast_nodes.difference(selected_ast_nodes)
+        ast_nodes_to_create = {n for n in ast_nodes if filter(n)}
+        ast_nodes = ast_nodes.difference(ast_nodes_to_create)
 
-        grouped = self._group(selected_ast_nodes).items()
+        grouped = self._group(ast_nodes_to_create).items()
         return [ObjectNode(key, node_type,
                            self._create_nodes(ast_nodes, partial(self._is_child, nodes)))
                 for key, (nodes, node_type) in grouped]
 
     @staticmethod
     def _is_child(key_nodes: set, ast_node: ast.AST) -> bool:
-        return not isinstance(ast_node, ast.Name) and ast_node.value in key_nodes
+        return ast_node.value in key_nodes
 
     @staticmethod
     def _group(ast_nodes: Set[ast.AST]) -> Dict[str, Tuple[Set[ast.AST], str]]:
