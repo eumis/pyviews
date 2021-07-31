@@ -46,7 +46,7 @@ class ExpressionBinding(Binding):
             if child_inst is not None:
                 self._create_dependencies(child_inst, entry)
 
-    def _subscribe_for_changes(self, inst: Any, var_tree: ObjectNode):
+    def _subscribe_for_changes(self, inst: Observable, var_tree: ObjectNode):
         try:
             for entry in var_tree.children:
                 inst.observe(entry.key, self._update_callback)
