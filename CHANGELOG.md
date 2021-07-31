@@ -4,6 +4,7 @@
 
 - added BindingNode
 - added inject binding
+- added expression bindings for indexes like "vm[0].attr" or "vm[index.value].attr"
 
 ## 3.1.0
 
