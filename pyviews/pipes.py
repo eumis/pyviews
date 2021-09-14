@@ -6,6 +6,7 @@ from injectool import resolve
 
 from pyviews.binding import Binder, BindingContext
 from pyviews.core import Node, XmlAttr, import_path, XmlNode, Setter
+from pyviews.core.rendering import NodeType
 from pyviews.expression import is_expression, parse_expression
 from pyviews.rendering import RenderingContext, render
 
@@ -45,7 +46,6 @@ def call_set_attr(node: Node, key: str, value):
     node.set_attr(key, value)
 
 
-NodeType = Union[Node, Any]
 RenderingContextType = Union[RenderingContext, Any]
 GetChildContextType = Callable[[XmlNode, NodeType, RenderingContextType], RenderingContext]
 

@@ -7,11 +7,12 @@ from typing import List, Callable, Union, Type, Tuple, Dict, Any, cast, Collecti
 from injectool import resolve, DependencyError, dependency, SingletonResolver, get_container
 
 from pyviews.core import Node, InstanceNode, XmlNode
-from .common import RenderingContext, RenderingError, use_context
+from .common import RenderingContext, RenderingError, use_context, RenderingContextType
 from ..core.error import error_handling, PyViewsError
+from ..core.rendering import NodeType
 
-Pipe = Callable[[Node, Union[RenderingContext, Any]], None]
-CreateNode = Callable[[Union[RenderingContext, Any]], Node]
+Pipe = Callable[[NodeType, RenderingContextType], None]
+CreateNode = Callable[[RenderingContextType], Node]
 
 
 class RenderingPipeline:
@@ -108,7 +109,7 @@ def get_pipeline(xml_node: XmlNode) -> RenderingPipeline:
 
 
 @dependency
-def render(context: RenderingContext) -> Node:
+def render(context: RenderingContextType) -> Node:
     """Renders node from xml node"""
     with error_handling(RenderingError, lambda e: e.add_view_info(context.xml_node.view_info)):
         pipeline = get_pipeline(context.xml_node)

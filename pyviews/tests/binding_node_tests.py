@@ -36,14 +36,24 @@ def node_fixture(request):
 @mark.usefixtures('node_fixture')
 class ApplyAttributesTests:
     @mark.parametrize('value, code', [('{vm.property}', 'vm.property')])
-    def test_when_attribute(self, value, code):
+    def test_when_changed_attribute(self, value, code):
         """should parse value as expression"""
-        self.xml_node.attrs.append(XmlAttr('when', value))
+        self.xml_node.attrs.append(XmlAttr('when_changed', value))
 
         apply_attributes(self.node, Mock())
 
-        assert isinstance(self.node.when, Expression)
-        assert self.node.when.code == code
+        assert isinstance(self.node.when_changed, Expression)
+        assert self.node.when_changed.code == code
+
+    @mark.parametrize('value, code', [('{vm.property}', 'vm.property')])
+    def test_when_true_attribute(self, value, code):
+        """should parse value as expression"""
+        self.xml_node.attrs.append(XmlAttr('when_true', value))
+
+        apply_attributes(self.node, Mock())
+
+        assert isinstance(self.node.when_true, Expression)
+        assert self.node.when_true.code == code
 
     @mark.parametrize('attr_value, value', [
         ('{True}', True),
