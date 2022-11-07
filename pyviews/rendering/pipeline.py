@@ -2,30 +2,30 @@
 
 from importlib import import_module
 from inspect import signature, Parameter
-from typing import List, Callable, Union, Type, Tuple, Dict, Any, cast, Collection
+from typing import List, Callable, Optional, Union, Type, Tuple, Dict, Any, cast, Collection
 
 from injectool import resolve, DependencyError, dependency, SingletonResolver, get_container
 
 from pyviews.core import Node, InstanceNode, XmlNode
-from .common import RenderingContext, RenderingError, use_context, RenderingContextType
+from .common import RenderingContext, RenderingError, use_context
 from ..core.error import error_handling, PyViewsError
-from ..core.rendering import NodeType
 
-Pipe = Callable[[NodeType, RenderingContextType], None]
-CreateNode = Callable[[RenderingContextType], Node]
+
+Pipe = Callable[[Node, RenderingContext], None]
+CreateNode = Callable[[RenderingContext], Node]
 
 
 class RenderingPipeline:
     """Creates and renders node"""
 
-    def __init__(self, pipes: List[Pipe] = None, create_node: CreateNode = None, name: str = None):
-        self._name: str = name
+    def __init__(self, pipes: Optional[List[Pipe]] = None, create_node: Optional[CreateNode] = None, name: Optional[str] = None):
+        self._name: Optional[str] = name
         self._pipes: List[Pipe] = pipes if pipes else []
         self._create_node: CreateNode = create_node if create_node else _create_node
 
     def run(self, context: RenderingContext) -> Node:
         """Runs pipeline"""
-        pipe: Pipe = None
+        pipe: Optional[Pipe] = None
         with use_context(context):
             with error_handling(RenderingError, lambda e: self._add_pipe_info(e, pipe, context)):
                 node = self._create_node(context)
@@ -33,7 +33,7 @@ class RenderingPipeline:
                     pipe(node, context)
                 return node
 
-    def _add_pipe_info(self, error: PyViewsError, pipe: Pipe, context: RenderingContext):
+    def _add_pipe_info(self, error: PyViewsError, pipe: Optional[Pipe], context: RenderingContext):
         error.add_view_info(context.xml_node.view_info)
         if pipe:
             try:
@@ -109,14 +109,14 @@ def get_pipeline(xml_node: XmlNode) -> RenderingPipeline:
 
 
 @dependency
-def render(context: RenderingContextType) -> Node:
+def render(context: RenderingContext) -> Node:
     """Renders node from xml node"""
     with error_handling(RenderingError, lambda e: e.add_view_info(context.xml_node.view_info)):
         pipeline = get_pipeline(context.xml_node)
         return pipeline.run(context)
 
 
-def use_pipeline(pipeline: RenderingPipeline, class_path: str, resolver: SingletonResolver = None):
+def use_pipeline(pipeline: RenderingPipeline, class_path: str, resolver: Optional[SingletonResolver] = None):
     """Adds rendering pipeline for class path"""
     if resolver is None:
         container = get_container()

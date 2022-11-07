@@ -1,4 +1,4 @@
-from typing import Any, NamedTuple, Union, List
+from typing import Any, NamedTuple, Optional, Union, List
 
 from pyviews.binding import ExpressionBinding
 from pyviews.core import XmlNode, InheritedDict, Node, Setter, Binding
@@ -14,19 +14,19 @@ class BindingProperty(NamedTuple):
 
 
 class BindingNode(Node):
-    def __init__(self, xml_node: XmlNode,
-                 node_globals: InheritedDict = None):
+    def __init__(self, xml_node: XmlNode, node_globals: Optional[InheritedDict] = None):
         super().__init__(xml_node, node_globals=node_globals)
         self.properties: List[BindingProperty] = []
         self.target: Any = None
-        self.when_changed: Expression = None
-        self.when_true: Expression = None
+        self.when_changed: Optional[Expression] = None
+        self.when_true: Optional[Expression] = None
         self.execute_on_bind: bool = True
-        self.binding: Binding = None
+        self.binding: Optional[Binding] = None
 
     def destroy(self):
-        self.binding.destroy()
-        self.binding = None
+        if self.binding is not None:
+            self.binding.destroy()
+            self.binding = None
 
 
 def get_binding_pipeline() -> RenderingPipeline:
@@ -35,7 +35,7 @@ def get_binding_pipeline() -> RenderingPipeline:
         apply_attributes,
         set_target,
         bind_changed,
-        bind_true,
+        bind_true
     ], name='container pipeline', create_node=create_binding_node)
 
 

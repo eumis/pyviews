@@ -9,7 +9,7 @@ from .error import PyViewsError
 class BindingError(PyViewsError):
     """Base error for binding errors"""
 
-    def __init__(self, message: str = None):
+    def __init__(self, message: str = ''):
         super().__init__(message=message)
 
 

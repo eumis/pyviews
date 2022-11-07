@@ -2,7 +2,7 @@
 
 # pylint:disable=wrong-import-order
 from collections import namedtuple
-from typing import List, Tuple, NamedTuple, Generator
+from typing import List, Optional, Tuple, NamedTuple, Generator
 from xml.parsers.expat import ParserCreate, ExpatError
 
 from .error import PyViewsError, ViewInfo
@@ -11,8 +11,8 @@ from .error import PyViewsError, ViewInfo
 class XmlAttr(NamedTuple):
     """Parsed xml attribute"""
     name: str
-    value: str = None
-    namespace: str = None
+    value: Optional[str] = None
+    namespace: Optional[str] = None
 
 
 class XmlNode(NamedTuple):
@@ -22,7 +22,7 @@ class XmlNode(NamedTuple):
     text: str = ''
     children: List['XmlNode'] = []
     attrs: List[XmlAttr] = []
-    view_info: ViewInfo = None
+    view_info: ViewInfo = ViewInfo('', '')
 
 
 class XmlError(PyViewsError):
@@ -43,7 +43,7 @@ class Parser:
         self._namespaces = {}
         self._view_name = None
 
-    def parse(self, xml_file, view_name: str = None) -> XmlNode:
+    def parse(self, xml_file, view_name: Optional[str] = None) -> XmlNode:
         """Parses xml file with xml_path and returns XmlNode"""
         self._setup_parser()
         try:

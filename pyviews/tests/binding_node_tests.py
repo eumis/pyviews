@@ -23,6 +23,16 @@ class BindingNodeTests:
         assert binding.destroy.called
         assert node.binding is None
 
+    @staticmethod
+    def test_destroy_binding_none():
+        """should not throw for none binding"""
+        node = BindingNode(Mock())
+
+        node.destroy()
+
+        assert node.binding is None
+
+
 
 @fixture
 def node_fixture(request):

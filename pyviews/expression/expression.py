@@ -14,6 +14,7 @@ from pyviews.expression.error import ExpressionError
 _COMPILATION_CACHE = {}
 _CacheItem = namedtuple('CacheItem', ['compiled_code', 'tree'])
 _AST_CLASSES = {ast.Name, ast.Attribute, ast.Subscript}
+
 ROOT = 'root'
 ENTRY = 'entry'
 ATTRIBUTE = 'attribute'

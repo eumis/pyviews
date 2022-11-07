@@ -1,6 +1,6 @@
 """Module with setters"""
 
-from typing import Any, NamedTuple, Iterable
+from typing import Any, NamedTuple, Iterable, Union
 
 from injectool import resolve
 
@@ -34,7 +34,8 @@ def call_args(*args_, **kwargs) -> Args:
     return Args(args_, kwargs)
 
 
-def call(node: (Node, InstanceNode), key: str, value: Args):
+def call(node: Union[InstanceNode, Node], key: str, value: Args):
     """Calls node or node instance method"""
-    target = node if hasattr(node, key) else node.instance
+    target = node if hasattr(node, key) else \
+            node.instance if isinstance(node, InstanceNode) else node
     getattr(target, key)(*value.args, **value.kwargs)
