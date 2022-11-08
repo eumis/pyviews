@@ -2,7 +2,7 @@
 
 from importlib import import_module
 from inspect import signature, Parameter
-from typing import List, Callable, Optional, Union, Type, Tuple, Dict, Any, cast, Collection
+from typing import Generic, List, Callable, Optional, TypeVar, Union, Type, Tuple, Dict, Any, cast, Collection
 
 from injectool import resolve, DependencyError, dependency, SingletonResolver, get_container
 
@@ -11,19 +11,19 @@ from .common import RenderingContext, RenderingError, use_context
 from ..core.error import error_handling, PyViewsError
 
 
-Pipe = Callable[[Node, RenderingContext], None]
-CreateNode = Callable[[RenderingContext], Node]
+N = TypeVar('N', bound=Node)
+RC = TypeVar('RC', bound=RenderingContext)
+Pipe = Callable[[N, RC], None]
+CreateNode = Callable[[RC], N]
 
-
-class RenderingPipeline:
+class RenderingPipeline(Generic[N, RC]):
     """Creates and renders node"""
-
-    def __init__(self, pipes: Optional[List[Pipe]] = None, create_node: Optional[CreateNode] = None, name: Optional[str] = None):
+    def __init__(self, pipes: Optional[List[Pipe[N, RC]]] = None, create_node: Optional[CreateNode[RC, N]] = None, name: Optional[str] = None):
         self._name: Optional[str] = name
-        self._pipes: List[Pipe] = pipes if pipes else []
+        self._pipes: List[Callable[[N, RC], None]] = pipes if pipes else []
         self._create_node: CreateNode = create_node if create_node else _create_node
 
-    def run(self, context: RenderingContext) -> Node:
+    def run(self, context: RenderingContext) -> N:
         """Runs pipeline"""
         pipe: Optional[Pipe] = None
         with use_context(context):

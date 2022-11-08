@@ -5,6 +5,7 @@
 - added BindingNode
 - added inject binding
 - added expression bindings for indexes like "vm[0].attr" or "vm[index.value].attr"
+- RenderingPipeline is made generic
 
 ## 3.1.0
 
