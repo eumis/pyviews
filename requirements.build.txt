@@ -2,3 +2,4 @@ injectool
 pytest
 coverage
 contextvars;python_version<'3.7'
+importlib-metadata;python_version='3.7'
