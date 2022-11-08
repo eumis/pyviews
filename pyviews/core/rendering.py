@@ -38,7 +38,6 @@ class Node:
 
     def add_binding(self, binding: Binding):
         """Stores binding"""
-        binding.add_error_info = lambda error: error.add_view_info(self._xml_node.view_info)
         self._bindings.append(binding)
 
     def add_child(self, child: 'Node'):
