@@ -35,7 +35,7 @@ def setup_package():
             'Programming Language :: Python :: 3.9'
         ],
         python_requires='>=3.6',
-        install_requires=['injectool==2.*', 'contextvars;python_version<"3.7"'],
+        install_requires=['injectool==2.*', 'contextvars;python_version<"3.7";importlib-metadata<4;python_version<"3.8"'],
         keywords='binding pyviews python mvvm tkviews wxviews',
         packages=find_packages(exclude=['*.tests']))
 
