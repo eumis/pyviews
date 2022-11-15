@@ -1,6 +1,7 @@
 from os.path import abspath
 
 from injectool import resolve, SingletonResolver
+from injectool.core import Container
 from pytest import mark
 
 from pyviews.rendering import RenderingPipeline
@@ -9,6 +10,10 @@ from pyviews.rendering.setup import use_rendering
 
 @mark.usefixtures('container_fixture')
 class UseRenderingTests:
+    """use_rendering() tests"""
+
+    container: Container
+
     @staticmethod
     def test_views_folder():
         """should add views_folder dependency"""

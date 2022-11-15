@@ -65,6 +65,11 @@ def view_fixture(request):
 class RenderViewContentTests:
     """render_view_content tests"""
 
+    render_view: Mock
+    view: View
+    parent: Mock
+    sizer: Mock
+
     def test_renders_view(self):
         """should render view by node name and set result as view child"""
         child = Mock()
@@ -98,6 +103,10 @@ class RenderViewContentTests:
 @mark.usefixtures('container_fixture', 'view_fixture')
 class RerenderOnViewChangeTests:
     """rerender_on_view_change() tests"""
+
+    view: View
+    render_view: Mock
+
 
     def test_handles_new_view(self):
         """render_view_children should be called on view change"""
@@ -155,6 +164,8 @@ def for_fixture(request):
 @mark.usefixtures('container_fixture', 'for_fixture')
 class RenderForItemsTests:
     """render_for_items tests"""
+
+    for_node: For
 
     def _setup_for_children(self, items, xml_children):
         self.for_node.items = items
@@ -240,6 +251,10 @@ def if_fixture(request):
 
 @mark.usefixtures('container_fixture', 'if_fixture')
 class IfRenderingTests:
+    """If tests"""
+
+    if_node: If
+    render: Mock
 
     @mark.parametrize('condition, children_count', [
         (True, 0), (False, 0),

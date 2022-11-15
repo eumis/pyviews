@@ -50,7 +50,7 @@ class Parser:
             self._view_name = view_name
             self._parser.ParseFile(xml_file)
         except ExpatError as error:
-            raise XmlError(str(error), ViewInfo(view_name, error.lineno))
+            raise XmlError(str(error), ViewInfo(view_name, error.lineno)) from error
 
         root = self._root
         self._reset()
@@ -92,14 +92,14 @@ class Parser:
         parts = full_name.split(':')
         try:
             return self._namespaces[parts[0]], parts[1]
-        except KeyError:
-            raise XmlError(f'Unknown xml namespace: {parts[0]}', self._get_view_info())
+        except KeyError as error:
+            raise XmlError(f'Unknown xml namespace: {parts[0]}', self._get_view_info()) from error
 
     def _get_default_namespace(self) -> str:
         try:
             return self._namespaces['']
-        except KeyError:
-            raise XmlError('Unknown default xml namespace', self._get_view_info())
+        except KeyError as error:
+            raise XmlError('Unknown default xml namespace', self._get_view_info()) from error
 
     def _get_attributes(self, attributes: List[ElementAttr]) -> Generator[XmlAttr, None, None]:
         value_attrs = [a for a in attributes if not a.name.startswith('xmlns')]

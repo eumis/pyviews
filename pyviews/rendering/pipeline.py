@@ -18,7 +18,9 @@ CreateNode = Callable[[RC], N]
 
 class RenderingPipeline(Generic[N, RC]):
     """Creates and renders node"""
-    def __init__(self, pipes: Optional[List[Pipe[N, RC]]] = None, create_node: Optional[CreateNode[RC, N]] = None, name: Optional[str] = None):
+    def __init__(self, pipes: Optional[List[Pipe[N, RC]]] = None,
+                 create_node: Optional[CreateNode[RC, N]] = None,
+                 name: Optional[str] = None):
         self._name: Optional[str] = name
         self._pipes: List[Callable[[N, RC], None]] = pipes if pipes else []
         self._create_node: CreateNode = create_node if create_node else _create_node
@@ -56,9 +58,9 @@ def get_type(xml_node: XmlNode) -> Type:
     (module_path, class_name) = (xml_node.namespace, xml_node.name)
     try:
         return import_module(module_path).__dict__[class_name]
-    except (KeyError, ImportError, ModuleNotFoundError):
+    except (KeyError, ImportError, ModuleNotFoundError) as error:
         message = f'Import "{module_path}.{class_name}" is failed.'
-        raise RenderingError(message, xml_node.view_info)
+        raise RenderingError(message, xml_node.view_info) from error
 
 
 def create_instance(instance_type: Type, context: Union[RenderingContext, dict]):
@@ -75,7 +77,7 @@ def _get_init_args(inst_type: Type, values: dict) -> Tuple[List, Dict]:
         kwargs = _get_optional_args(parameters, values)
     except KeyError as key_error:
         msg_format = 'parameter with key "{0}" is not found in node args'
-        raise RenderingError(msg_format.format(key_error.args[0]))
+        raise RenderingError(msg_format.format(key_error.args[0])) from key_error
     return args, kwargs
 
 

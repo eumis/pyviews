@@ -45,6 +45,11 @@ def node_fixture(request):
 
 @mark.usefixtures('node_fixture')
 class ApplyAttributesTests:
+    """apply_attributes() tests"""
+
+    xml_node: XmlNode
+    node: BindingNode
+
     @mark.parametrize('value, code', [('{vm.property}', 'vm.property')])
     def test_when_changed_attribute(self, value, code):
         """should parse value as expression"""

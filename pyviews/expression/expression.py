@@ -97,9 +97,9 @@ class Expression:
     def _is_name(ast_node: ast.AST) -> bool:
         return isinstance(ast_node, ast.Name)
 
-    def _create_nodes(self, ast_nodes: Set[ast.AST], filter: Callable[[ast.AST], bool]) \
+    def _create_nodes(self, ast_nodes: Set[ast.AST], node_filter: Callable[[ast.AST], bool]) \
             -> List[ObjectNode]:
-        ast_nodes_to_create = {n for n in ast_nodes if filter(n)}
+        ast_nodes_to_create = {n for n in ast_nodes if node_filter(n)}
         ast_nodes = ast_nodes.difference(ast_nodes_to_create)
 
         grouped = self._group(ast_nodes_to_create).items()

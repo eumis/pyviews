@@ -51,5 +51,4 @@ def _get_error(xml_node: XmlNode, cause: Optional[BaseException], line_number: O
     return error
 
 def get_code_pipeline() -> RenderingPipeline[Code, RenderingContext]:
-    return RenderingPipeline[Code, RenderingContext](pipes=[run_code]);
-
+    return RenderingPipeline[Code, RenderingContext](pipes=[run_code])

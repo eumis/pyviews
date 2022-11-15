@@ -16,6 +16,11 @@ def node_fixture(request):
 
 @mark.usefixtures('node_fixture')
 class NodeTests:
+    """Node class tests"""
+
+    xml_node: XmlNode
+    node: Node
+
     def test_init_xml_node(self):
         """__init__() should set xml_node"""
         assert self.node.xml_node == self.xml_node

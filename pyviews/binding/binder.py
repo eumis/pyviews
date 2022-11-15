@@ -78,8 +78,8 @@ class Binder:
         try:
             rules = self._rules[binding_type]
             return next(rule for rule in rules if rule.suitable(context))
-        except (KeyError, StopIteration):
+        except (KeyError, StopIteration) as exc:
             error = BindingError('Binding rule is not found')
             error.add_info('Binding type', binding_type)
             error.add_info('Binding context', context)
-            raise error
+            raise error from exc

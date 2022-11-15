@@ -24,6 +24,10 @@ def observable_binding_fixture(request):
 class ObservableBindingTests:
     """ObservableBinding tests"""
 
+    inst: InnerViewModel
+    target_inst: InnerViewModel
+    binding: ObservableBinding
+
     def test_initialize_target(self):
         """Target should be updated with property value on Binding.bind() call"""
         assert self.inst.int_value == self.target_inst.int_value

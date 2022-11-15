@@ -40,6 +40,12 @@ def inline_binding_fixture(request):
 class InlineBindingTests:
     """InlineBinding class tests"""
 
+    target_instance: InnerViewModel
+    source_instance: InnerViewModel
+    binding: InlineBinding
+    binding_callback: Mock
+    destroy: Mock
+
     def test_updates_target_on_binding(self):
         """bind() should update target with value expression result"""
         self.binding_callback()

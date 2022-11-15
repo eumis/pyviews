@@ -23,6 +23,8 @@ def expression_binding_fixture(request):
 class ExpressionBindingTests:
     """ExpressionBinding tests"""
 
+    callback: Mock
+
     def _bind(self, expression: Expression, global_vars: InheritedDict) -> ExpressionBinding:
         binding = ExpressionBinding(self.callback, expression, global_vars)
         binding.bind()
@@ -154,6 +156,9 @@ def binding_context_fixture(request):
 
 @mark.usefixtures('binding_context_fixture')
 class BindSetterToExpressionTests:
+
+    context: BindingContext
+
     def test_binds_setter_to_expression_changes(self):
         """should bind setter to expression changes"""
         self.context.node = Mock(node_globals=InheritedDict({'value': 1}))
