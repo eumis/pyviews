@@ -1,8 +1,6 @@
-name: Release
+name: CI
 
-on:
-  release:
-    types: [published]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -10,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9"]
+        python-version: ["3.6", "3.7", "3.8", "3.9"]
 
     steps:
       - uses: actions/checkout@v3
@@ -23,16 +21,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.build.txt
           pip install pytest
-          pip install build
-          pip install twine
+          pip install coverage
       - name: Test with pytest
         run: |
-          pytest
-      - name: Build package
-        if: ${{ success() }}
+          coverage run -m pytest
+          coverage xml -o cobertura.xml
+      - name: Publish coverage
+        if: ${{ matrix.python-version == 3.9 && success() }}
         run: |
-          python -m build
-      - name: Publish package
-        if: ${{ success() }}
-        run: |
-          python -m twine upload dist/* -u __token__ -p ${{ secrets.PYPI_TOKEN }}
+          export CODACY_PROJECT_TOKEN=${{ secrets.CODACY_PROJECT_TOKEN }}
+          bash <(curl -Ls https://coverage.codacy.com/get.sh)
