@@ -15,6 +15,8 @@ def rendering_context_fixture(request):
 class RenderingContextTests:
     """RenderingContext tests"""
 
+    context: RenderingContext
+
     def test_node_globals(self):
         """node_globals property should use key 'node_globals'"""
         value = InheritedDict()

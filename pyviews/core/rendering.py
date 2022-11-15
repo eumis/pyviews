@@ -1,7 +1,7 @@
 """Core classes for creation from xml nodes"""
 
 from functools import partial
-from typing import Any, List, Callable
+from typing import Any, List, Callable, Optional
 
 from .binding import Binding
 from .observable import InheritedDict
@@ -11,7 +11,7 @@ from .xml import XmlNode
 class Node:
     """Represents node with properties and bindings created from xml node"""
 
-    def __init__(self, xml_node: XmlNode, node_globals: InheritedDict = None):
+    def __init__(self, xml_node: XmlNode, node_globals: Optional[InheritedDict] = None):
         self._children: List[Node] = []
         self._bindings: List[Binding] = []
         self._xml_node: XmlNode = xml_node
@@ -38,7 +38,6 @@ class Node:
 
     def add_binding(self, binding: Binding):
         """Stores binding"""
-        binding.add_error_info = lambda error: error.add_view_info(self._xml_node.view_info)
         self._bindings.append(binding)
 
     def add_child(self, child: 'Node'):
@@ -71,7 +70,7 @@ class Node:
 class InstanceNode(Node):
     """Represents Node that wraps instance created from xml node"""
 
-    def __init__(self, instance: Any, xml_node: XmlNode, node_globals: InheritedDict = None):
+    def __init__(self, instance: Any, xml_node: XmlNode, node_globals: Optional[InheritedDict] = None):
         super().__init__(xml_node, node_globals)
         self._instance = instance
         self.set_attr = partial(_instance_attr_setter, self)

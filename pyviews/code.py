@@ -3,9 +3,11 @@
 from sys import exc_info
 from textwrap import dedent
 from traceback import extract_tb
+from typing import Optional
 from pyviews.core import Node, XmlNode, ViewInfo
 from pyviews.expression import ExpressionError
 from pyviews.rendering.common import RenderingContext
+from pyviews.rendering.pipeline import RenderingPipeline
 
 
 class Code(Node):
@@ -41,9 +43,12 @@ def _update_context(globs: dict, context: RenderingContext):
         context.parent_node.node_globals[key] = value
 
 
-def _get_error(xml_node: XmlNode, cause: BaseException, line_number: int) -> ExpressionError:
+def _get_error(xml_node: XmlNode, cause: Optional[BaseException], line_number: Optional[int]) -> ExpressionError:
     error = ExpressionError()
     error.cause_error = cause
     error.add_view_info(ViewInfo('<Code>', line_number))
     error.add_view_info(xml_node.view_info)
     return error
+
+def get_code_pipeline() -> RenderingPipeline[Code, RenderingContext]:
+    return RenderingPipeline[Code, RenderingContext](pipes=[run_code])

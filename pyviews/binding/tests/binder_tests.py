@@ -17,6 +17,8 @@ def binding_context_fixture(request):
 class BindingContextTests:
     """BindingContext tests"""
 
+    context: BindingContext
+
     def test_node(self):
         """node property should use key 'node'"""
         value = Node(Mock())

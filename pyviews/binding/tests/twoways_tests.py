@@ -22,6 +22,10 @@ def two_ways_fixture(request):
 class TwoWaysBindingTests:
     """TwoWaysBinding tests using ExpressionBinding and ObservableBinding"""
 
+    binding: TwoWaysBinding
+    one: Mock
+    two: Mock
+
     def test_bind(self):
         """should bind both bindings"""
         self.binding.bind()

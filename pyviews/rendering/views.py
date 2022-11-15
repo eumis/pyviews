@@ -29,7 +29,7 @@ _XML_CACHE = {}
 
 def get_view_root(view_name: str) -> XmlNode:
     """Parses xml file and return root XmlNode"""
-    path = join(resolve('views_folder'), '{0}.{1}'.format(view_name, resolve('view_ext')))
+    path = join(resolve('views_folder'), f'{view_name}.{resolve("view_ext")}')
     if path not in _XML_CACHE:
         _parse_root(path, view_name)
     return _XML_CACHE[path]
@@ -40,8 +40,8 @@ def _parse_root(path, view_name):
         parser = Parser()
         with open(path, 'rb') as xml_file:
             _XML_CACHE[path] = parser.parse(xml_file, view_name)
-    except FileNotFoundError:
+    except FileNotFoundError as exc:
         error = ViewError('View is not found')
         error.add_info('View name', view_name)
         error.add_info('Path', path)
-        raise error
+        raise error from exc

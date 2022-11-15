@@ -1,6 +1,7 @@
 from unittest.mock import Mock, call
 
 from injectool import SingletonResolver, add_resolver
+from injectool.core import Container
 from pytest import mark, fixture, raises, fail
 
 from pyviews.code import Code
@@ -68,6 +69,11 @@ def pipeline_fixture(request):
 
 @mark.usefixtures('container_fixture', 'pipeline_fixture')
 class RenderingPipelineTests:
+    """RenderingPipeline class tests"""
+
+    context: RenderingContext
+    pipeline: RenderingPipeline
+
     @mark.parametrize('namespace, tag, node_type, init_args', [
         ('pyviews.core', 'Node', Node, {}),
         ('pyviews.code', 'Code', Code, {'parent_node': Node(XmlNode('', ''))})
@@ -240,6 +246,9 @@ def get_pipeline_fixture(request):
 class GetPipelineTests:
     """get_pipeline() tests"""
 
+    resolver: SingletonResolver
+    pipeline: RenderingPipeline
+
     @mark.parametrize('xml_node, key', [
         (XmlNode('pyviews.core.node', 'Node'), 'pyviews.core.node.Node'),
         (XmlNode('pyviews.core.node', 'Node'), 'pyviews.core.node'),
@@ -288,6 +297,13 @@ def render_fixture(request):
 
 @mark.usefixtures('container_fixture', 'render_fixture')
 class RenderTests:
+    """render() tests"""
+
+    xml_nod: XmlNode
+    pipeline: RenderingPipeline
+    pipeline_resolver: SingletonResolver
+    context: RenderingContext
+
     def _set_pipeline(self, xml_node, pipeline):
         self.pipeline_resolver.set_value(pipeline, f'{xml_node.namespace}.{xml_node.name}')
 
@@ -309,6 +325,10 @@ class RenderTests:
 
 @mark.usefixtures('container_fixture')
 class UsePipelineTests:
+    """use_pipeline() tests"""
+
+    container: Container
+
     @mark.parametrize('class_path', ['package.module.class', 'package.module'])
     def test_adds_pipeline_to_passed_resolver(self, class_path: str):
         """should add pipeline to passed resolver"""

@@ -1,4 +1,4 @@
+contextvars;python_version<'3.7'
 injectool
 pytest
 coverage
-contextvars;python_version<'3.7'

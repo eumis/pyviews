@@ -2,7 +2,7 @@
 
 from importlib import import_module
 from inspect import signature, Parameter
-from typing import List, Callable, Union, Type, Tuple, Dict, Any, cast, Collection
+from typing import Generic, List, Callable, Optional, TypeVar, Union, Type, Tuple, Dict, Any, cast, Collection
 
 from injectool import resolve, DependencyError, dependency, SingletonResolver, get_container
 
@@ -10,21 +10,24 @@ from pyviews.core import Node, InstanceNode, XmlNode
 from .common import RenderingContext, RenderingError, use_context
 from ..core.error import error_handling, PyViewsError
 
-Pipe = Callable[[Node, Union[RenderingContext, Any]], None]
-CreateNode = Callable[[Union[RenderingContext, Any]], Node]
 
+N = TypeVar('N', bound=Node)
+RC = TypeVar('RC', bound=RenderingContext)
+Pipe = Callable[[N, RC], None]
+CreateNode = Callable[[RC], N]
 
-class RenderingPipeline:
+class RenderingPipeline(Generic[N, RC]):
     """Creates and renders node"""
-
-    def __init__(self, pipes: List[Pipe] = None, create_node: CreateNode = None, name: str = None):
-        self._name: str = name
-        self._pipes: List[Pipe] = pipes if pipes else []
+    def __init__(self, pipes: Optional[List[Pipe[N, RC]]] = None,
+                 create_node: Optional[CreateNode[RC, N]] = None,
+                 name: Optional[str] = None):
+        self._name: Optional[str] = name
+        self._pipes: List[Callable[[N, RC], None]] = pipes if pipes else []
         self._create_node: CreateNode = create_node if create_node else _create_node
 
-    def run(self, context: RenderingContext) -> Node:
+    def run(self, context: RenderingContext) -> N:
         """Runs pipeline"""
-        pipe: Pipe = None
+        pipe: Optional[Pipe] = None
         with use_context(context):
             with error_handling(RenderingError, lambda e: self._add_pipe_info(e, pipe, context)):
                 node = self._create_node(context)
@@ -32,7 +35,7 @@ class RenderingPipeline:
                     pipe(node, context)
                 return node
 
-    def _add_pipe_info(self, error: PyViewsError, pipe: Pipe, context: RenderingContext):
+    def _add_pipe_info(self, error: PyViewsError, pipe: Optional[Pipe], context: RenderingContext):
         error.add_view_info(context.xml_node.view_info)
         if pipe:
             try:
@@ -55,9 +58,9 @@ def get_type(xml_node: XmlNode) -> Type:
     (module_path, class_name) = (xml_node.namespace, xml_node.name)
     try:
         return import_module(module_path).__dict__[class_name]
-    except (KeyError, ImportError, ModuleNotFoundError):
+    except (KeyError, ImportError, ModuleNotFoundError) as error:
         message = f'Import "{module_path}.{class_name}" is failed.'
-        raise RenderingError(message, xml_node.view_info)
+        raise RenderingError(message, xml_node.view_info) from error
 
 
 def create_instance(instance_type: Type, context: Union[RenderingContext, dict]):
@@ -74,7 +77,7 @@ def _get_init_args(inst_type: Type, values: dict) -> Tuple[List, Dict]:
         kwargs = _get_optional_args(parameters, values)
     except KeyError as key_error:
         msg_format = 'parameter with key "{0}" is not found in node args'
-        raise RenderingError(msg_format.format(key_error.args[0]))
+        raise RenderingError(msg_format.format(key_error.args[0])) from key_error
     return args, kwargs
 
 
@@ -115,7 +118,7 @@ def render(context: RenderingContext) -> Node:
         return pipeline.run(context)
 
 
-def use_pipeline(pipeline: RenderingPipeline, class_path: str, resolver: SingletonResolver = None):
+def use_pipeline(pipeline: RenderingPipeline, class_path: str, resolver: Optional[SingletonResolver] = None):
     """Adds rendering pipeline for class path"""
     if resolver is None:
         container = get_container()

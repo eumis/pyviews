@@ -2,17 +2,17 @@
 from contextlib import contextmanager
 from contextvars import ContextVar
 from functools import wraps
-from typing import Union
+from typing import Generator, Optional
 
 from injectool import dependency
 
-from pyviews.core import PyViewsError, InheritedDict, Node, XmlNode, InstanceNode, ViewInfo
+from pyviews.core import PyViewsError, InheritedDict, XmlNode, ViewInfo, Node
 
 
 class RenderingError(PyViewsError):
     """Error for rendering"""
 
-    def __init__(self, message: str = None, view_info: ViewInfo = None):
+    def __init__(self, message: str = '', view_info: Optional[ViewInfo] = None):
         super().__init__(message=message, view_info=view_info)
 
 
@@ -29,12 +29,12 @@ class RenderingContext(dict):
         self['node_globals'] = value
 
     @property
-    def parent_node(self) -> Union[Node, InstanceNode]:
+    def parent_node(self) -> Node:
         """Parent node"""
         return self.get('parent_node', None)
 
     @parent_node.setter
-    def parent_node(self, value: Union[Node, InstanceNode]):
+    def parent_node(self, value: Node):
         self['parent_node'] = value
 
     @property
@@ -62,7 +62,7 @@ _CONTEXT_VAR: ContextVar[RenderingContext] = ContextVar('rendering_context')
 
 
 @contextmanager
-def use_context(context: RenderingContext) -> RenderingContext:
+def use_context(context: RenderingContext) -> Generator[RenderingContext, None, None]:
     """Stores rendering context to context var"""
     token = _CONTEXT_VAR.set(context)
     try:
@@ -71,7 +71,7 @@ def use_context(context: RenderingContext) -> RenderingContext:
         _CONTEXT_VAR.reset(token)
 
 
-def get_rendering_context() -> RenderingContext:
+def get_rendering_context() -> Optional[RenderingContext]:
     """Returns current rendering context"""
     return _CONTEXT_VAR.get(None)
 

@@ -48,7 +48,7 @@ class BindingContext(dict):
 class BindingRule(NamedTuple):
     """Creates binding for args"""
     suitable: Callable[[BindingContext], bool]
-    bind: Callable[[BindingContext], Union[Binding]]
+    bind: Callable[[BindingContext], Optional[Binding]]
 
 
 class Binder:
@@ -57,8 +57,8 @@ class Binder:
     def __init__(self):
         self._rules = {}
 
-    def add_rule(self, binding_type: str, bind: Callable[[BindingContext], Union[Binding, None]],
-                 suitable: Callable[[BindingContext], bool] = None):
+    def add_rule(self, binding_type: str, bind: Callable[[BindingContext], Optional[Binding]],
+                 suitable: Optional[Callable[[BindingContext], bool]] = None):
         """Adds new rule"""
         suitable = suitable if suitable else lambda _: True
         if binding_type not in self._rules:
@@ -73,13 +73,13 @@ class Binder:
         if binding:
             context.node.add_binding(binding)
 
-    def _find_rule(self, binding_type: str, context: BindingContext) -> Optional[BindingRule]:
+    def _find_rule(self, binding_type: str, context: BindingContext) -> BindingRule:
         """Finds rule by binding type and args"""
         try:
             rules = self._rules[binding_type]
             return next(rule for rule in rules if rule.suitable(context))
-        except (KeyError, StopIteration):
+        except (KeyError, StopIteration) as exc:
             error = BindingError('Binding rule is not found')
             error.add_info('Binding type', binding_type)
             error.add_info('Binding context', context)
-            raise error
+            raise error from exc

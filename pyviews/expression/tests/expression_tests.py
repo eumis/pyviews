@@ -1,7 +1,7 @@
 from pytest import mark, raises, fixture
 
 from pyviews.expression import Expression, ExpressionError
-from pyviews.expression.expression import execute
+from pyviews.expression.expression import ObjectNode, execute
 
 
 @fixture
@@ -15,6 +15,10 @@ def object_tree_fixture(request):
 
 @mark.usefixtures('object_tree_fixture')
 class ExpressionTests:
+    """Expression class tests"""
+
+    root: ObjectNode
+    vm_node: ObjectNode
 
     def test_root(self):
         """get_object_tree() should return objects tree root"""

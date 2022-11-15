@@ -25,6 +25,12 @@ def observable_fixture(request):
 
 @mark.usefixtures('observable_fixture')
 class ObservableEntityTests:
+    """ObservableEntity class tests"""
+
+    observable: TestObservable
+    callback: Mock
+    add_callback: Mock
+
     def test_observe(self):
         """observe() should subscribe passed callback to property changes"""
         self.observable.observe('name', self.callback)

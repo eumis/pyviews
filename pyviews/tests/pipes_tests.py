@@ -33,20 +33,22 @@ def test_apply_attributes(apply_attribute_mock):
 def apply_attribute_fixture(request):
     setter_mock = Mock()
     get_setter_mock = Mock()
-    get_setter_mock.side_effect = lambda attr: setter_mock
+    get_setter_mock.side_effect = lambda _: setter_mock
     request.cls.setter_mock = setter_mock
     with patch(f'{pipes.__name__}.get_setter', get_setter_mock) as patched:
         binder = Binder()
         binder.add_rule('once', run_once)
         binder.add_rule('oneway', bind_setter_to_expression)
         add_singleton(Binder, binder)
-        add_function_resolver(Expression, lambda c, p=None: Expression(p))
+        add_function_resolver(Expression, lambda _, p=None: Expression(p))
         yield patched
 
 
 @mark.usefixtures('container_fixture', 'apply_attribute_fixture')
 class ApplyAttributeTests:
     """apply_attribute() tests"""
+
+    setter_mock: Mock
 
     @mark.parametrize('xml_attr, key, value', [
         (XmlAttr('key', 'value'), 'key', 'value'),
@@ -152,6 +154,11 @@ def render_children_fixture(request):
 @mark.usefixtures('container_fixture', 'render_children_fixture')
 class RenderChildrenTests:
     """render_children pipe tests"""
+
+    xml_node: XmlNode
+    node: Node
+    context: RenderingContext
+    render: Mock
 
     @mark.parametrize('child_count', [1, 2, 5])
     def test_renders_children(self, child_count):

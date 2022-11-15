@@ -2,7 +2,7 @@
 
 # pylint:disable=wrong-import-order
 from collections import namedtuple
-from typing import List, Tuple, NamedTuple, Generator
+from typing import List, Optional, Tuple, NamedTuple, Generator
 from xml.parsers.expat import ParserCreate, ExpatError
 
 from .error import PyViewsError, ViewInfo
@@ -11,8 +11,8 @@ from .error import PyViewsError, ViewInfo
 class XmlAttr(NamedTuple):
     """Parsed xml attribute"""
     name: str
-    value: str = None
-    namespace: str = None
+    value: Optional[str] = None
+    namespace: Optional[str] = None
 
 
 class XmlNode(NamedTuple):
@@ -22,7 +22,7 @@ class XmlNode(NamedTuple):
     text: str = ''
     children: List['XmlNode'] = []
     attrs: List[XmlAttr] = []
-    view_info: ViewInfo = None
+    view_info: ViewInfo = ViewInfo('', '')
 
 
 class XmlError(PyViewsError):
@@ -43,14 +43,14 @@ class Parser:
         self._namespaces = {}
         self._view_name = None
 
-    def parse(self, xml_file, view_name: str = None) -> XmlNode:
+    def parse(self, xml_file, view_name: Optional[str] = None) -> XmlNode:
         """Parses xml file with xml_path and returns XmlNode"""
         self._setup_parser()
         try:
             self._view_name = view_name
             self._parser.ParseFile(xml_file)
         except ExpatError as error:
-            raise XmlError(str(error), ViewInfo(view_name, error.lineno))
+            raise XmlError(str(error), ViewInfo(view_name, error.lineno)) from error
 
         root = self._root
         self._reset()
@@ -92,14 +92,14 @@ class Parser:
         parts = full_name.split(':')
         try:
             return self._namespaces[parts[0]], parts[1]
-        except KeyError:
-            raise XmlError(f'Unknown xml namespace: {parts[0]}', self._get_view_info())
+        except KeyError as error:
+            raise XmlError(f'Unknown xml namespace: {parts[0]}', self._get_view_info()) from error
 
     def _get_default_namespace(self) -> str:
         try:
             return self._namespaces['']
-        except KeyError:
-            raise XmlError('Unknown default xml namespace', self._get_view_info())
+        except KeyError as error:
+            raise XmlError('Unknown default xml namespace', self._get_view_info()) from error
 
     def _get_attributes(self, attributes: List[ElementAttr]) -> Generator[XmlAttr, None, None]:
         value_attrs = [a for a in attributes if not a.name.startswith('xmlns')]

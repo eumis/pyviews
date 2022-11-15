@@ -1,5 +1,5 @@
 """Expression errors"""
-from typing import Generator
+from typing import Generator, Optional
 
 from pyviews.core import PyViewsError
 
@@ -7,9 +7,9 @@ from pyviews.core import PyViewsError
 class ExpressionError(PyViewsError):
     """Error for failed expression"""
 
-    def __init__(self, message=None, expression_body: str = None):
+    def __init__(self, message=None, expression_body: Optional[str] = None):
         super().__init__(message=message)
-        self.expression: str = expression_body
+        self.expression: Optional[str] = expression_body
         if expression_body:
             self.add_expression_info(expression_body)
 

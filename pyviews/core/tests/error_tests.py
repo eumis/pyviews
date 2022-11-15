@@ -88,6 +88,9 @@ def error_fixture(request):
 class ErrorHandlingTests:
     """error_handling_tests"""
 
+    error: PyViewsError
+    add_error_info: Mock
+
     def test_raises_passed_error(self):
         """should handle errors and raise passed error"""
         with raises(PyViewsError) as actual:

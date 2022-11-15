@@ -1,6 +1,6 @@
 """Common rendering pipes"""
 
-from typing import Callable, Union, Any
+from typing import Callable, Optional
 
 from injectool import resolve
 
@@ -16,7 +16,7 @@ def apply_attributes(node: Node, _: RenderingContext):
         apply_attribute(node, attr)
 
 
-def apply_attribute(node: Node, attr: XmlAttr, setter: Setter = None):
+def apply_attribute(node: Node, attr: XmlAttr, setter: Optional[Setter] = None):
     """Maps xml attribute to instance node property and setups bindings"""
     setter = get_setter(attr) if setter is None else setter
     stripped_value = attr.value.strip() if attr.value else ''
@@ -45,9 +45,7 @@ def call_set_attr(node: Node, key: str, value):
     node.set_attr(key, value)
 
 
-NodeType = Union[Node, Any]
-RenderingContextType = Union[RenderingContext, Any]
-GetChildContextType = Callable[[XmlNode, NodeType, RenderingContextType], RenderingContext]
+GetChildContextType = Callable[[XmlNode, Node, RenderingContext], RenderingContext]
 
 
 def render_children(node: Node, context: RenderingContext,
