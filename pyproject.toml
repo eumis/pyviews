@@ -22,7 +22,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9"
 ]
 dependencies = [
-    'injectool==2.*',
+    'injectool==3.*',
     'contextvars;python_version<"3.7"'
 ]
 

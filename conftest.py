@@ -1,15 +1,15 @@
-from injectool import use_container, set_container, Container
+import injectool
 from pytest import fixture
 
 
 def pytest_configure(config):  # pylint: disable=unused-argument
-    set_container(Container())
+    injectool.set_default_container(injectool.Container())
 
 
 @fixture
 def container_fixture(request):
     """runs test in own dependency container"""
-    with use_container() as container:
+    with injectool.use_container() as container:
         if request.cls:
             request.cls.container = container
         yield container

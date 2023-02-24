@@ -1,5 +1,9 @@
 # Changelog
 
+## Dev
+
+- upgraded injectool
+
 ## 3.2.0
 
 - added BindingNode

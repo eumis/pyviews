@@ -2,9 +2,9 @@
 
 from importlib import import_module
 from inspect import signature, Parameter
-from typing import Generic, List, Callable, Optional, TypeVar, Union, Type, Tuple, Dict, Any, cast, Collection
+from typing import Generic, List, Callable, Optional, TypeVar, Union, Type, Tuple, Dict, Any, Collection
 
-from injectool import resolve, DependencyError, dependency, SingletonResolver, get_container
+from injectool import dependency, resolve, DependencyError, add_singleton
 
 from pyviews.core import Node, InstanceNode, XmlNode
 from .common import RenderingContext, RenderingError, use_context
@@ -100,10 +100,10 @@ def get_pipeline(xml_node: XmlNode) -> RenderingPipeline:
     """Resolves pipeline by namespace and name or by namespace"""
     key = f'{xml_node.namespace}.{xml_node.name}'
     try:
-        return resolve(RenderingPipeline, key)
+        return resolve((RenderingPipeline, key))
     except DependencyError:
         try:
-            return resolve(RenderingPipeline, xml_node.namespace)
+            return resolve((RenderingPipeline, xml_node.namespace))
         except DependencyError as error:
             render_error = RenderingError('RenderingPipeline is not found')
             render_error.add_info('Used keys to resolve pipeline', f'{key}, {xml_node.namespace}')
@@ -118,9 +118,6 @@ def render(context: RenderingContext) -> Node:
         return pipeline.run(context)
 
 
-def use_pipeline(pipeline: RenderingPipeline, class_path: str, resolver: Optional[SingletonResolver] = None):
+def use_pipeline(pipeline: RenderingPipeline, class_path: str):
     """Adds rendering pipeline for class path"""
-    if resolver is None:
-        container = get_container()
-        resolver = cast(SingletonResolver, container.get_resolver(RenderingPipeline))
-    resolver.set_value(pipeline, class_path)
+    add_singleton((RenderingPipeline, class_path), pipeline)

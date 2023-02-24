@@ -1,6 +1,6 @@
 from unittest.mock import Mock, call
 
-from injectool import SingletonResolver, add_resolver
+from injectool import resolve
 from injectool.core import Container
 from pytest import mark, fixture, raises, fail
 
@@ -237,8 +237,6 @@ def test_create_inst(inst_type, init_args):
 
 @fixture
 def get_pipeline_fixture(request):
-    request.cls.resolver = SingletonResolver()
-    add_resolver(RenderingPipeline, request.cls.resolver)
     request.cls.pipeline = RenderingPipeline()
 
 
@@ -246,7 +244,6 @@ def get_pipeline_fixture(request):
 class GetPipelineTests:
     """get_pipeline() tests"""
 
-    resolver: SingletonResolver
     pipeline: RenderingPipeline
 
     @mark.parametrize('xml_node, key', [
@@ -257,7 +254,7 @@ class GetPipelineTests:
     ])
     def test_resolves_pipeline_by_xml_node_namespace_and_name(self, xml_node, key):
         """should resolve RenderingPipeline using namespace.name or namespace"""
-        self.resolver.set_value(self.pipeline, key)
+        use_pipeline(self.pipeline, key)
 
         actual = get_pipeline(xml_node)
 
@@ -267,8 +264,8 @@ class GetPipelineTests:
         """should try resolve by namespace.name first"""
         name_pipeline, namespace_pipeline = RenderingPipeline(), RenderingPipeline()
         xml_node = XmlNode('pyviews.core.node', 'Node')
-        self.resolver.set_value(namespace_pipeline, xml_node.namespace)
-        self.resolver.set_value(name_pipeline, f'{xml_node.namespace}.{xml_node.name}')
+        use_pipeline(namespace_pipeline, xml_node.namespace)
+        use_pipeline(name_pipeline, f'{xml_node.namespace}.{xml_node.name}')
 
         actual = get_pipeline(xml_node)
 
@@ -285,13 +282,10 @@ class GetPipelineTests:
 def render_fixture(request):
     xml_node = XmlNode('pyviews.core.node', 'Node')
     pipeline = RenderingPipeline()
-    pipeline_resolver = SingletonResolver()
-    pipeline_resolver.set_value(pipeline, f'{xml_node.namespace}.{xml_node.name}')
-    add_resolver(RenderingPipeline, pipeline_resolver)
+    use_pipeline(pipeline, f'{xml_node.namespace}.{xml_node.name}')
 
     request.cls.xml_node = xml_node
     request.cls.pipeline = pipeline
-    request.cls.pipeline_resolver = pipeline_resolver
     request.cls.context = RenderingContext({'xml_node': xml_node})
 
 
@@ -301,11 +295,10 @@ class RenderTests:
 
     xml_nod: XmlNode
     pipeline: RenderingPipeline
-    pipeline_resolver: SingletonResolver
     context: RenderingContext
 
     def _set_pipeline(self, xml_node, pipeline):
-        self.pipeline_resolver.set_value(pipeline, f'{xml_node.namespace}.{xml_node.name}')
+        use_pipeline(pipeline, f'{xml_node.namespace}.{xml_node.name}')
 
     @mark.parametrize('namespace, tag, node_type, init_args', [
         ('pyviews.core', 'Node', Node, {}),
@@ -332,18 +325,8 @@ class UsePipelineTests:
     @mark.parametrize('class_path', ['package.module.class', 'package.module'])
     def test_adds_pipeline_to_passed_resolver(self, class_path: str):
         """should add pipeline to passed resolver"""
-        resolver, pipeline = SingletonResolver(), RenderingPipeline()
-
-        use_pipeline(pipeline, class_path, resolver)
-
-        assert resolver.resolve(self.container, class_path) == pipeline
-
-    @mark.parametrize('class_path', ['package.module.class', 'package.module'])
-    def test_adds_pipeline_to_resolver_from_container(self, class_path: str):
-        """should add pipeline to passed resolver"""
-        resolver, pipeline = SingletonResolver(), RenderingPipeline()
-        add_resolver(RenderingPipeline, resolver)
+        pipeline = RenderingPipeline()
 
         use_pipeline(pipeline, class_path)
 
-        assert resolver.resolve(self.container, class_path) == pipeline
+        assert resolve((RenderingPipeline, class_path)) is pipeline

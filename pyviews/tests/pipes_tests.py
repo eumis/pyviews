@@ -1,12 +1,11 @@
 from unittest.mock import Mock, patch, call
 
-from injectool import add_singleton, add_function_resolver
+from injectool import add_singleton
 from pytest import fixture, mark, raises
 
 from pyviews.binding import Binder, BindingContext
 from pyviews.binding.expression import bind_setter_to_expression
 from pyviews.binding.once import run_once
-from pyviews.expression import Expression
 from pyviews.core import XmlAttr, Node, XmlNode
 from pyviews import pipes, setters
 from pyviews.pipes import apply_attribute, apply_attributes, call_set_attr, get_setter, \
@@ -40,7 +39,6 @@ def apply_attribute_fixture(request):
         binder.add_rule('once', run_once)
         binder.add_rule('oneway', bind_setter_to_expression)
         add_singleton(Binder, binder)
-        add_function_resolver(Expression, lambda _, p=None: Expression(p))
         yield patched
 
 
