@@ -1,9 +1,9 @@
-"""Observable implementations"""
+"""Bindable implementations"""
 
 from typing import Callable, Any, Optional, Union
 
 
-class Observable:
+class Bindable:
     """Base class for observable entities"""
 
     def __init__(self):
@@ -35,16 +35,16 @@ class Observable:
             pass
 
 
-class ObservableEntity(Observable):
-    """Observable general object"""
+class BindableEntity(Bindable):
+    """Bindable general object"""
 
     def __setattr__(self, key, value):
         if key in self.__dict__:
             old_val = getattr(self, key, None)
-            Observable.__setattr__(self, key, value)
+            Bindable.__setattr__(self, key, value)
             self._notify(key, value, old_val)
         else:
-            Observable.__setattr__(self, key, value)
+            Bindable.__setattr__(self, key, value)
 
     def observe(self, key, callback: Callable[[Any, Any], None]):
         """Subscribes to key changes"""
@@ -53,7 +53,7 @@ class ObservableEntity(Observable):
         super().observe(key, callback)
 
 
-class InheritedDict(Observable):
+class InheritedDict(Bindable):
     """Dictionary that pulls value from parent if doesn't have own"""
 
     def __init__(self, source: Optional[Union[dict, 'InheritedDict']] = None):

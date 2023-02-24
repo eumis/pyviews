@@ -5,7 +5,7 @@ from injectool.core import Container
 from pytest import mark, fixture, raises, fail
 
 from pyviews.code import Code
-from pyviews.core import Node, XmlNode, Observable, InstanceNode, ViewInfo
+from pyviews.core import Node, XmlNode, Bindable, InstanceNode, ViewInfo
 from pyviews.rendering.common import RenderingContext, RenderingError, get_rendering_context
 from pyviews.rendering.pipeline import RenderingPipeline, get_pipeline, create_instance, get_type, render, use_pipeline
 
@@ -126,7 +126,7 @@ class RenderingPipelineTests:
             fail()
 
     @mark.parametrize('namespace, tag, inst_type', [
-        ('pyviews.core.observable', 'Observable', Observable),
+        ('pyviews.core.observable', 'Bindable', Bindable),
         (__name__, 'InstWithKwargs', InstWithKwargs)
     ])
     def test_creates_instance_node(self, namespace, tag, inst_type):
@@ -166,7 +166,7 @@ class GetTypeTests:
     @staticmethod
     @mark.parametrize('xml_node, expected', [
         (XmlNode(__name__, 'Inst'), Inst),
-        (XmlNode('pyviews.core.observable', 'Observable'), Observable),
+        (XmlNode('pyviews.core.observable', 'Bindable'), Bindable),
         (XmlNode(__name__, 'SecondInst'), SecondInst),
         (XmlNode('pyviews.core', 'Node'), Node)
     ])
@@ -249,8 +249,8 @@ class GetPipelineTests:
     @mark.parametrize('xml_node, key', [
         (XmlNode('pyviews.core.node', 'Node'), 'pyviews.core.node.Node'),
         (XmlNode('pyviews.core.node', 'Node'), 'pyviews.core.node'),
-        (XmlNode('pyviews.core.observable', 'Observable'), 'pyviews.core.observable.Observable'),
-        (XmlNode('pyviews.core.observable', 'Observable'), 'pyviews.core.observable')
+        (XmlNode('pyviews.core.observable', 'Bindable'), 'pyviews.core.observable.Bindable'),
+        (XmlNode('pyviews.core.observable', 'Bindable'), 'pyviews.core.observable')
     ])
     def test_resolves_pipeline_by_xml_node_namespace_and_name(self, xml_node, key):
         """should resolve RenderingPipeline using namespace.name or namespace"""

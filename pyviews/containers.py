@@ -2,7 +2,7 @@
 from typing import Any
 
 from pyviews.core import Node, XmlNode
-from pyviews.core.observable import InheritedDict, Observable
+from pyviews.core.observable import InheritedDict, Bindable
 from pyviews.pipes import render_children, apply_attributes
 from pyviews.rendering import RenderingPipeline, render, RenderingContext, get_child_context
 from pyviews.rendering.views import render_view
@@ -25,11 +25,11 @@ def render_container_children(node, context: RenderingContext):
     render_children(node, context, get_child_context)
 
 
-class View(Container, Observable):
+class View(Container, Bindable):
     """Loads xml from another file"""
 
     def __init__(self, xml_node: XmlNode, node_globals: InheritedDict = None):
-        Observable.__init__(self)
+        Bindable.__init__(self)
         Container.__init__(self, xml_node, node_globals=node_globals)
         self._name = None
 
@@ -72,11 +72,11 @@ def _rerender_view(node: View, context: RenderingContext):
     render_view_content(node, context)
 
 
-class For(Container, Observable):
+class For(Container, Bindable):
     """Renders children for every item in items collection"""
 
     def __init__(self, xml_node: XmlNode, node_globals: InheritedDict = None):
-        Observable.__init__(self)
+        Bindable.__init__(self)
         Container.__init__(self, xml_node, node_globals=node_globals)
         self._items = []
 
@@ -169,11 +169,11 @@ def _create_not_existing(node: For, context: RenderingContext):
     _render_for_children(node, items, context, start)
 
 
-class If(Container, Observable):
+class If(Container, Bindable):
     """Renders children if condition is True"""
 
     def __init__(self, xml_node: XmlNode, node_globals: InheritedDict = None):
-        Observable.__init__(self)
+        Bindable.__init__(self)
         Container.__init__(self, xml_node, node_globals=node_globals)
         self._condition = False
 

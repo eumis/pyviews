@@ -2,10 +2,10 @@ from unittest.mock import Mock, call
 
 from pytest import fixture, raises, mark
 
-from pyviews.core.observable import ObservableEntity, InheritedDict
+from pyviews.core.observable import BindableEntity, InheritedDict
 
 
-class TestObservable(ObservableEntity):
+class TestBindable(BindableEntity):
     def __init__(self, private, name, value):
         super().__init__()
         self._private = private
@@ -18,16 +18,16 @@ class TestObservable(ObservableEntity):
 
 @fixture
 def observable_fixture(request):
-    request.cls.observable = TestObservable('private', 'some name', 'some value')
+    request.cls.observable = TestBindable('private', 'some name', 'some value')
     request.cls.callback = Mock()
     request.cls.add_callback = Mock()
 
 
 @mark.usefixtures('observable_fixture')
-class ObservableEntityTests:
-    """ObservableEntity class tests"""
+class BindableEntityTests:
+    """BindableEntity class tests"""
 
-    observable: TestObservable
+    observable: TestBindable
     callback: Mock
     add_callback: Mock
 

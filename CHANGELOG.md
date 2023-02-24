@@ -3,6 +3,7 @@
 ## Dev
 
 - upgraded injectool
+- Observable is renamed to Bindable
 
 ## 3.2.0
 
