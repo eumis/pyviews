@@ -4,7 +4,7 @@ from functools import partial
 from typing import Any, List, Callable, Optional
 
 from .binding import Binding
-from .observable import InheritedDict
+from .bindable import InheritedDict
 from .xml import XmlNode
 
 

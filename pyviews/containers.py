@@ -2,7 +2,7 @@
 from typing import Any
 
 from pyviews.core import Node, XmlNode
-from pyviews.core.observable import InheritedDict, Bindable
+from pyviews.core.bindable import InheritedDict, Bindable
 from pyviews.pipes import render_children, apply_attributes
 from pyviews.rendering import RenderingPipeline, render, RenderingContext, get_child_context
 from pyviews.rendering.views import render_view

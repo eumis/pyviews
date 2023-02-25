@@ -6,7 +6,7 @@ from pyviews.code import Code, run_code
 from pyviews.core import ViewInfo
 from pyviews.expression import ExpressionError
 from pyviews.core.rendering import Node
-from pyviews.core.observable import InheritedDict
+from pyviews.core.bindable import InheritedDict
 from pyviews.core.xml import XmlNode
 from pyviews.rendering.common import RenderingContext
 

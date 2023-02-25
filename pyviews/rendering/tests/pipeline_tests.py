@@ -126,7 +126,7 @@ class RenderingPipelineTests:
             fail()
 
     @mark.parametrize('namespace, tag, inst_type', [
-        ('pyviews.core.observable', 'Bindable', Bindable),
+        ('pyviews.core.bindable', 'Bindable', Bindable),
         (__name__, 'InstWithKwargs', InstWithKwargs)
     ])
     def test_creates_instance_node(self, namespace, tag, inst_type):
@@ -166,7 +166,7 @@ class GetTypeTests:
     @staticmethod
     @mark.parametrize('xml_node, expected', [
         (XmlNode(__name__, 'Inst'), Inst),
-        (XmlNode('pyviews.core.observable', 'Bindable'), Bindable),
+        (XmlNode('pyviews.core.bindable', 'Bindable'), Bindable),
         (XmlNode(__name__, 'SecondInst'), SecondInst),
         (XmlNode('pyviews.core', 'Node'), Node)
     ])
@@ -179,7 +179,7 @@ class GetTypeTests:
     @staticmethod
     @mark.parametrize('xml_node', [
         (XmlNode(__name__, 'UnknownType')),
-        (XmlNode('pyviews.core.observable', 'SomeClass')),
+        (XmlNode('pyviews.core.bindable', 'SomeClass')),
         (XmlNode('pyviews.some_module.node', 'Node'))
     ])
     def test_raises_for_not_existing_type(xml_node):
@@ -249,8 +249,8 @@ class GetPipelineTests:
     @mark.parametrize('xml_node, key', [
         (XmlNode('pyviews.core.node', 'Node'), 'pyviews.core.node.Node'),
         (XmlNode('pyviews.core.node', 'Node'), 'pyviews.core.node'),
-        (XmlNode('pyviews.core.observable', 'Bindable'), 'pyviews.core.observable.Bindable'),
-        (XmlNode('pyviews.core.observable', 'Bindable'), 'pyviews.core.observable')
+        (XmlNode('pyviews.core.bindable', 'Bindable'), 'pyviews.core.bindable.Bindable'),
+        (XmlNode('pyviews.core.bindable', 'Bindable'), 'pyviews.core.bindable')
     ])
     def test_resolves_pipeline_by_xml_node_namespace_and_name(self, xml_node, key):
         """should resolve RenderingPipeline using namespace.name or namespace"""
