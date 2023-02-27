@@ -5,7 +5,7 @@ from pytest import mark
 
 from pyviews.binding_node import BindingNode, apply_attributes, BindingProperty, set_target
 from pyviews.core import XmlNode, XmlAttr, InheritedDict
-from pyviews.expression import Expression
+from pyviews.core.expression import Expression
 from pyviews.pipes import get_setter
 from pyviews.rendering import RenderingContext
 

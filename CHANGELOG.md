@@ -4,6 +4,7 @@
 
 - upgraded injectool
 - Observable is renamed to Bindable
+- expression is moved to core
 
 ## 3.2.0
 

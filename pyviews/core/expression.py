@@ -1,30 +1,52 @@
-"""Expression eval implementation"""
+"""Expression errors"""
 
 import ast
 from collections import namedtuple
 from functools import partial
+from re import compile as compile_regex
 from types import CodeType
-from typing import List, Callable, Any, NamedTuple, Union, Set, Dict, Tuple
+from typing import List, Callable, Any, NamedTuple, Union, Set, Dict, Tuple, Generator, Optional
 
 from injectool import dependency
 
-from pyviews.core import error_handling
-from pyviews.expression.error import ExpressionError
+from pyviews.core.error import error_handling, PyViewsError
+
 
 _COMPILATION_CACHE = {}
 _CacheItem = namedtuple('CacheItem', ['compiled_code', 'tree'])
 _AST_CLASSES = {ast.Name, ast.Attribute, ast.Subscript}
+
 
 ROOT = 'root'
 ENTRY = 'entry'
 ATTRIBUTE = 'attribute'
 INDEX = 'index'
 
+
 _TYPES = {
     ast.Name: ENTRY,
     ast.Attribute: ATTRIBUTE,
     ast.Subscript: INDEX
 }
+
+
+class ExpressionError(PyViewsError):
+    """Error for failed expression"""
+
+    def __init__(self, message=None, expression_body: Optional[str] = None):
+        super().__init__(message=message)
+        self.expression: Optional[str] = expression_body
+        if expression_body:
+            self.add_expression_info(expression_body)
+
+    def add_expression_info(self, expression: str):
+        """Adds info about expression to error"""
+        self.expression = expression
+        self.add_info('Expression', expression)
+
+    def _get_error(self) -> Generator[str, None, None]:
+        yield from super()._get_error()
+        yield self._format_info('Expression', self.expression if self.expression else '')
 
 
 def _get_index_value(ast_node: ast.Subscript):
@@ -36,7 +58,7 @@ def _get_index_value(ast_node: ast.Subscript):
     return _get_attr_expression(ast_node)
 
 
-def _get_attr_expression(ast_node: Union[ast.Name, ast.Attribute]) -> 'Expression':
+def _get_attr_expression(ast_node: Union[ast.Name, ast.Attribute, ast.Subscript]) -> 'Expression':
     result = ''
     while isinstance(ast_node, ast.Attribute):
         result = f'.{ast_node.attr}{result}'
@@ -150,3 +172,27 @@ def execute(expression: Union[Expression, str], parameters: dict = None) -> Any:
         expression = expression if isinstance(expression, Expression) else Expression(expression)
         parameters = {} if parameters is None else parameters
         return eval(expression.compiled_code, parameters, {})
+
+
+EXPRESSION_REGEX = compile_regex(r'([a-zA-Z_]{1,}\:){0,1}\{.*\}')
+
+
+def is_expression(source: str) -> bool:
+    """Return true if passed value is expression"""
+    return EXPRESSION_REGEX.fullmatch(source) is not None
+
+
+ParsedExpression = namedtuple('Expression', ['binding_type', 'body'])
+
+
+def parse_expression(source: str) -> ParsedExpression:
+    """Returns tuple with expression type and expression body"""
+    if not is_expression(source):
+        raise ExpressionError('Expression is not valid', source)
+    if not source.startswith('{'):
+        binding_type, source = source.split(':', 1)
+    elif source.startswith('{{') and source.endswith('}}'):
+        binding_type, source = 'twoways', source[1:-1]
+    else:
+        binding_type = 'oneway'
+    return ParsedExpression(binding_type, source[1:-1])

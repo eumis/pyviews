@@ -6,7 +6,7 @@ from injectool import resolve
 
 from pyviews.binding import Binder, BindingContext
 from pyviews.core import Node, XmlAttr, import_path, XmlNode, Setter
-from pyviews.expression import is_expression, parse_expression
+from pyviews.core.expression import is_expression, parse_expression
 from pyviews.rendering import RenderingContext, render
 
 

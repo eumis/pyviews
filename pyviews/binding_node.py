@@ -2,7 +2,7 @@ from typing import Any, NamedTuple, Optional, Union, List
 
 from pyviews.binding import ExpressionBinding
 from pyviews.core import XmlNode, InheritedDict, Node, Setter, Binding
-from pyviews.expression import is_expression, parse_expression, Expression, execute
+from pyviews.core.expression import is_expression, parse_expression, Expression, execute
 from pyviews.pipes import get_setter
 from pyviews.rendering import RenderingPipeline, RenderingContext
 

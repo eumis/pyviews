@@ -5,7 +5,7 @@ from textwrap import dedent
 from traceback import extract_tb
 from typing import Optional
 from pyviews.core import Node, XmlNode, ViewInfo
-from pyviews.expression import ExpressionError
+from pyviews.core.expression import ExpressionError
 from pyviews.rendering.common import RenderingContext
 from pyviews.rendering.pipeline import RenderingPipeline
 

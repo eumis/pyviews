@@ -4,7 +4,7 @@ from functools import partial
 from re import compile as compile_regex
 from typing import Any
 
-from pyviews.expression import Expression, ObjectNode
+from pyviews.core.expression import Expression, ObjectNode
 from pyviews.core import BindingError, Binding
 from pyviews.core import BindingCallback
 from pyviews.core import InheritedDict

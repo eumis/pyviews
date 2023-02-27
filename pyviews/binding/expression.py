@@ -7,8 +7,8 @@ from pyviews.binding.binder import BindingContext
 from pyviews.core import Binding, BindingCallback, InheritedDict, Bindable, BindingError, \
     PyViewsError
 from pyviews.core import error_handling
-from pyviews.expression import Expression, ObjectNode, execute
-from pyviews.expression.expression import ENTRY, ATTRIBUTE, INDEX
+from pyviews.core.expression import Expression, ObjectNode, execute, ENTRY, ATTRIBUTE, INDEX
+
 
 _GET_VALUE = {
     ENTRY: lambda inst, key: inst.get(key),

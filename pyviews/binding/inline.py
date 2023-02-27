@@ -3,7 +3,7 @@
 from functools import partial
 
 from pyviews.binding.binder import BindingContext
-from pyviews.expression import Expression, execute
+from pyviews.core.expression import Expression, execute
 from pyviews.core import Binding, BindingCallback, error_handling, BindingError, PyViewsError
 from pyviews.core import InheritedDict
 

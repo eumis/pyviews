@@ -1,7 +1,7 @@
 from injectool import resolve
 
 from pyviews.binding import BindingContext
-from pyviews.expression import execute
+from pyviews.core.expression import execute
 
 
 def inject_binding(context: BindingContext):

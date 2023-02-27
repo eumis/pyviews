@@ -5,7 +5,7 @@ from pytest import fixture, mark
 from pyviews.binding import BindingContext
 from pyviews.binding.expression import ExpressionBinding, bind_setter_to_expression
 from pyviews.binding.tests.common import InnerViewModel, ParentViewModel
-from pyviews.expression import Expression, execute
+from pyviews.core.expression import Expression, execute
 from pyviews.core import InheritedDict, XmlAttr
 
 
