@@ -1,7 +1,8 @@
-from pyviews.core import BindableEntity
+from pyviews.core.bindable import BindableEntity
 
 
 class InnerViewModel(BindableEntity):
+
     def __init__(self, int_value, str_value):
         super().__init__()
         self._val = ''
@@ -19,6 +20,7 @@ class InnerViewModel(BindableEntity):
 
 
 class ParentViewModel(BindableEntity):
+
     def __init__(self, int_value, inner_vm):
         super().__init__()
         self._val = ''

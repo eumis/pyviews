@@ -4,8 +4,11 @@ from sys import exc_info
 from textwrap import dedent
 from traceback import extract_tb
 from typing import Optional
-from pyviews.core import Node, XmlNode, ViewInfo
+
+from pyviews.core.error import ViewInfo
 from pyviews.core.expression import ExpressionError
+from pyviews.core.rendering import Node
+from pyviews.core.xml import XmlNode
 from pyviews.rendering.common import RenderingContext
 from pyviews.rendering.pipeline import RenderingPipeline
 
@@ -37,8 +40,9 @@ def run_code(node: Code, context: RenderingContext):
 
 
 def _update_context(globs: dict, context: RenderingContext):
-    definitions = [(key, value) for key, value in globs.items()
-                   if key != '__builtins__' and key not in context.node_globals]
+    definitions = [
+        (key, value) for key, value in globs.items() if key != '__builtins__' and key not in context.node_globals
+    ]
     for key, value in definitions:
         context.parent_node.node_globals[key] = value
 
@@ -50,5 +54,6 @@ def _get_error(xml_node: XmlNode, cause: Optional[BaseException], line_number: O
     error.add_view_info(xml_node.view_info)
     return error
 
+
 def get_code_pipeline() -> RenderingPipeline[Code, RenderingContext]:
-    return RenderingPipeline[Code, RenderingContext](pipes=[run_code])
+    return RenderingPipeline[Code, RenderingContext](pipes = [run_code])

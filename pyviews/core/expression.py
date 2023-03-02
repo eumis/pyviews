@@ -5,36 +5,29 @@ from collections import namedtuple
 from functools import partial
 from re import compile as compile_regex
 from types import CodeType
-from typing import List, Callable, Any, NamedTuple, Union, Set, Dict, Tuple, Generator, Optional
+from typing import Any, Callable, Dict, Generator, List, NamedTuple, Optional, Set, Tuple, Union
 
 from injectool import dependency
 
-from pyviews.core.error import error_handling, PyViewsError
-
+from pyviews.core.error import PyViewsError, error_handling
 
 _COMPILATION_CACHE = {}
 _CacheItem = namedtuple('CacheItem', ['compiled_code', 'tree'])
 _AST_CLASSES = {ast.Name, ast.Attribute, ast.Subscript}
-
 
 ROOT = 'root'
 ENTRY = 'entry'
 ATTRIBUTE = 'attribute'
 INDEX = 'index'
 
-
-_TYPES = {
-    ast.Name: ENTRY,
-    ast.Attribute: ATTRIBUTE,
-    ast.Subscript: INDEX
-}
+_TYPES = {ast.Name: ENTRY, ast.Attribute: ATTRIBUTE, ast.Subscript: INDEX}
 
 
 class ExpressionError(PyViewsError):
     """Error for failed expression"""
 
-    def __init__(self, message=None, expression_body: Optional[str] = None):
-        super().__init__(message=message)
+    def __init__(self, message: Optional[str] = None, expression_body: Optional[str] = None):
+        super().__init__(message = message)
         self.expression: Optional[str] = expression_body
         if expression_body:
             self.add_expression_info(expression_body)
@@ -66,11 +59,7 @@ def _get_attr_expression(ast_node: Union[ast.Name, ast.Attribute, ast.Subscript]
     return Expression(f'{ast_node.id}{result}')
 
 
-_KEYS = {
-    ast.Name: lambda n: n.id,
-    ast.Attribute: lambda n: n.attr,
-    ast.Subscript: _get_index_value
-}
+_KEYS = {ast.Name: lambda n: n.id, ast.Attribute: lambda n: n.attr, ast.Subscript: _get_index_value}
 
 
 class ObjectNode(NamedTuple):
@@ -125,9 +114,10 @@ class Expression:
         ast_nodes = ast_nodes.difference(ast_nodes_to_create)
 
         grouped = self._group(ast_nodes_to_create).items()
-        return [ObjectNode(key, node_type,
-                           self._create_nodes(ast_nodes, partial(self._is_child, nodes)))
-                for key, (nodes, node_type) in grouped]
+        return [
+            ObjectNode(key, node_type, self._create_nodes(ast_nodes, partial(self._is_child, nodes)))
+            for key, (nodes, node_type) in grouped
+        ]
 
     @staticmethod
     def _is_child(key_nodes: set, ast_node: ast.AST) -> bool:
@@ -167,8 +157,9 @@ class Expression:
 def execute(expression: Union[Expression, str], parameters: dict = None) -> Any:
     """Executes expression with passed parameters and returns result"""
     code = expression.code if isinstance(expression, Expression) else expression
-    with error_handling(ExpressionError('Error occurred in expression execution'),
-                        lambda e: e.add_expression_info(code)):
+    with error_handling(
+        ExpressionError('Error occurred in expression execution'), lambda e: e.add_expression_info(code)
+    ):
         expression = expression if isinstance(expression, Expression) else Expression(expression)
         parameters = {} if parameters is None else parameters
         return eval(expression.compiled_code, parameters, {})

@@ -2,26 +2,14 @@
 
 from os.path import join
 
-from injectool import resolve, dependency
+from injectool import resolve
 
-from pyviews.core import PyViewsError, ViewInfo, Node
+from pyviews.core.error import PyViewsError
 from pyviews.core.xml import Parser, XmlNode
-from .common import RenderingContext
-from .pipeline import render
-from ..core.error import error_handling
 
 
 class ViewError(PyViewsError):
     """Common error for parsing exceptions"""
-
-
-@dependency
-def render_view(view_name: str, context: RenderingContext) -> Node:
-    """Renders view"""
-    with error_handling(ViewError,
-                        lambda e: e.add_view_info(ViewInfo(view_name, None))):
-        context.xml_node = get_view_root(view_name)
-        return render(context)
 
 
 _XML_CACHE = {}

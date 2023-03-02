@@ -3,10 +3,10 @@ from unittest.mock import Mock
 from pytest import mark, raises
 
 from pyviews.code import Code, run_code
-from pyviews.core import ViewInfo
+from pyviews.core.bindable import InheritedDict
+from pyviews.core.error import ViewInfo
 from pyviews.core.expression import ExpressionError
 from pyviews.core.rendering import Node
-from pyviews.core.bindable import InheritedDict
 from pyviews.core.xml import XmlNode
 from pyviews.rendering.common import RenderingContext
 
@@ -31,7 +31,7 @@ class CodeTests:
          {'key': 'key'},
          {'none': None, 'one': 1, 'str_value': 'str_value', 'global_key': 'key'}
          )
-    ])
+    ]) # yapf: disable
     def test_run_adds_methods_definitions(self, content, globals_dict, expected):
         """defined functions should be added to parent globals"""
         parent_node = Node(Mock())
@@ -60,7 +60,7 @@ class CodeTests:
          {'key': 'key'},
          {'one': 1, 'str_value': 'str_value', 'global_key': 'key'}
          )
-    ])
+    ]) # yapf: disable
     def test_run_adds_variables_definitions(self, content, globals_dict, expected):
         """variables should be added to parent globals"""
         parent_node = Node(Mock())
@@ -84,7 +84,7 @@ class CodeTests:
          def some_func()
              pass
          ''', {})
-    ])
+    ]) # yapf: disable
     def test_run_raises_error(self, content, globals_dict):
         """should raise ExpressionError for invalid code"""
         parent_node = Node(Mock())
@@ -96,5 +96,5 @@ class CodeTests:
 
     @staticmethod
     def _get_code_node(content):
-        xml_node = XmlNode('namespace', 'name', content, view_info=ViewInfo('test', 5))
+        xml_node = XmlNode('namespace', 'name', content, view_info = ViewInfo('test', 5))
         return Code(xml_node)

@@ -1,11 +1,12 @@
 """Core classes for creation from xml nodes"""
 
 from functools import partial
-from typing import Any, List, Callable, Optional
+from typing import Any, Callable, List, Optional
 
-from .binding import Binding
-from .bindable import InheritedDict
-from .xml import XmlNode
+from pyviews.core.bindable import InheritedDict
+from pyviews.core.binding import Binding
+from pyviews.core.error import PyViewsError, ViewInfo
+from pyviews.core.xml import XmlNode
 
 
 class Node:
@@ -17,9 +18,8 @@ class Node:
         self._xml_node: XmlNode = xml_node
         self._globals: InheritedDict = InheritedDict() if node_globals is None else node_globals
         self._globals['node'] = self
-        # noinspection PyTypeChecker
         self.set_attr: Callable[[str, Any], None] = partial(setattr, self)
-        self.on_destroy = lambda node: None
+        self.on_destroy: Callable[[Node], None] = lambda _: None
 
     @property
     def xml_node(self) -> XmlNode:
@@ -87,3 +87,41 @@ def _instance_attr_setter(node: InstanceNode, key, value):
 
 
 Setter = Callable[[Node, str, Any], None]
+
+
+class RenderingError(PyViewsError):
+    """Error for rendering"""
+
+    def __init__(self, message: str = '', view_info: Optional[ViewInfo] = None):
+        super().__init__(message = message, view_info = view_info)
+
+
+class RenderingContext(dict):
+    """Used as rendering arguments container, passed to rendering step"""
+
+    @property
+    def node_globals(self) -> InheritedDict:
+        """Node globals"""
+        return self.get('node_globals', None)
+
+    @node_globals.setter
+    def node_globals(self, value):
+        self['node_globals'] = value
+
+    @property
+    def parent_node(self) -> Node:
+        """Parent node"""
+        return self.get('parent_node', None)
+
+    @parent_node.setter
+    def parent_node(self, value: Node):
+        self['parent_node'] = value
+
+    @property
+    def xml_node(self) -> XmlNode:
+        """xml node"""
+        return self.get('xml_node', None)
+
+    @xml_node.setter
+    def xml_node(self, value: XmlNode):
+        self['xml_node'] = value

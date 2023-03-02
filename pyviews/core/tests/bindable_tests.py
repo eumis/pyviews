@@ -1,11 +1,12 @@
 from unittest.mock import Mock, call
 
-from pytest import fixture, raises, mark
+from pytest import fixture, mark, raises
 
 from pyviews.core.bindable import BindableEntity, InheritedDict
 
 
 class TestBindable(BindableEntity):
+
     def __init__(self, private, name, value):
         super().__init__()
         self._private = private
@@ -44,7 +45,7 @@ class BindableEntityTests:
     def test_observe_raises(self):
         """observe() should raise if entity doesn't have passed property"""
         with raises(KeyError):
-            self.observable.observe('attr', lambda: self.callback)
+            self.observable.observe('attr', self.callback)
 
     def test_release_callback(self):
         """release() should unsubscribe callback from property changes"""
@@ -73,7 +74,7 @@ class BindableEntityTests:
 
     def test_observe_in_callback(self):
         """observe() inside callback should add new callback"""
-        self.observable.observe('name', lambda *args: self.observable.observe('name', self.callback))
+        self.observable.observe('name', lambda *_: self.observable.observe('name', self.callback))
 
         self.observable.name = 'new name'
         assert self.callback.call_count == 0
@@ -83,6 +84,7 @@ class BindableEntityTests:
 
 
 class InheritedDictTests:
+
     @staticmethod
     def _create_inh_dict(own, parent):
         inh_dict = InheritedDict(own)
@@ -91,11 +93,7 @@ class InheritedDictTests:
         return inh_dict
 
     @staticmethod
-    @mark.parametrize('source', [
-        {},
-        {'key': 'value'},
-        {'key': 'value', 'two': 1},
-    ])
+    @mark.parametrize('source', [{}, {'key': 'value'}, {'key': 'value', 'two': 1}, ])
     def test_dict_source(source):
         """__init__() should copy values from source dict"""
         inh_dict = InheritedDict(source)
@@ -103,11 +101,10 @@ class InheritedDictTests:
         assert inh_dict.to_dictionary() == source
 
     @staticmethod
-    @mark.parametrize('parent_source, key, new_parent_value', [
-        ({}, 'key', 'value'),
-        ({'key': 'value'}, 'key', 1),
-        ({'key': 'value', 'two': 1}, 'two', 'new value'),
-    ])
+    @mark.parametrize(
+        'parent_source, key, new_parent_value',
+        [({}, 'key', 'value'), ({'key': 'value'}, 'key', 1), ({'key': 'value', 'two': 1}, 'two', 'new value'), ]
+    )
     def test_inherited_dict_source(parent_source, key, new_parent_value):
         """__init__() should inherit source InheritedDict"""
         parent = InheritedDict(parent_source)
@@ -117,11 +114,7 @@ class InheritedDictTests:
         assert inh_dict.to_dictionary() == parent.to_dictionary()
 
     @staticmethod
-    @mark.parametrize('parent_source', [
-        {},
-        {'key': 'value'},
-        {'key': 'value', 'two': 1}
-    ])
+    @mark.parametrize('parent_source', [{}, {'key': 'value'}, {'key': 'value', 'two': 1}])
     def test_inheritance(parent_source):
         """inherit() should use parent as source"""
         parent = InheritedDict(parent_source)
@@ -132,11 +125,10 @@ class InheritedDictTests:
         assert inh_dict.to_dictionary() == parent.to_dictionary()
 
     @staticmethod
-    @mark.parametrize('parent_source, key, new_parent_value', [
-        ({}, 'key', 'value'),
-        ({'key': 'value'}, 'key', 1),
-        ({'key': 'value', 'two': 1}, 'two', 'new value'),
-    ])
+    @mark.parametrize(
+        'parent_source, key, new_parent_value',
+        [({}, 'key', 'value'), ({'key': 'value'}, 'key', 1), ({'key': 'value', 'two': 1}, 'two', 'new value'), ]
+    )
     def test_using_parent_values(parent_source, key, new_parent_value):
         """inherit() should subscribe to parent changes"""
         parent = InheritedDict(parent_source)
@@ -147,13 +139,14 @@ class InheritedDictTests:
         parent[key] = new_parent_value
         assert inh_dict[key] == parent[key]
 
-    @mark.parametrize('parent, own, result', [
-        (None, {'key': 'value'}, {'key': 'value'}),
-        ({}, {'key': 'value'}, {'key': 'value'}),
-        ({'key': 'value'}, {}, {'key': 'value'}),
-        ({'key': 'value'}, {'key': 'own value'}, {'key': 'own value'}),
-        ({'key': 'value', 'one': 1}, {'key': 'own value'}, {'key': 'own value', 'one': 1})
-    ])
+    @mark.parametrize(
+        'parent, own, result',
+        [
+            (None, {'key': 'value'}, {'key': 'value'}), ({}, {'key': 'value'}, {'key': 'value'}),
+            ({'key': 'value'}, {}, {'key': 'value'}), ({'key': 'value'}, {'key': 'own value'}, {'key': 'own value'}),
+            ({'key': 'value', 'one': 1}, {'key': 'own value'}, {'key': 'own value', 'one': 1})
+        ]
+    )
     def test_to_dictionary(self, parent, own, result):
         """to_dictionary() should return dict with own values then parent values"""
         parent = InheritedDict(parent) if parent else None
@@ -162,9 +155,7 @@ class InheritedDictTests:
         assert inh_dict.to_dictionary() == result
 
     @staticmethod
-    @mark.parametrize('source, key', [
-        ({'key': 'own value'}, 'key')
-    ])
+    @mark.parametrize('source, key', [({'key': 'own value'}, 'key')])
     def test_remove_key(source, key):
         """remove_key() should remove own key"""
         inh_dict = InheritedDict(source)
@@ -173,9 +164,7 @@ class InheritedDictTests:
 
         assert key not in inh_dict
 
-    @mark.parametrize('parent, own, key, value', [
-        ({'key': 'value'}, {'key': 'own value'}, 'key', 'value')
-    ])
+    @mark.parametrize('parent, own, key, value', [({'key': 'value'}, {'key': 'own value'}, 'key', 'value')])
     def test_remove_key_start_using_parent(self, parent, own, key, value):
         """remove_key() should start using parent value"""
         parent = InheritedDict(parent)
@@ -186,16 +175,15 @@ class InheritedDictTests:
         assert key in inh_dict
         assert inh_dict[key] == value
 
-    @mark.parametrize('parent, source, key, expected', [
-        (None, {}, 'key', False),
-        ({}, {}, 'key', False),
-        ({'key': 'value'}, {}, 'key', True),
-        ({'key': 'value'}, {'key': 'value'}, 'key', True),
-        (None, {'key': 'value'}, 'key', True),
-        ({}, {'key': 'value'}, 'key', True),
-        ({'key': 'value'}, {}, 'other key', False),
-        ({}, {'key': 'value'}, 'other key', False)
-    ])
+    @mark.parametrize(
+        'parent, source, key, expected',
+        [
+            (None, {}, 'key', False), ({}, {}, 'key', False), ({'key': 'value'}, {}, 'key', True),
+            ({'key': 'value'}, {'key': 'value'}, 'key', True), (None, {'key': 'value'}, 'key', True),
+            ({}, {'key': 'value'}, 'key', True), ({'key': 'value'}, {}, 'other key', False),
+            ({}, {'key': 'value'}, 'other key', False)
+        ]
+    )
     def test_key_check(self, parent, source, key, expected):
         """__contains__() should return true if own or parent key exist"""
         parent = InheritedDict(parent) if parent else None
@@ -247,17 +235,14 @@ class InheritedDictTests:
         assert value == default
 
     @staticmethod
-    @mark.parametrize('source, parent_source, expected', [
-        ({}, None, 0),
-        ({'k': 1}, None, 1),
-        ({'k': 1, 'a': 'v'}, None, 2),
-        ({}, {'k': 1}, 1),
-        ({}, {'k': 1, 'a': 'v'}, 2),
-        ({'k': 1}, {'a': 'v'}, 2),
-        ({'k': 1}, {'k': 'v'}, 1),
-        ({'k': 1, 'a': 'v'}, {'k': 2}, 2),
-        ({'k': 1, 'a': 'v'}, {'z': 2}, 3)
-    ])
+    @mark.parametrize(
+        'source, parent_source, expected',
+        [
+            ({}, None, 0), ({'k': 1}, None, 1), ({'k': 1, 'a': 'v'}, None, 2), ({}, {'k': 1}, 1),
+            ({}, {'k': 1, 'a': 'v'}, 2), ({'k': 1}, {'a': 'v'}, 2), ({'k': 1}, {'k': 'v'}, 1),
+            ({'k': 1, 'a': 'v'}, {'k': 2}, 2), ({'k': 1, 'a': 'v'}, {'z': 2}, 3)
+        ]
+    )
     def test_length(source, parent_source, expected):
         """__len__() should return keys count"""
         inh_dict = InheritedDict(source)

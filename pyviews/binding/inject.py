@@ -1,6 +1,6 @@
 from injectool import resolve
 
-from pyviews.binding import BindingContext
+from pyviews.binding.binder import BindingContext
 from pyviews.core.expression import execute
 
 

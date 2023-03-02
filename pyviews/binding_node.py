@@ -1,10 +1,13 @@
-from typing import Any, NamedTuple, Optional, Union, List
+from typing import Any, List, NamedTuple, Optional, Union
 
-from pyviews.binding import ExpressionBinding
-from pyviews.core import XmlNode, InheritedDict, Node, Setter, Binding
-from pyviews.core.expression import is_expression, parse_expression, Expression, execute
+from pyviews.binding.expression import ExpressionBinding
+from pyviews.core.bindable import InheritedDict
+from pyviews.core.binding import Binding
+from pyviews.core.expression import Expression, execute, is_expression, parse_expression
+from pyviews.core.rendering import Node, RenderingContext, Setter
+from pyviews.core.xml import XmlNode
 from pyviews.pipes import get_setter
-from pyviews.rendering import RenderingPipeline, RenderingContext
+from pyviews.rendering.pipeline import RenderingPipeline
 
 
 class BindingProperty(NamedTuple):
@@ -14,8 +17,9 @@ class BindingProperty(NamedTuple):
 
 
 class BindingNode(Node):
+
     def __init__(self, xml_node: XmlNode, node_globals: Optional[InheritedDict] = None):
-        super().__init__(xml_node, node_globals=node_globals)
+        super().__init__(xml_node, node_globals = node_globals)
         self.properties: List[BindingProperty] = []
         self.target: Any = None
         self.when_changed: Optional[Expression] = None
@@ -31,12 +35,11 @@ class BindingNode(Node):
 
 def get_binding_pipeline() -> RenderingPipeline:
     """Returns setup for container"""
-    return RenderingPipeline(pipes=[
-        apply_attributes,
-        set_target,
-        bind_changed,
-        bind_true
-    ], name='container pipeline', create_node=create_binding_node)
+    return RenderingPipeline(
+        pipes = [apply_attributes, set_target, bind_changed, bind_true],
+        name = 'container pipeline',
+        create_node = create_binding_node
+    )
 
 
 def apply_attributes(node: BindingNode, _: RenderingContext):
@@ -65,8 +68,7 @@ def set_target(node: BindingNode, context: RenderingContext):
 def bind_changed(node: BindingNode, _: RenderingContext):
     """Rendering pipe: creates binding"""
     if node.when_changed:
-        binding = ExpressionBinding(lambda _: binding_callback(node), node.when_changed,
-                                    node.node_globals)
+        binding = ExpressionBinding(lambda _: binding_callback(node), node.when_changed, node.node_globals)
         binding.bind(node.execute_on_bind)
         node.binding = binding
 
@@ -81,8 +83,7 @@ def binding_callback(node: BindingNode):
 def bind_true(node: BindingNode, _: RenderingContext):
     """Rendering pipe: creates binding"""
     if node.when_true:
-        binding = ExpressionBinding(lambda _: binding_true_callback(node), node.when_true,
-                                    node.node_globals)
+        binding = ExpressionBinding(lambda _: binding_true_callback(node), node.when_true, node.node_globals)
         binding.bind(node.execute_on_bind)
         node.binding = binding
 

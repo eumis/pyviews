@@ -1,12 +1,13 @@
 from injectool import resolve
 from pytest import mark
 
-from pyviews.binding import Binder
+from pyviews.binding.binder import Binder
 from pyviews.binding.setup import use_binding
 
 
 @mark.usefixtures('container_fixture')
 class UseBindingTests:
+
     @staticmethod
     def test_registers_new_binder():
         """should add Binder to container"""

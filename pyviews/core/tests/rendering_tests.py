@@ -2,9 +2,9 @@ from unittest.mock import Mock, call
 
 from pytest import fixture, mark
 
-from pyviews.core.rendering import Node
 from pyviews.core.bindable import InheritedDict
-from pyviews.core import XmlNode
+from pyviews.core.rendering import Node
+from pyviews.core.xml import XmlNode
 
 
 @fixture
@@ -30,7 +30,7 @@ class NodeTests:
         None,
         InheritedDict(),
         InheritedDict({'one': 1})
-    ])
+    ]) # yapf: disable
     def test_init_setup_globals(node_globals: InheritedDict):
         """__init__() should setup node_globals"""
         node = Node(Mock(), node_globals)
@@ -44,7 +44,7 @@ class NodeTests:
         None,
         InheritedDict(),
         InheritedDict({'one': 1})
-    ])
+    ]) # yapf: disable
     def test_adds_self_to_globals(node_globals: InheritedDict):
         """__init__() should add self to node_globals"""
         node = Node(Mock(), node_globals)
@@ -56,7 +56,7 @@ class NodeTests:
         ('key', None),
         ('key', 'value'),
         ('setter', 'value'),
-    ])
+    ]) # yapf: disable
     def test_setattr_sets_property(self, key, value):
         """__setattr__() should set property from properties"""
         # node.properties = {key: Property(key)}

@@ -4,3 +4,5 @@ pytest
 pylint
 coverage
 contextvars;python_version<'3.7'
+yapf
+toml

@@ -1,20 +1,19 @@
 """Expression binding"""
 
 from functools import partial
-from typing import Callable, List, Any
+from typing import Any, Callable, List
 
 from pyviews.binding.binder import BindingContext
-from pyviews.core import Binding, BindingCallback, InheritedDict, Bindable, BindingError, \
-    PyViewsError
-from pyviews.core import error_handling
-from pyviews.core.expression import Expression, ObjectNode, execute, ENTRY, ATTRIBUTE, INDEX
-
+from pyviews.core.bindable import Bindable, InheritedDict
+from pyviews.core.binding import Binding, BindingCallback, BindingError
+from pyviews.core.error import PyViewsError, error_handling
+from pyviews.core.expression import ATTRIBUTE, ENTRY, INDEX, Expression, ObjectNode, execute
 
 _GET_VALUE = {
     ENTRY: lambda inst, key: inst.get(key),
     ATTRIBUTE: getattr,
     INDEX: lambda inst, key: inst[key]
-}
+} # yapf: disable
 
 
 class ExpressionBinding(Binding):
@@ -27,7 +26,7 @@ class ExpressionBinding(Binding):
         self._destroy_functions: List[Callable] = []
         self._vars: InheritedDict = expr_vars
 
-    def bind(self, execute_callback=True):
+    def bind(self, execute_callback = True):
         self.destroy()
         objects_tree = self._expression.get_object_tree()
         with error_handling(BindingError, self._add_error_info):
@@ -50,8 +49,7 @@ class ExpressionBinding(Binding):
         try:
             for entry in var_tree.children:
                 inst.observe(entry.key, self._update_callback)
-                self._destroy_functions.append(
-                    partial(inst.release, entry.key, self._update_callback))
+                self._destroy_functions.append(partial(inst.release, entry.key, self._update_callback))
         except KeyError:
             pass
 

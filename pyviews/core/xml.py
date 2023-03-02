@@ -1,11 +1,10 @@
 """Xml parsing"""
 
-# pylint:disable=wrong-import-order
 from collections import namedtuple
-from typing import List, Optional, Tuple, NamedTuple, Generator
-from xml.parsers.expat import ParserCreate, ExpatError
+from typing import Generator, List, NamedTuple, Optional, Tuple, cast
+from xml.parsers.expat import ExpatError, ParserCreate, XMLParserType
 
-from .error import PyViewsError, ViewInfo
+from pyviews.core.error import PyViewsError, ViewInfo
 
 
 class XmlAttr(NamedTuple):
@@ -37,8 +36,8 @@ class Parser:
     """Wrapper under xml.parsers.expat for parsing xml files"""
 
     def __init__(self):
-        self._parser = None
-        self._root = None
+        self._parser: XMLParserType = cast(XMLParserType, None)
+        self._root: XmlNode = cast(XmlNode, None)
         self._elements: List[Element] = []
         self._namespaces = {}
         self._view_name = None
@@ -58,7 +57,7 @@ class Parser:
 
     def _setup_parser(self):
         self._parser = ParserCreate()
-        self._parser.ordered_attributes = 1
+        self._parser.ordered_attributes = True
         self._parser.buffer_text = True
 
         self._parser.StartElementHandler = self._start_element
@@ -82,7 +81,7 @@ class Parser:
         view_info = ViewInfo(self._view_name, self._parser.CurrentLineNumber)
         return XmlNode(namespace, name, '', [], value_attrs, view_info)
 
-    def _get_namespace_and_name(self, full_name: str, use_default=False) -> Tuple[str, str]:
+    def _get_namespace_and_name(self, full_name: str, use_default = False) -> Tuple[Optional[str], str]:
         if ':' in full_name:
             return self._split(full_name)
         namespace = self._get_default_namespace() if use_default else None
@@ -133,12 +132,12 @@ class Parser:
         if text:
             item = self._elements[-1]
             # noinspection PyProtectedMember
-            node = item.node._replace(text=text)
+            node = item.node._replace(text = text)
             self._elements[-1] = Element(node, item.namespaces)
 
     def _reset(self):
-        self._parser = None
-        self._root = None
+        self._parser = cast(XMLParserType, None)
+        self._root = cast(XmlNode, None)
         self._elements = []
         self._namespaces = {}
 

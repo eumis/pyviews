@@ -2,11 +2,12 @@ from unittest.mock import Mock, call
 
 from pytest import fixture, mark
 
-from pyviews.binding import BindingContext
+from pyviews.binding.binder import BindingContext
 from pyviews.binding.expression import ExpressionBinding, bind_setter_to_expression
 from pyviews.binding.tests.common import InnerViewModel, ParentViewModel
+from pyviews.core.bindable import InheritedDict
 from pyviews.core.expression import Expression, execute
-from pyviews.core import InheritedDict, XmlAttr
+from pyviews.core.xml import XmlAttr
 
 
 @fixture
@@ -39,7 +40,7 @@ class ExpressionBindingTests:
             'vm': InnerViewModel(2, 'asdf'),
             'parent': ParentViewModel(0, InnerViewModel(0, ''))
         }),
-    ])
+    ]) # yapf: disable
     def test_initialize_target(self, source: str, global_dict: dict):
         """Target should be updated with expression value on Binding.bind() call"""
         expression = Expression(source)
@@ -82,7 +83,7 @@ class ExpressionBindingTests:
         },
          lambda gl: setattr(gl['ivm'], 'int_value', 1)
          )
-    ])
+    ]) # yapf: disable
     def test_expression_changed(self, source: str, global_dict: dict, change):
         """Target should be updated after expression result is changed"""
         expression = Expression(source)
@@ -127,7 +128,7 @@ class ExpressionBindingTests:
         },
          lambda gl: setattr(gl['ivm'], 'int_value', 1)
          )
-    ])
+    ]) # yapf: disable
     def test_destroy(self, source: str, global_dict: dict, change):
         """Destroy should stop handling expression changes and update target"""
         expression = Expression(source)
@@ -144,12 +145,14 @@ class ExpressionBindingTests:
 @fixture
 def binding_context_fixture(request):
     setter, xml_attr = Mock(), XmlAttr('name')
-    context = BindingContext({
-        'setter': setter,
-        'xml_attr': xml_attr,
-        'expression_body': '1+1',
-        'node': Mock(node_globals=InheritedDict())
-    })
+    context = BindingContext(
+        {
+            'setter': setter,
+            'xml_attr': xml_attr,
+            'expression_body': '1+1',
+            'node': Mock(node_globals = InheritedDict())
+        }
+    )
 
     request.cls.context = context
 
@@ -161,15 +164,14 @@ class BindSetterToExpressionTests:
 
     def test_binds_setter_to_expression_changes(self):
         """should bind setter to expression changes"""
-        self.context.node = Mock(node_globals=InheritedDict({'value': 1}))
+        self.context.node = Mock(node_globals = InheritedDict({'value': 1}))
         self.context.expression_body = 'value'
 
         bind_setter_to_expression(self.context)
         self.context.setter.reset_mock()
         self.context.node.node_globals['value'] = 2
 
-        assert self.context.setter.call_args == call(self.context.node, self.context.xml_attr.name,
-                                                     2)
+        assert self.context.setter.call_args == call(self.context.node, self.context.xml_attr.name, 2)
 
     def test_returns_binding(self):
         """should return expression binding"""

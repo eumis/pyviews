@@ -3,17 +3,22 @@
 from functools import partial
 
 from pyviews.binding.binder import BindingContext
+from pyviews.core.bindable import InheritedDict
+from pyviews.core.binding import Binding, BindingCallback, BindingError
+from pyviews.core.error import PyViewsError, error_handling
 from pyviews.core.expression import Expression, execute
-from pyviews.core import Binding, BindingCallback, error_handling, BindingError, PyViewsError
-from pyviews.core import InheritedDict
 
 
 class InlineBinding(Binding):
     """Inline binding"""
 
-    def __init__(self, callback: BindingCallback, bind_expression: Expression,
-                 value_expression: Expression,
-                 expr_vars: InheritedDict):
+    def __init__(
+        self,
+        callback: BindingCallback,
+        bind_expression: Expression,
+        value_expression: Expression,
+        expr_vars: InheritedDict
+    ):
         super().__init__()
         self._callback: BindingCallback = callback
         self._bind_expression: Expression = bind_expression
@@ -24,8 +29,7 @@ class InlineBinding(Binding):
 
     def bind(self):
         self.destroy()
-        with error_handling(BindingError('Error occurred during inline binding'),
-                            self._add_error_info):
+        with error_handling(BindingError('Error occurred during inline binding'), self._add_error_info):
             bind = execute(self._bind_expression, self._expression_vars.to_dictionary())
             self._destroy = bind(self._execute_callback)
         self._execute_callback()

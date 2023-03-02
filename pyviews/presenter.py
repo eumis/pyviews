@@ -1,12 +1,14 @@
 """Presenter"""
 
 from abc import ABC
-from typing import Dict, Union
+from typing import Dict, Optional, Union
 
-from pyviews.core import XmlNode, InheritedDict, Node
-from pyviews.core.rendering import InstanceNode
+from pyviews.core.bindable import InheritedDict
+from pyviews.core.rendering import InstanceNode, Node, RenderingContext
+from pyviews.core.xml import XmlNode
 from pyviews.pipes import apply_attributes, render_children
-from pyviews.rendering import RenderingPipeline, RenderingContext, get_child_context
+from pyviews.rendering.common import get_child_context
+from pyviews.rendering.pipeline import RenderingPipeline
 
 
 class Presenter(ABC):
@@ -26,9 +28,10 @@ class Presenter(ABC):
 class PresenterNode(InstanceNode):
     """Presenter node"""
 
-    def __init__(self, instance: 'Presenter', xml_node: XmlNode,
-                 node_globals: InheritedDict = None):
-        super().__init__(instance, xml_node, node_globals=node_globals)
+    def __init__(
+        self, instance: Optional['Presenter'], xml_node: XmlNode, node_globals: Optional[InheritedDict] = None
+    ):
+        super().__init__(instance, xml_node, node_globals = node_globals)
 
     @property
     def instance(self) -> Presenter:
@@ -41,12 +44,11 @@ class PresenterNode(InstanceNode):
 
 def get_presenter_pipeline() -> RenderingPipeline:
     """Returns setup for PresenterNode"""
-    return RenderingPipeline(pipes=[
-        apply_attributes,
-        add_presenter_to_globals,
-        render_presenter_children,
-        call_on_rendered
-    ], create_node=create_presenter_node, name='presenter pipeline')
+    return RenderingPipeline(
+        pipes = [apply_attributes, add_presenter_to_globals, render_presenter_children, call_on_rendered],
+        create_node = create_presenter_node,
+        name = 'presenter pipeline'
+    )
 
 
 def add_presenter_to_globals(node: PresenterNode, _: RenderingContext):
@@ -66,7 +68,7 @@ def render_presenter_children(node, context: RenderingContext):
 
 def create_presenter_node(context: RenderingContext) -> PresenterNode:
     """Create presenter node"""
-    return PresenterNode(None, context.xml_node, node_globals=context.node_globals)
+    return PresenterNode(None, context.xml_node, node_globals = context.node_globals)
 
 
 def add_reference(node: Node, _: str, value: str):

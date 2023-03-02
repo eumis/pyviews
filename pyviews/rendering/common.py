@@ -1,4 +1,5 @@
 """Common functionality for rendering package"""
+
 from contextlib import contextmanager
 from contextvars import ContextVar
 from functools import wraps
@@ -6,56 +7,19 @@ from typing import Generator, Optional
 
 from injectool import dependency
 
-from pyviews.core import PyViewsError, InheritedDict, XmlNode, ViewInfo, Node
-
-
-class RenderingError(PyViewsError):
-    """Error for rendering"""
-
-    def __init__(self, message: str = '', view_info: Optional[ViewInfo] = None):
-        super().__init__(message=message, view_info=view_info)
-
-
-class RenderingContext(dict):
-    """Used as rendering arguments container, passed to rendering step"""
-
-    @property
-    def node_globals(self) -> InheritedDict:
-        """Node globals"""
-        return self.get('node_globals', None)
-
-    @node_globals.setter
-    def node_globals(self, value):
-        self['node_globals'] = value
-
-    @property
-    def parent_node(self) -> Node:
-        """Parent node"""
-        return self.get('parent_node', None)
-
-    @parent_node.setter
-    def parent_node(self, value: Node):
-        self['parent_node'] = value
-
-    @property
-    def xml_node(self) -> XmlNode:
-        """xml node"""
-        return self.get('xml_node', None)
-
-    @xml_node.setter
-    def xml_node(self, value: XmlNode):
-        self['xml_node'] = value
+from pyviews.core.bindable import InheritedDict
+from pyviews.core.rendering import Node, RenderingContext
+from pyviews.core.xml import XmlNode
 
 
 @dependency
-def get_child_context(xml_node: XmlNode, parent_node: Node,
-                      _: RenderingContext) -> RenderingContext:
+def get_child_context(xml_node: XmlNode, parent_node: Node, _: RenderingContext) -> RenderingContext:
     """Return"""
     return RenderingContext({
         'parent_node': parent_node,
         'node_globals': InheritedDict(parent_node.node_globals),
         'xml_node': xml_node
-    })
+    }) # yapf: disable
 
 
 _CONTEXT_VAR: ContextVar[RenderingContext] = ContextVar('rendering_context')
@@ -82,6 +46,6 @@ def pass_rendering_context(func):
     @wraps(func)
     def _decorated(*args, **kwargs):
         ctx = get_rendering_context()
-        return func(*args, **kwargs, rendering_context=ctx)
+        return func(*args, **kwargs, rendering_context = ctx)
 
     return _decorated

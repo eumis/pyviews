@@ -1,6 +1,6 @@
 """Bindable implementations"""
 
-from typing import Callable, Any, Optional, Union
+from typing import Any, Callable, Optional, Union
 
 
 class Bindable:
@@ -139,7 +139,7 @@ class InheritedDict(Bindable):
         except KeyError:
             pass
 
-    def get(self, key, default=None):
+    def get(self, key, default = None):
         """Returns value by value. default is return in case key does not exist"""
         try:
             return self[key]

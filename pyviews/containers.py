@@ -1,11 +1,12 @@
 """Contains methods for node setups creation"""
-from typing import Any
+from typing import Any, Optional
 
-from pyviews.core import Node, XmlNode
-from pyviews.core.bindable import InheritedDict, Bindable
-from pyviews.pipes import render_children, apply_attributes
-from pyviews.rendering import RenderingPipeline, render, RenderingContext, get_child_context
-from pyviews.rendering.views import render_view
+from pyviews.core.bindable import Bindable, InheritedDict
+from pyviews.core.rendering import Node, RenderingContext
+from pyviews.core.xml import XmlNode
+from pyviews.pipes import apply_attributes, render_children
+from pyviews.rendering.common import get_child_context
+from pyviews.rendering.pipeline import RenderingPipeline, render, render_view
 
 
 class Container(Node):
@@ -14,10 +15,7 @@ class Container(Node):
 
 def get_container_pipeline() -> RenderingPipeline:
     """Returns setup for container"""
-    return RenderingPipeline(pipes=[
-        apply_attributes,
-        render_container_children
-    ], name='container pipeline')
+    return RenderingPipeline(pipes = [apply_attributes, render_container_children], name = 'container pipeline')
 
 
 def render_container_children(node, context: RenderingContext):
@@ -28,18 +26,18 @@ def render_container_children(node, context: RenderingContext):
 class View(Container, Bindable):
     """Loads xml from another file"""
 
-    def __init__(self, xml_node: XmlNode, node_globals: InheritedDict = None):
+    def __init__(self, xml_node: XmlNode, node_globals: Optional[InheritedDict] = None):
         Bindable.__init__(self)
-        Container.__init__(self, xml_node, node_globals=node_globals)
-        self._name = None
+        Container.__init__(self, xml_node, node_globals = node_globals)
+        self._name: Optional[str] = None
 
     @property
-    def name(self) -> str:
+    def name(self) -> Optional[str]:
         """Returns view name"""
         return self._name
 
     @name.setter
-    def name(self, value: str):
+    def name(self, value: Optional[str]):
         old_name = self._name
         self._name = value
         self._notify('name', value, old_name)
@@ -47,11 +45,9 @@ class View(Container, Bindable):
 
 def get_view_pipeline() -> RenderingPipeline:
     """Returns setup for container"""
-    return RenderingPipeline(pipes=[
-        apply_attributes,
-        render_view_content,
-        rerender_on_view_change
-    ], name='view pipeline')
+    return RenderingPipeline(
+        pipes = [apply_attributes, render_view_content, rerender_on_view_change], name = 'view pipeline'
+    )
 
 
 def render_view_content(node: View, context: RenderingContext):
@@ -64,7 +60,7 @@ def render_view_content(node: View, context: RenderingContext):
 
 def rerender_on_view_change(node: View, context: RenderingContext):
     """Subscribes to name change and renders new view"""
-    node.observe('name', lambda _, __: _rerender_view(node, context))
+    node.observe('name', lambda *_: _rerender_view(node, context))
 
 
 def _rerender_view(node: View, context: RenderingContext):
@@ -75,9 +71,9 @@ def _rerender_view(node: View, context: RenderingContext):
 class For(Container, Bindable):
     """Renders children for every item in items collection"""
 
-    def __init__(self, xml_node: XmlNode, node_globals: InheritedDict = None):
+    def __init__(self, xml_node: XmlNode, node_globals: Optional[InheritedDict] = None):
         Bindable.__init__(self)
-        Container.__init__(self, xml_node, node_globals=node_globals)
+        Container.__init__(self, xml_node, node_globals = node_globals)
         self._items = []
 
     @property
@@ -94,11 +90,9 @@ class For(Container, Bindable):
 
 def get_for_pipeline() -> RenderingPipeline:
     """Returns setup for For node"""
-    return RenderingPipeline(pipes=[
-        apply_attributes,
-        render_for_items,
-        rerender_on_items_change
-    ], name='for pipeline')
+    return RenderingPipeline(
+        pipes = [apply_attributes, render_for_items, rerender_on_items_change], name = 'for pipeline'
+    )
 
 
 def render_for_items(node: For, context: RenderingContext):
@@ -106,7 +100,7 @@ def render_for_items(node: For, context: RenderingContext):
     _render_for_children(node, node.items, context)
 
 
-def _render_for_children(node: For, items: list, context: RenderingContext, index_shift=0):
+def _render_for_children(node: For, items: list, context: RenderingContext, index_shift = 0):
     item_xml_nodes = node.xml_node.children
     for index, item in enumerate(items):
         for xml_node in item_xml_nodes:
@@ -115,8 +109,7 @@ def _render_for_children(node: For, items: list, context: RenderingContext, inde
             node.add_child(child)
 
 
-def _get_for_child_args(xml_node: XmlNode, index: int, item: Any,
-                        parent_node: For, context: RenderingContext):
+def _get_for_child_args(xml_node: XmlNode, index: int, item: Any, parent_node: For, context: RenderingContext):
     child_context = get_child_context(xml_node, parent_node, context)
     child_globals = child_context.node_globals
     child_globals['index'] = index
@@ -126,7 +119,7 @@ def _get_for_child_args(xml_node: XmlNode, index: int, item: Any,
 
 def rerender_on_items_change(node: For, context: RenderingContext):
     """Subscribes to items change and updates children"""
-    node.observe('items', lambda _, __: _on_items_changed(node, context))
+    node.observe('items', lambda *_: _on_items_changed(node, context))
 
 
 def _on_items_changed(node: For, context: RenderingContext):
@@ -172,9 +165,9 @@ def _create_not_existing(node: For, context: RenderingContext):
 class If(Container, Bindable):
     """Renders children if condition is True"""
 
-    def __init__(self, xml_node: XmlNode, node_globals: InheritedDict = None):
+    def __init__(self, xml_node: XmlNode, node_globals: Optional[InheritedDict] = None):
         Bindable.__init__(self)
-        Container.__init__(self, xml_node, node_globals=node_globals)
+        Container.__init__(self, xml_node, node_globals = node_globals)
         self._condition = False
 
     @property
@@ -191,11 +184,7 @@ class If(Container, Bindable):
 
 def get_if_pipeline() -> RenderingPipeline:
     """Returns setup for For node"""
-    return RenderingPipeline(pipes=[
-        apply_attributes,
-        render_if,
-        rerender_on_condition_change
-    ], name='if pipeline')
+    return RenderingPipeline(pipes = [apply_attributes, render_if, rerender_on_condition_change], name = 'if pipeline')
 
 
 def render_if(node: If, context: RenderingContext):
@@ -206,7 +195,7 @@ def render_if(node: If, context: RenderingContext):
 
 def rerender_on_condition_change(node: If, context: RenderingContext):
     """Rerenders if on condition change"""
-    node.observe('condition', lambda _, __: _on_condition_change(node, context))
+    node.observe('condition', lambda *_: _on_condition_change(node, context))
 
 
 def _on_condition_change(node: If, context: RenderingContext):

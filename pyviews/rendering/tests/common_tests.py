@@ -1,9 +1,12 @@
+from typing import Optional
 from unittest.mock import Mock
 
-from pytest import mark, fixture
+from pytest import fixture, mark
 
-from pyviews.core import InheritedDict, Node, XmlNode
-from pyviews.rendering.common import RenderingContext, use_context, get_rendering_context, pass_rendering_context
+from pyviews.core.bindable import InheritedDict
+from pyviews.core.rendering import Node
+from pyviews.core.xml import XmlNode
+from pyviews.rendering.common import RenderingContext, get_rendering_context, pass_rendering_context, use_context
 
 
 @fixture
@@ -68,7 +71,7 @@ def test_pass_rendering_context():
     """Should pass rendering context as default argument"""
 
     @pass_rendering_context
-    def get_current_context(rendering_context: RenderingContext = None):
+    def get_current_context(rendering_context: Optional[RenderingContext] = None):
         return rendering_context
 
     with use_context(RenderingContext()) as ctx:

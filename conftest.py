@@ -2,7 +2,7 @@ import injectool
 from pytest import fixture
 
 
-def pytest_configure(config):  # pylint: disable=unused-argument
+def pytest_configure(config):
     injectool.set_default_container(injectool.Container())
 
 

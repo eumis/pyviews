@@ -4,7 +4,8 @@ from pytest import fixture, mark, raises
 
 from pyviews.binding.tests.common import InnerViewModel, ParentViewModel
 from pyviews.binding.twoways import TwoWaysBinding, get_expression_callback
-from pyviews.core import InheritedDict, BindingError
+from pyviews.core.bindable import InheritedDict
+from pyviews.core.binding import BindingError
 from pyviews.core.expression import Expression, execute
 
 
@@ -55,7 +56,7 @@ class GetPropertyExpressionCallbackTests:
         ('vm.inner_vm.int_value', 134, {'vm': ParentViewModel(0, InnerViewModel(0, ''))}),
         ('vm.inner_vm.str_value', 'value', {'vm': ParentViewModel(0, InnerViewModel(0, ''))}),
         ('vm.inner_vm', InnerViewModel(50, 'a'), {'vm': ParentViewModel(0, InnerViewModel(0, ''))})
-    ])
+    ]) # yapf: disable
     def test_callback_updates_property(expression_body, value, globals_dict):
         """returned callback should update target property"""
         expression, global_vars = Expression(expression_body), InheritedDict(globals_dict)
@@ -70,7 +71,7 @@ class GetPropertyExpressionCallbackTests:
         ('int_value', 10),
         ('vm', InnerViewModel(50, 'a')),
         ('str_value', 'some value')
-    ])
+    ]) # yapf: disable
     def test_callback_updates_global_value(key, value):
         """returned callback should update target property"""
         global_vars = InheritedDict({key: None})

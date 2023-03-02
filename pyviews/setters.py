@@ -1,10 +1,11 @@
 """Module with setters"""
 
-from typing import Any, NamedTuple, Iterable, Union
+from typing import Any, Iterable, NamedTuple, Union
 
 from injectool import resolve
 
-from pyviews.core import Node, import_path, InstanceNode
+from pyviews.core.reflection import import_path
+from pyviews.core.rendering import InstanceNode, Node
 
 
 def import_global(node: Node, key: str, path: Any):
@@ -37,5 +38,5 @@ def call_args(*args_, **kwargs) -> Args:
 def call(node: Union[InstanceNode, Node], key: str, value: Args):
     """Calls node or node instance method"""
     target = node if hasattr(node, key) else \
-            node.instance if isinstance(node, InstanceNode) else node
+             node.instance if isinstance(node, InstanceNode) else node
     getattr(target, key)(*value.args, **value.kwargs)

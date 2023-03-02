@@ -4,10 +4,9 @@ from functools import partial
 from re import compile as compile_regex
 from typing import Any
 
+from pyviews.core.bindable import InheritedDict
+from pyviews.core.binding import Binding, BindingCallback, BindingError
 from pyviews.core.expression import Expression, ObjectNode
-from pyviews.core import BindingError, Binding
-from pyviews.core import BindingCallback
-from pyviews.core import InheritedDict
 
 
 class TwoWaysBinding(Binding):

@@ -1,7 +1,7 @@
-from pytest import mark, raises, fixture
+from pytest import fixture, mark, raises
 
-from pyviews.core.expression import Expression, ExpressionError, ObjectNode, execute
-from pyviews.core.expression import is_expression, parse_expression, ParsedExpression
+from pyviews.core.expression import (Expression, ExpressionError, ObjectNode, ParsedExpression, execute, is_expression,
+                                     parse_expression)
 
 
 @fixture
@@ -66,10 +66,11 @@ _EXPRESSION_TEST_PARAMETERS = [
     ('str(some_key)', {'some_key': 1}, '1'),
     ('some_key', {'some_key': 'asdf'}, 'asdf'),
     ('some_key(some_value)', {'some_key': lambda val: val, 'some_value': 'value'}, 'value')
-]
+] # yapf: disable
 
 
 class ExecuteTests:
+
     @staticmethod
     @mark.parametrize('code, params, expected', _EXPRESSION_TEST_PARAMETERS)
     def test_execute_expression(code, params, expected):
@@ -89,10 +90,7 @@ class ExecuteTests:
         assert expected == actual
 
     @staticmethod
-    @mark.parametrize('expression', [
-        '2/0',
-        Expression('print(some_variable)')
-    ])
+    @mark.parametrize('expression', ['2/0', Expression('print(some_variable)')])
     def test_execute_raises(expression):
         """execute() should raise error if expression is invalid"""
         with raises(ExpressionError):
@@ -119,7 +117,7 @@ class ExecuteTests:
     ('asdf}', False),
     (' {asdf}', False),
     ('once: {asdf}', False),
-])
+]) # yapf: disable
 def test_is_expression(expr: str, expected: bool):
     """is_expression() should return True for valid expression by syntax"""
     assert is_expression(expr) == expected
@@ -137,7 +135,7 @@ def test_is_expression(expr: str, expected: bool):
     ('oneway:{{asdf}}', ('oneway', '{asdf}')),
     ('twoways:{to_int:{asdf}}', ('twoways', 'to_int:{asdf}')),
     ('bind:{qwer}:{asdf}', ('bind', 'qwer}:{asdf')),
-])
+]) # yapf: disable
 def test_parse_expression(expr: str, expected: ParsedExpression):
     """parse_expression() should return tuple (binding_type, expression body)"""
     assert parse_expression(expr) == expected
