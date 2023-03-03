@@ -2,25 +2,22 @@
 
 import ast
 from collections import namedtuple
-from functools import partial
 from re import compile as compile_regex
 from types import CodeType
-from typing import Any, Callable, Dict, Generator, List, NamedTuple, Optional, Set, Tuple, Union
+from typing import Any, Dict, Generator, List, NamedTuple, Optional, Union
 
 from injectool import dependency
 
 from pyviews.core.error import PyViewsError, error_handling
 
-_COMPILATION_CACHE = {}
-_CacheItem = namedtuple('CacheItem', ['compiled_code', 'tree'])
+_CompiledCode = namedtuple('CacheItem', ['compiled_code', 'tree'])
+_COMPILATION_CACHE: Dict[str, _CompiledCode] = {}
 _AST_CLASSES = {ast.Name, ast.Attribute, ast.Subscript}
 
 ROOT = 'root'
 ENTRY = 'entry'
 ATTRIBUTE = 'attribute'
 INDEX = 'index'
-
-_TYPES = {ast.Name: ENTRY, ast.Attribute: ATTRIBUTE, ast.Subscript: INDEX}
 
 
 class ExpressionError(PyViewsError):
@@ -32,17 +29,18 @@ class ExpressionError(PyViewsError):
         if expression_body:
             self.add_expression_info(expression_body)
 
-    def add_expression_info(self, expression: str):
+    def add_expression_info(self, expression: str) -> 'ExpressionError':
         """Adds info about expression to error"""
         self.expression = expression
         self.add_info('Expression', expression)
+        return self
 
     def _get_error(self) -> Generator[str, None, None]:
         yield from super()._get_error()
         yield self._format_info('Expression', self.expression if self.expression else '')
 
 
-def _get_index_value(ast_node: ast.Subscript):
+def _get_index_value(ast_node: ast.Subscript) -> Any:
     ast_node = ast_node.slice.value if isinstance(ast_node.slice, ast.Index) else ast_node.slice
     if isinstance(ast_node, ast.Constant):
         return ast_node.value
@@ -59,9 +57,6 @@ def _get_attr_expression(ast_node: Union[ast.Name, ast.Attribute, ast.Subscript]
     return Expression(f'{ast_node.id}{result}')
 
 
-_KEYS = {ast.Name: lambda n: n.id, ast.Attribute: lambda n: n.attr, ast.Subscript: _get_index_value}
-
-
 class ObjectNode(NamedTuple):
     """Root entry in expression"""
     key: str
@@ -69,73 +64,81 @@ class ObjectNode(NamedTuple):
     children: List['ObjectNode']
 
 
+def _level_key(ast_node: ast.AST):
+    level = 0
+    while hasattr(ast_node, 'value'):
+        level = level + 1
+        ast_node = ast_node.value
+    return level
+
+
 class Expression:
     """Parses and executes expression."""
+
+    __slots__ = ('_code', '_compiled_code', '_object_tree')
 
     def __init__(self, code):
         self._code: str = code
         self._compiled_code: CodeType
         self._object_tree: ObjectNode
         if not self._init_from_cache():
-            self._compiled_code = self._compile()
-            self._object_tree = self._build_object_tree()
+            self._compiled_code = self._compile(code)
+            self._object_tree = self._build_object_tree(code)
             self._store_to_cache()
 
     def _init_from_cache(self) -> bool:
-        try:
-            item = _COMPILATION_CACHE[self._code]
-            self._compiled_code = item.compiled_code
-            self._object_tree = item.tree
-        except KeyError:
+        compiled = _COMPILATION_CACHE.get(self._code)
+        if compiled is None:
             return False
+        self._compiled_code = compiled.compiled_code
+        self._object_tree = compiled.tree
         return True
 
-    def _compile(self) -> CodeType:
+    @staticmethod
+    def _compile(code: str) -> CodeType:
         try:
-            code = self._code if self._code.strip(' ') else 'None'
+            code = code if code.strip(' ') else 'None'
             return compile(code, '<string>', 'eval')
         except SyntaxError as syntax_error:
-            error = ExpressionError(syntax_error.msg, self._code)
+            error = ExpressionError(syntax_error.msg, code)
             error.cause_error = syntax_error
             raise error from syntax_error
 
-    def _build_object_tree(self) -> ObjectNode:
-        ast_root = ast.parse(self._code)
-        ast_nodes = {n for n in ast.walk(ast_root) if n.__class__ in _AST_CLASSES}
-        return ObjectNode('root', ROOT, self._create_nodes(ast_nodes, self._is_name))
-
     @staticmethod
-    def _is_name(ast_node: ast.AST) -> bool:
-        return isinstance(ast_node, ast.Name)
-
-    def _create_nodes(self, ast_nodes: Set[ast.AST], node_filter: Callable[[ast.AST], bool]) \
-            -> List[ObjectNode]:
-        ast_nodes_to_create = {n for n in ast_nodes if node_filter(n)}
-        ast_nodes = ast_nodes.difference(ast_nodes_to_create)
-
-        grouped = self._group(ast_nodes_to_create).items()
-        return [
-            ObjectNode(key, node_type, self._create_nodes(ast_nodes, partial(self._is_child, nodes)))
-            for key, (nodes, node_type) in grouped
-        ]
-
-    @staticmethod
-    def _is_child(key_nodes: set, ast_node: ast.AST) -> bool:
-        return ast_node.value in key_nodes
-
-    @staticmethod
-    def _group(ast_nodes: Set[ast.AST]) -> Dict[str, Tuple[Set[ast.AST], str]]:
-        result = {}
+    def _build_object_tree(code: str) -> ObjectNode:
+        root = ObjectNode('root', ROOT, [])
+        ast_root = ast.parse(code)
+        nodes: Dict[ast.AST, ObjectNode] = {}
+        ast_nodes = sorted((item for item in ast.walk(ast_root) if item.__class__ in _AST_CLASSES), key = _level_key)
         for ast_node in ast_nodes:
-            key = _KEYS[ast_node.__class__](ast_node)
-            if key not in result:
-                result[key] = ({ast_node}, _TYPES[ast_node.__class__])
-            else:
-                result[key][0].add(ast_node)
-        return result
+            if isinstance(ast_node, ast.Name):
+                try:
+                    node = next(n for n in root.children if n.key == ast_node.id)
+                except StopIteration:
+                    node = ObjectNode(ast_node.id, ENTRY, [])
+                    root.children.append(node)
+                nodes[ast_node] = node
+            if isinstance(ast_node, ast.Attribute):
+                ast_parent = ast_node.value
+                try:
+                    node = next(n for n in nodes[ast_parent].children if n.key == ast_node.attr)
+                except StopIteration:
+                    node = ObjectNode(ast_node.attr, ATTRIBUTE, [])
+                    nodes[ast_parent].children.append(node)
+                nodes[ast_node] = node
+            if isinstance(ast_node, ast.Subscript):
+                ast_parent = ast_node.value
+                key = _get_index_value(ast_node)
+                try:
+                    node = next(n for n in nodes[ast_parent].children if n.key == key)
+                except StopIteration:
+                    node = ObjectNode(key, INDEX, [])
+                    nodes[ast_parent].children.append(node)
+                nodes[ast_node] = node
+        return root
 
     def _store_to_cache(self):
-        item = _CacheItem(self._compiled_code, self._object_tree)
+        item = _CompiledCode(self._compiled_code, self._object_tree)
         _COMPILATION_CACHE[self._code] = item
 
     @property
@@ -154,12 +157,10 @@ class Expression:
 
 
 @dependency
-def execute(expression: Union[Expression, str], parameters: dict = None) -> Any:
+def execute(expression: Union[Expression, str], parameters: Optional[dict] = None) -> Any:
     """Executes expression with passed parameters and returns result"""
     code = expression.code if isinstance(expression, Expression) else expression
-    with error_handling(
-        ExpressionError('Error occurred in expression execution'), lambda e: e.add_expression_info(code)
-    ):
+    with error_handling(ExpressionError('Error occurred in expression execution', code)):
         expression = expression if isinstance(expression, Expression) else Expression(expression)
         parameters = {} if parameters is None else parameters
         return eval(expression.compiled_code, parameters, {})

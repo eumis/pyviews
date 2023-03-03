@@ -1,16 +1,16 @@
 """Classes used for binding"""
 
 from abc import ABC, abstractmethod
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
-from pyviews.core.error import PyViewsError
+from pyviews.core.error import PyViewsError, ViewInfo
 
 
 class BindingError(PyViewsError):
     """Base error for binding errors"""
 
-    def __init__(self, message: str = ''):
-        super().__init__(message = message)
+    def __init__(self, message: Optional[str] = None, view_info: Optional[ViewInfo] = None):
+        super().__init__(message = message, view_info = view_info)
 
 
 BindingCallback = Callable[[Any], None]
