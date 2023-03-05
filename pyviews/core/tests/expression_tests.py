@@ -1,61 +1,7 @@
-from pytest import fixture, mark, raises
+from pytest import mark, raises
 
-from pyviews.core.expression import (Expression, ExpressionError, ObjectNode, ParsedExpression, execute, is_expression,
+from pyviews.core.expression import (Expression, ExpressionError, ParsedExpression, execute, is_expression,
                                      parse_expression)
-
-
-@fixture
-def object_tree_fixture(request):
-    expression = Expression("str(vm.vm.int_value) + vm.vm.str_value + vm.str_value + vm.get()")
-    root = expression.get_object_tree()
-
-    request.cls.root = root
-    request.cls.vm_node = [entry for entry in root.children if entry.key == 'vm'][0]
-
-
-@mark.usefixtures('object_tree_fixture')
-class ExpressionTests:
-    """Expression class tests"""
-
-    root: ObjectNode
-    vm_node: ObjectNode
-
-    def test_root(self):
-        """get_object_tree() should return objects tree root"""
-        assert self.root.key == 'root'
-
-    def test_locals(self):
-        """get_object_tree(): root should contain local variables"""
-        assert sorted([e.key for e in self.root.children]) == sorted(['str', 'vm'])
-
-    def test_method(self):
-        """get_object_tree(): method node should not contain any child"""
-        str_method_node = [entry for entry in self.root.children if entry.key == 'str'][0]
-
-        assert [e.key for e in str_method_node.children] == []
-
-    def test_property(self):
-        """get_object_tree(): object node should have children node for property"""
-        assert sorted([e.key for e in self.vm_node.children]) == sorted(['vm', 'str_value', 'get'])
-
-    def test_empty_children(self):
-        """
-        get_object_tree(): object node should not have children
-        if there are no properties used in expression
-        """
-        str_value_node = [entry for entry in self.vm_node.children if entry.key == 'str_value'][0]
-
-        assert [e.key for e in str_value_node.children] == []
-
-    def test_property_children(self):
-        """
-        get_object_tree(): object node should have children
-        if there are its properties used in expression
-        """
-        inner_vm_node = [entry for entry in self.vm_node.children if entry.key == 'vm'][0]
-
-        assert sorted([e.key for e in inner_vm_node.children]) == sorted(['int_value', 'str_value'])
-
 
 _EXPRESSION_TEST_PARAMETERS = [
     ('', None, None),
