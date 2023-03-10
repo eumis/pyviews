@@ -1,10 +1,117 @@
 from unittest.mock import Mock, call
 
-from pytest import fixture, mark
+from pytest import fixture, mark, raises
 
-from pyviews.core.bindable import InheritedDict
-from pyviews.core.rendering import Node
+from pyviews.core.bindable import BindableDict
+from pyviews.core.rendering import Node, NodeGlobals
 from pyviews.core.xml import XmlNode
+
+
+class NodeGlobalsTests:
+
+    @staticmethod
+    @mark.parametrize('parent', [
+        ({'key': 'value'}),
+        (BindableDict({'key': 'value'})),
+        (NodeGlobals({'key': 'value', 'two': 1}))
+    ]) # yapf: disable
+    def test_uses_parent_values(parent):
+        """should use parent values"""
+        node_globals = NodeGlobals(parent)
+
+        assert node_globals == parent
+
+    @staticmethod
+    @mark.parametrize('parent, key, value', [
+        (BindableDict({'key': 'value'}), 'key', 1),
+        (NodeGlobals({'key': 'value', 'two': 1}), 'two', 'new value')
+    ]) # yapf: disable
+    def test_listens_to_parent_changes(parent, key, value):
+        """should use updated parent values"""
+        node_globals = NodeGlobals(parent)
+
+        parent[key] = value
+        assert node_globals[key] == value
+
+    @staticmethod
+    @mark.parametrize('parent, key, value, parent_value', [
+        (BindableDict({'key': 'value'}), 'key', 1, 2),
+        (NodeGlobals({'key': 'value', 'two': 1}), 'two', 'new value', 'new parent value')
+    ]) # yapf: disable
+    def test_uses_own_value(parent, key, value, parent_value):
+        """should use own values"""
+        node_globals = NodeGlobals(parent)
+
+        node_globals[key] = value
+        parent[key] = parent_value
+        assert node_globals[key] == value
+
+    @staticmethod
+    @mark.parametrize('parent, key, value, parent_value', [
+        (BindableDict({'key': 'value'}), 'key', 1, 2),
+        (NodeGlobals({'key': 'value', 'two': 1}), 'two', 'new value', 'new parent value')
+    ]) # yapf: disable
+    def test_del_removes_own_value(parent, key, value, parent_value):
+        """should pop own item"""
+        node_globals = NodeGlobals(parent)
+        node_globals[key] = value
+        parent[key] = parent_value
+        callback = Mock()
+        node_globals.observe(key, callback)
+
+        del node_globals[key]
+
+        assert node_globals[key] == parent_value
+        assert callback.call_args == call(parent_value, value)
+
+    @staticmethod
+    @mark.parametrize('parent, key', [
+        (BindableDict({'key': 'value'}), 'key'),
+        (NodeGlobals({'key': 'value', 'two': 1}), 'key')
+    ]) # yapf: disable
+    def test_del_raises_when_key_is_not_own(parent, key):
+        """should raise KeyError when key is not presented"""
+        node_globals = NodeGlobals(parent)
+
+        with raises(KeyError):
+            del node_globals[key]
+        assert node_globals[key] == parent[key]
+
+    @staticmethod
+    @mark.parametrize('parent, key, value, parent_value', [
+        (BindableDict({'key': 'value'}), 'key', 1, 2),
+        (NodeGlobals({'key': 'value', 'two': 1}), 'two', 'new value', 'new parent value')
+    ]) # yapf: disable
+    def test_pop_removes_own_value(parent, key, value, parent_value):
+        """should pop own item"""
+        node_globals = NodeGlobals(parent)
+        node_globals[key] = value
+        parent[key] = parent_value
+        callback = Mock()
+        node_globals.observe(key, callback)
+
+        popped_value = node_globals.pop(key)
+
+        assert popped_value == value
+        assert node_globals[key] == parent_value
+        assert callback.call_args == call(parent_value, value)
+
+    @staticmethod
+    @mark.parametrize('parent, key', [
+        (BindableDict({'key': 'value'}), 'key'),
+        (NodeGlobals({'key': 'value', 'two': 1}), 'key')
+    ]) # yapf: disable
+    def test_pop_does_nothing(parent, key):
+        """should return default value when key is not presented"""
+        node_globals = NodeGlobals(parent)
+        callback = Mock()
+        node_globals.observe(key, callback)
+
+        popped_value = node_globals.pop(key)
+
+        assert popped_value is None
+        assert node_globals[key] == parent[key]
+        assert not callback.called
 
 
 @fixture
@@ -28,10 +135,10 @@ class NodeTests:
     @staticmethod
     @mark.parametrize('node_globals', [
         None,
-        InheritedDict(),
-        InheritedDict({'one': 1})
+        NodeGlobals(),
+        NodeGlobals({'one': 1})
     ]) # yapf: disable
-    def test_init_setup_globals(node_globals: InheritedDict):
+    def test_init_setup_globals(node_globals: NodeGlobals):
         """__init__() should setup node_globals"""
         node = Node(Mock(), node_globals)
 
@@ -42,10 +149,10 @@ class NodeTests:
     @staticmethod
     @mark.parametrize('node_globals', [
         None,
-        InheritedDict(),
-        InheritedDict({'one': 1})
+        NodeGlobals(),
+        NodeGlobals({'one': 1})
     ]) # yapf: disable
-    def test_adds_self_to_globals(node_globals: InheritedDict):
+    def test_adds_self_to_globals(node_globals: NodeGlobals):
         """__init__() should add self to node_globals"""
         node = Node(Mock(), node_globals)
 

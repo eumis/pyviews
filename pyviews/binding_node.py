@@ -1,10 +1,9 @@
 from typing import Any, List, NamedTuple, Optional, Union
 
 from pyviews.binding.expression import ExpressionBinding
-from pyviews.core.bindable import InheritedDict
 from pyviews.core.binding import Binding
 from pyviews.core.expression import Expression, execute, is_expression, parse_expression
-from pyviews.core.rendering import Node, RenderingContext, Setter
+from pyviews.core.rendering import Node, NodeGlobals, RenderingContext, Setter
 from pyviews.core.xml import XmlNode
 from pyviews.pipes import get_setter
 from pyviews.rendering.pipeline import RenderingPipeline
@@ -18,7 +17,7 @@ class BindingProperty(NamedTuple):
 
 class BindingNode(Node):
 
-    def __init__(self, xml_node: XmlNode, node_globals: Optional[InheritedDict] = None):
+    def __init__(self, xml_node: XmlNode, node_globals: Optional[NodeGlobals] = None):
         super().__init__(xml_node, node_globals = node_globals)
         self.properties: List[BindingProperty] = []
         self.target: Any = None
@@ -53,7 +52,7 @@ def apply_attributes(node: BindingNode, _: RenderingContext):
         elif attr.name == 'when_true':
             node.when_true = value
         elif attr.name in node.__dict__:
-            setattr(node, attr.name, execute(value, node.node_globals.to_dictionary()))
+            setattr(node, attr.name, execute(value, node.node_globals))
         else:
             setter = get_setter(attr)
             node.properties.append(BindingProperty(attr.name, setter, value))
@@ -75,7 +74,7 @@ def bind_changed(node: BindingNode, _: RenderingContext):
 
 def binding_callback(node: BindingNode):
     for prop in node.properties:
-        value = execute(prop.value, node.node_globals.to_dictionary()) \
+        value = execute(prop.value, node.node_globals) \
             if isinstance(prop.value, Expression) else prop.value
         prop.setter(node.target, prop.name, value)
 
@@ -89,7 +88,7 @@ def bind_true(node: BindingNode, _: RenderingContext):
 
 
 def binding_true_callback(node: BindingNode):
-    value = execute(node.when_true, node.node_globals.to_dictionary())
+    value = execute(node.when_true, node.node_globals)
     if value:
         binding_callback(node)
 

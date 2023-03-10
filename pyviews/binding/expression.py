@@ -3,13 +3,14 @@
 import ast
 from functools import partial
 from re import compile as compile_regex
-from typing import Any, Callable, Dict, List, NamedTuple, Union
+from typing import Any, Callable, Dict, List, NamedTuple, Set, Union
 
 from pyviews.binding.binder import BindingContext
-from pyviews.core.bindable import Bindable, InheritedDict
+from pyviews.core.bindable import Bindable, BindableRecord, recording
 from pyviews.core.binding import Binding, BindingCallback, BindingError
 from pyviews.core.error import PyViewsError, error_handling
 from pyviews.core.expression import Expression, execute
+from pyviews.core.rendering import NodeGlobals
 
 ROOT = 'root'
 ENTRY = 'entry'
@@ -99,37 +100,30 @@ def _get_object_tree(code: str) -> ObjectNode:
 class ExpressionBinding(Binding):
     """Binds target to expression result"""
 
-    def __init__(self, callback: BindingCallback, expression: Expression, expr_vars: InheritedDict):
+    def __init__(self, callback: BindingCallback, expression: Expression, expr_vars: NodeGlobals):
         super().__init__()
         self._callback: BindingCallback = callback
         self._expression: Expression = expression
         self._destroy_functions: List[Callable] = []
-        self._vars: InheritedDict = expr_vars
+        self._vars: NodeGlobals = expr_vars
 
     def bind(self, execute_callback = True):
         self.destroy()
-        objects_tree = _get_object_tree(self._expression.code)
+        with recording() as records:
+            value = execute(self._expression, self._vars)
         with error_handling(BindingError, self._add_error_info):
-            self._create_dependencies(self._vars, objects_tree)
+            self._create_dependencies(records)
         if execute_callback:
-            self._execute_callback()
+            self._callback(value)
 
-    def _create_dependencies(self, inst: Any, var_tree: ObjectNode):
-        if isinstance(inst, Bindable):
-            self._subscribe_for_changes(inst, var_tree)
+    def _create_dependencies(self, records: Set[BindableRecord]):
+        for record in records:
+            self._subscribe_for_changes(record.bindable, record.key)
 
-        for entry in var_tree.children:
-            key = execute(entry.key, self._vars.to_dictionary()) \
-                if isinstance(entry.key, Expression) else entry.key
-            child_inst = _GET_VALUE[entry.type](inst, key)
-            if child_inst is not None:
-                self._create_dependencies(child_inst, entry)
-
-    def _subscribe_for_changes(self, inst: Bindable, var_tree: ObjectNode):
+    def _subscribe_for_changes(self, inst: Bindable, key: str):
         try:
-            for entry in var_tree.children:
-                inst.observe(entry.key, self._update_callback)
-                self._destroy_functions.append(partial(inst.release, entry.key, self._update_callback))
+            inst.observe(key, self._update_callback)
+            self._destroy_functions.append(partial(inst.release, key, self._update_callback))
         except KeyError:
             pass
 
@@ -146,7 +140,7 @@ class ExpressionBinding(Binding):
         error.add_info('Callback', self._callback)
 
     def _execute_callback(self):
-        value = execute(self._expression, self._vars.to_dictionary())
+        value = execute(self._expression, self._vars)
         self._callback(value)
 
     def destroy(self):
@@ -167,7 +161,7 @@ def bind_setter_to_expression(context: BindingContext) -> Binding:
 PROPERTY_EXPRESSION_REGEX = compile_regex(r'([a-zA-Z_0-9]{1,}\.){0,}([a-zA-Z_0-9]{1,})')
 
 
-def get_expression_callback(expression: Expression, expr_vars: InheritedDict) -> BindingCallback:
+def get_expression_callback(expression: Expression, expr_vars: NodeGlobals) -> BindingCallback:
     """Returns callback that sets value to property expression"""
     _validate_property_expression(expression.code)
     object_tree = _get_object_tree(expression.code)
@@ -183,12 +177,12 @@ def _validate_property_expression(source_code: str):
         raise error
 
 
-def _property_expression_callback(_var_tree: ObjectNode, _vars: InheritedDict, value: Any):
+def _property_expression_callback(_var_tree: ObjectNode, _vars: NodeGlobals, value: Any):
     (inst, prop) = _get_target(_var_tree, _vars)
     setattr(inst, prop, value)
 
 
-def _get_target(var_tree: ObjectNode, expr_vars: InheritedDict):
+def _get_target(var_tree: ObjectNode, expr_vars: NodeGlobals):
     entry = var_tree.children[0]
     inst = expr_vars[entry.key]
     next_key = entry.children[0].key
@@ -202,5 +196,5 @@ def _get_target(var_tree: ObjectNode, expr_vars: InheritedDict):
     return inst, next_key
 
 
-def _on_global_value_update(_vars: InheritedDict, key: str, value):
+def _on_global_value_update(_vars: NodeGlobals, key: str, value):
     _vars[key] = value

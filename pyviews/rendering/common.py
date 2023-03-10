@@ -7,8 +7,7 @@ from typing import Generator, Optional
 
 from injectool import dependency
 
-from pyviews.core.bindable import InheritedDict
-from pyviews.core.rendering import Node, RenderingContext
+from pyviews.core.rendering import Node, NodeGlobals, RenderingContext
 from pyviews.core.xml import XmlNode
 
 
@@ -17,7 +16,7 @@ def get_child_context(xml_node: XmlNode, parent_node: Node, _: RenderingContext)
     """Return"""
     return RenderingContext({
         'parent_node': parent_node,
-        'node_globals': InheritedDict(parent_node.node_globals),
+        'node_globals': NodeGlobals(parent_node.node_globals),
         'xml_node': xml_node
     }) # yapf: disable
 

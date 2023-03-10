@@ -4,7 +4,7 @@ from pytest import mark
 
 from pyviews.binding.binder import BindingContext
 from pyviews.binding.once import run_once
-from pyviews.core.bindable import InheritedDict
+from pyviews.core.rendering import NodeGlobals
 from pyviews.core.xml import XmlAttr
 
 
@@ -15,7 +15,7 @@ from pyviews.core.xml import XmlAttr
 ]) # yapf: disable
 def test_run_once(expr_body: str, node_globals: dict, expected_value):
     """run_once() should call passed setter"""
-    node = Mock(node_globals = InheritedDict(node_globals))
+    node = Mock(node_globals = NodeGlobals(node_globals))
     setter, xml_attr = Mock(), XmlAttr('name')
 
     run_once(BindingContext({

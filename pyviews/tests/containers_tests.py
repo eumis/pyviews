@@ -6,8 +6,7 @@ from pytest import fixture, mark
 from pyviews.containers import (Container, For, If, View, render_container_children, render_for_items, render_if,
                                 render_view_content, rerender_on_condition_change, rerender_on_items_change,
                                 rerender_on_view_change)
-from pyviews.core.bindable import InheritedDict
-from pyviews.core.rendering import Node, RenderingContext
+from pyviews.core.rendering import Node, NodeGlobals, RenderingContext
 from pyviews.core.xml import XmlNode
 from pyviews.rendering import common
 from pyviews.rendering.pipeline import render, render_view
@@ -19,7 +18,7 @@ def test_render_container_children(nodes_count):
     """should render all xml children for every item"""
     render_mock = Mock()
     add_singleton(render, render_mock)
-    with patch(common.__name__ + '.InheritedDict') as inherited_dict_mock:
+    with patch(common.__name__ + '.NodeGlobals') as inherited_dict_mock:
         inherited_dict_mock.side_effect = lambda p: {'source': p} if p else p
         xml_node = Mock(children = [Mock() for _ in range(nodes_count)])
         node = Container(xml_node)
@@ -28,13 +27,9 @@ def test_render_container_children(nodes_count):
         render_container_children(node, context)
 
         for actual_call, child_xml_node in zip(render_mock.call_args_list, xml_node.children):
-            child_context = RenderingContext(
-                {
-                    'parent_node': node,
-                    'node_globals': inherited_dict_mock(node.node_globals),
-                    'xml_node': child_xml_node
-                }
-            )
+            child_context = RenderingContext({
+                'parent_node': node, 'node_globals': inherited_dict_mock(node.node_globals), 'xml_node': child_xml_node
+            })
             assert actual_call == call(child_context)
 
 
@@ -54,7 +49,7 @@ def view_fixture(request):
     render_view_mock = Mock()
     add_singleton(render_view, render_view_mock)
 
-    view = View(Mock(), node_globals = InheritedDict({'key': 'value'}))
+    view = View(Mock(), node_globals = NodeGlobals({'key': 'value'}))
     view.name = 'view'
 
     request.cls.render_view = render_view_mock
@@ -89,7 +84,7 @@ class RenderViewContentTests:
         render_view_content(self.view, RenderingContext({'parent': self.parent, 'sizer': self.sizer}))
 
         assert actual.parent_node == self.view
-        assert actual.node_globals.to_dictionary() == self.view.node_globals.to_dictionary()
+        assert actual.node_globals == self.view.node_globals
 
     @mark.parametrize('view_name', ['', None])
     def test_not_render_empty_view_name(self, view_name):
@@ -154,7 +149,7 @@ def for_fixture(request):
     render_mock.side_effect = lambda ctx: Node(ctx.xml_node, node_globals = ctx.node_globals)
     add_singleton(render, render_mock)
 
-    for_node = For(XmlNode('pyviews', 'For'), node_globals = InheritedDict({'key': 'value'}))
+    for_node = For(XmlNode('pyviews', 'For'), node_globals = NodeGlobals({'key': 'value'}))
 
     request.cls.render = render_mock
     request.cls.for_node = for_node
@@ -184,13 +179,13 @@ class RenderForItemsTests:
         render_for_items(self.for_node, RenderingContext())
 
         actual = iter(self.for_node.children)
-        parent_globals = self.for_node.node_globals.to_dictionary()
+        parent_globals = self.for_node.node_globals
         for index, item in enumerate(items):
             for xml_node in xml_children:
                 child = next(actual)
 
                 assert child.xml_node == xml_node
-                assert child.node_globals.to_dictionary() == {
+                assert child.node_globals == {
                     'index': index, 'item': item, **parent_globals, 'node': child
                 }
 
@@ -214,13 +209,13 @@ class RenderForItemsTests:
         self.for_node.items = new_items
 
         actual = iter(self.for_node.children)
-        parent_globals = self.for_node.node_globals.to_dictionary()
+        parent_globals = self.for_node.node_globals
         for index, item in enumerate(new_items):
             for xml_node in xml_children:
                 child = next(actual)
 
                 assert child.xml_node == xml_node
-                assert child.node_globals.to_dictionary() == {
+                assert child.node_globals == {
                     'index': index, 'item': item, **parent_globals, 'node': child
                 }
 
@@ -242,7 +237,7 @@ def if_fixture(request):
     render_mock.side_effect = lambda ctx: Node(ctx.xml_node, node_globals = ctx.node_globals)
     add_singleton(render, render_mock)
 
-    if_node = If(XmlNode('pyviews', 'If'), node_globals = InheritedDict({'key': 'value'}))
+    if_node = If(XmlNode('pyviews', 'If'), node_globals = NodeGlobals({'key': 'value'}))
 
     request.cls.render = render_mock
     request.cls.if_node = if_node

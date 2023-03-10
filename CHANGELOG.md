@@ -5,6 +5,8 @@
 - upgraded injectool
 - Observable is renamed to Bindable
 - expression is moved to core
+- InheritedDict is renamed to BindableDict
+- Added NodeGlobals class
 
 ## 3.2.0
 

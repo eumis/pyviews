@@ -3,8 +3,7 @@ from unittest.mock import Mock
 
 from pytest import fixture, mark
 
-from pyviews.core.bindable import InheritedDict
-from pyviews.core.rendering import Node
+from pyviews.core.rendering import Node, NodeGlobals
 from pyviews.core.xml import XmlNode
 from pyviews.rendering.common import RenderingContext, get_rendering_context, pass_rendering_context, use_context
 
@@ -22,7 +21,7 @@ class RenderingContextTests:
 
     def test_node_globals(self):
         """node_globals property should use key 'node_globals'"""
-        value = InheritedDict()
+        value = NodeGlobals()
         init_value = self.context.node_globals
 
         self.context.node_globals = value

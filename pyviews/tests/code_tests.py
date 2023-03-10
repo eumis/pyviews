@@ -3,10 +3,9 @@ from unittest.mock import Mock
 from pytest import mark, raises
 
 from pyviews.code import Code, run_code
-from pyviews.core.bindable import InheritedDict
 from pyviews.core.error import ViewInfo
 from pyviews.core.expression import ExpressionError
-from pyviews.core.rendering import Node
+from pyviews.core.rendering import Node, NodeGlobals
 from pyviews.core.xml import XmlNode
 from pyviews.rendering.common import RenderingContext
 
@@ -36,7 +35,7 @@ class CodeTests:
         """defined functions should be added to parent globals"""
         parent_node = Node(Mock())
         code = self._get_code_node(content)
-        context = RenderingContext({'parent_node': parent_node, 'node_globals': InheritedDict(globals_dict)})
+        context = RenderingContext({'parent_node': parent_node, 'node_globals': NodeGlobals(globals_dict)})
 
         run_code(code, context)
 
@@ -65,7 +64,7 @@ class CodeTests:
         """variables should be added to parent globals"""
         parent_node = Node(Mock())
         code = self._get_code_node(content)
-        context = RenderingContext({'parent_node': parent_node, 'node_globals': InheritedDict(globals_dict)})
+        context = RenderingContext({'parent_node': parent_node, 'node_globals': NodeGlobals(globals_dict)})
 
         run_code(code, context)
 
@@ -89,7 +88,7 @@ class CodeTests:
         """should raise ExpressionError for invalid code"""
         parent_node = Node(Mock())
         code = self._get_code_node(content)
-        context = RenderingContext({'parent_node': parent_node, 'node_globals': InheritedDict(globals_dict)})
+        context = RenderingContext({'parent_node': parent_node, 'node_globals': NodeGlobals(globals_dict)})
 
         with raises(ExpressionError):
             run_code(code, context)

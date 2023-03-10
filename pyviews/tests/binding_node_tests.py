@@ -4,9 +4,8 @@ from _pytest.fixtures import fixture
 from pytest import mark
 
 from pyviews.binding_node import BindingNode, BindingProperty, apply_attributes, set_target
-from pyviews.core.bindable import InheritedDict
 from pyviews.core.expression import Expression
-from pyviews.core.rendering import RenderingContext
+from pyviews.core.rendering import NodeGlobals, RenderingContext
 from pyviews.core.xml import XmlAttr, XmlNode
 from pyviews.pipes import get_setter
 
@@ -38,7 +37,7 @@ class BindingNodeTests:
 @fixture
 def node_fixture(request):
     xml_node = XmlNode('', 'Binding', attrs = [])
-    node = BindingNode(xml_node, InheritedDict())
+    node = BindingNode(xml_node, NodeGlobals())
 
     request.cls.xml_node = xml_node
     request.cls.node = node

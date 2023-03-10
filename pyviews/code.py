@@ -26,7 +26,7 @@ def run_code(node: Code, context: RenderingContext):
         return
     code = node.xml_node.text
     try:
-        globs = context.node_globals.to_dictionary()
+        globs = context.node_globals.copy()
         exec(dedent(code), globs)
         _update_context(globs, context)
     except SyntaxError as err:

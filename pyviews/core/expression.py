@@ -82,7 +82,7 @@ def execute(expression: Union[Expression, str], parameters: Optional[dict] = Non
     with error_handling(ExpressionError('Error occurred in expression execution', code)):
         expression = expression if isinstance(expression, Expression) else Expression(expression)
         parameters = {} if parameters is None else parameters
-        return eval(expression.compiled_code, parameters, {})
+        return eval(expression.compiled_code, {}, parameters)
 
 
 EXPRESSION_REGEX = compile_regex(r'([a-zA-Z_]{1,}\:){0,1}\{.*\}')

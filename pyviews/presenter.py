@@ -3,8 +3,7 @@
 from abc import ABC
 from typing import Dict, Optional, Union
 
-from pyviews.core.bindable import InheritedDict
-from pyviews.core.rendering import InstanceNode, Node, RenderingContext
+from pyviews.core.rendering import InstanceNode, Node, NodeGlobals, RenderingContext
 from pyviews.core.xml import XmlNode
 from pyviews.pipes import apply_attributes, render_children
 from pyviews.rendering.common import get_child_context
@@ -28,9 +27,7 @@ class Presenter(ABC):
 class PresenterNode(InstanceNode):
     """Presenter node"""
 
-    def __init__(
-        self, instance: Optional['Presenter'], xml_node: XmlNode, node_globals: Optional[InheritedDict] = None
-    ):
+    def __init__(self, instance: Optional['Presenter'], xml_node: XmlNode, node_globals: Optional[NodeGlobals] = None):
         super().__init__(instance, xml_node, node_globals = node_globals)
 
     @property

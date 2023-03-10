@@ -1,6 +1,35 @@
 """Bindable implementations"""
 
-from typing import Any, Callable, Optional, Union
+from contextlib import contextmanager
+from contextvars import ContextVar
+from dataclasses import dataclass
+from typing import Any, Callable, Generator, Optional, Set, Union
+
+
+@dataclass
+class BindableRecord:
+    bindable: 'Bindable'
+    key: str
+
+    def __eq__(self, other: 'BindableRecord'):
+        return self.bindable is other.bindable and self.key == other.key
+
+    def __hash__(self):
+        return hash((id(self.bindable), self.key))
+
+
+_CONTEXT_VAR: ContextVar[Set[BindableRecord]] = ContextVar('recording')
+
+
+@contextmanager
+def recording() -> Generator[Set[BindableRecord], None, None]:
+    """Stores rendering context to context var"""
+    records_set = set()
+    token = _CONTEXT_VAR.set(records_set)
+    try:
+        yield records_set
+    finally:
+        _CONTEXT_VAR.reset(token)
 
 
 class Bindable:
@@ -8,6 +37,12 @@ class Bindable:
 
     def __init__(self):
         self._callbacks = {}
+
+    def __getattribute__(self, name: str):
+        recording = _CONTEXT_VAR.get(None)
+        if recording is not None and not name.startswith('_'):
+            recording.add(BindableRecord(self, name))
+        return super().__getattribute__(name)
 
     def observe(self, key: str, callback: Callable[[Any, Any], None]):
         """Subscribes to key changes"""
@@ -53,64 +88,57 @@ class BindableEntity(Bindable):
         super().observe(key, callback)
 
 
-class InheritedDict(Bindable):
-    """Dictionary that pulls value from parent if doesn't have own"""
+class BindableDict(dict, Bindable):
 
-    def __init__(self, source: Optional[Union[dict, 'InheritedDict']] = None):
-        super().__init__()
-        self._parent = None
-        self._container = {}
-        self._own_keys = set()
+    def __init__(self, source: Optional[Union[dict, 'BindableDict']] = None):
+        if source is not None:
+            dict.__init__(self, source)
+        else:
+            dict.__init__(self)
+        Bindable.__init__(self)
         self._all_callbacks = []
 
-        if isinstance(source, InheritedDict):
-            self.inherit(source)
-        elif source:
-            self._container = source.copy()
-            self._own_keys = set(self._container.keys())
+    def __getattribute__(self, name: str):
+        return object.__getattribute__(self, name)
 
-    def __getitem__(self, key):
-        return self._container[key]
+    def __getitem__(self, key: Any):
+        recording = _CONTEXT_VAR.get(None)
+        if recording is not None:
+            recording.add(BindableRecord(self, key))
+        return dict.__getitem__(self, key)
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: Any, value: Any):
         try:
             old_value = self[key]
-            self._own_keys.add(key)
         except KeyError:
             old_value = None
-        self._set_value(key, value, old_value)
-
-    def _set_value(self, key, value, old_value):
-        self._container[key] = value
+        dict.__setitem__(self, key, value)
         self._notify(key, value, old_value)
 
-    def __len__(self):
-        return len(self._container)
+    def __delitem__(self, key: Any):
+        value = self[key]
+        super().__delitem__(key)
+        self._notify(key, None, value)
 
-    def __contains__(self, item):
-        return item in self._container
+    def get(self, key: Any, default: Any = None) -> Any:
+        recording = _CONTEXT_VAR.get(None)
+        if recording is not None:
+            recording.add(BindableRecord(self, key))
+        return super().get(key, default)
 
-    def inherit(self, parent: 'InheritedDict'):
-        """Inherit passed dictionary"""
-        if self._parent == parent:
-            return
-        if self._parent:
-            self._parent.release_all(self._parent_changed)
-        self_values = {key: self._container[key] for key in self._own_keys}
-        self._container = {**parent.to_dictionary(), **self_values}
-        self._parent = parent
-        self._parent.observe_all(self._parent_changed)
-
-    def _parent_changed(self, key, value, old_value):
-        if key in self._own_keys:
-            return
-        self._set_value(key, value, old_value)
+    def pop(self, key: Any, default: Any = None) -> None:
+        if key in self:
+            value = super().pop(key)
+            self._notify(key, None, value)
+        else:
+            value = default
+        return value
 
     def observe_all(self, callback: Callable[[str, Any, Any], None]):
         """Subscribes to all keys changes"""
         self._all_callbacks.append(callback)
 
-    def _notify(self, key: str, value, old_value):
+    def _notify(self, key: str, value: Any, old_value: Any):
         super()._notify(key, value, old_value)
         self._notify_all(key, value, old_value)
 
@@ -123,25 +151,3 @@ class InheritedDict(Bindable):
     def release_all(self, callback: Callable[[str, Any, Any], None]):
         """Releases callback from all keys changes"""
         self._all_callbacks = [c for c in self._all_callbacks if c != callback]
-
-    def to_dictionary(self) -> dict:
-        """Returns all values as dict"""
-        return self._container.copy()
-
-    def remove_key(self, key):
-        """Remove own key, value"""
-        try:
-            self._own_keys.discard(key)
-            if self._parent and key in self._parent:
-                self._container[key] = self._parent[key]
-            else:
-                del self._container[key]
-        except KeyError:
-            pass
-
-    def get(self, key, default = None):
-        """Returns value by value. default is return in case key does not exist"""
-        try:
-            return self[key]
-        except KeyError:
-            return default

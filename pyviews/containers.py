@@ -1,8 +1,8 @@
 """Contains methods for node setups creation"""
 from typing import Any, Optional
 
-from pyviews.core.bindable import Bindable, InheritedDict
-from pyviews.core.rendering import Node, RenderingContext
+from pyviews.core.bindable import Bindable
+from pyviews.core.rendering import Node, NodeGlobals, RenderingContext
 from pyviews.core.xml import XmlNode
 from pyviews.pipes import apply_attributes, render_children
 from pyviews.rendering.common import get_child_context
@@ -26,7 +26,7 @@ def render_container_children(node, context: RenderingContext):
 class View(Container, Bindable):
     """Loads xml from another file"""
 
-    def __init__(self, xml_node: XmlNode, node_globals: Optional[InheritedDict] = None):
+    def __init__(self, xml_node: XmlNode, node_globals: Optional[NodeGlobals] = None):
         Bindable.__init__(self)
         Container.__init__(self, xml_node, node_globals = node_globals)
         self._name: Optional[str] = None
@@ -71,7 +71,7 @@ def _rerender_view(node: View, context: RenderingContext):
 class For(Container, Bindable):
     """Renders children for every item in items collection"""
 
-    def __init__(self, xml_node: XmlNode, node_globals: Optional[InheritedDict] = None):
+    def __init__(self, xml_node: XmlNode, node_globals: Optional[NodeGlobals] = None):
         Bindable.__init__(self)
         Container.__init__(self, xml_node, node_globals = node_globals)
         self._items = []
@@ -165,7 +165,7 @@ def _create_not_existing(node: For, context: RenderingContext):
 class If(Container, Bindable):
     """Renders children if condition is True"""
 
-    def __init__(self, xml_node: XmlNode, node_globals: Optional[InheritedDict] = None):
+    def __init__(self, xml_node: XmlNode, node_globals: Optional[NodeGlobals] = None):
         Bindable.__init__(self)
         Container.__init__(self, xml_node, node_globals = node_globals)
         self._condition = False

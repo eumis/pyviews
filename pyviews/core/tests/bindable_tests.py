@@ -2,7 +2,7 @@ from unittest.mock import Mock, call
 
 from pytest import fixture, mark, raises
 
-from pyviews.core.bindable import BindableEntity, InheritedDict
+from pyviews.core.bindable import BindableDict, BindableEntity, BindableRecord, recording
 
 
 class TestBindable(BindableEntity):
@@ -82,12 +82,30 @@ class BindableEntityTests:
         self.observable.name = 'another name'
         assert self.callback.call_count == 1
 
+    def test_recording(self):
+        one = TestBindable('one', 'one', 'one')
+        one.value = 'value'
+        with recording() as records:
+            self.observable.name = 'new name'
 
-class InheritedDictTests:
+            two = TestBindable('two', 'two', 2)
+            two.value = 5
+        one.name = 'updated name'
+
+        print('----------records-------------')
+        for r in records:
+            print(f'hash {hash(r)} id {id(r.bindable)} key {r.key}')
+        print('----------items-------------')
+        for r in {BindableRecord(self.observable, 'name'), BindableRecord(two, 'value')}:
+            print(f'hash {hash(r)} id {id(r.bindable)} key {r.key}')
+        assert records == {BindableRecord(self.observable, 'name'), BindableRecord(two, 'value')}
+
+
+class BindableDictTests:
 
     @staticmethod
     def _create_inh_dict(own, parent):
-        inh_dict = InheritedDict(own)
+        inh_dict = BindableDict(own)
         if parent:
             inh_dict.inherit(parent)
         return inh_dict
@@ -96,166 +114,60 @@ class InheritedDictTests:
     @mark.parametrize('source', [{}, {'key': 'value'}, {'key': 'value', 'two': 1}, ])
     def test_dict_source(source):
         """__init__() should copy values from source dict"""
-        inh_dict = InheritedDict(source)
+        inh_dict = BindableDict(source)
 
-        assert inh_dict.to_dictionary() == source
-
-    @staticmethod
-    @mark.parametrize(
-        'parent_source, key, new_parent_value',
-        [({}, 'key', 'value'), ({'key': 'value'}, 'key', 1), ({'key': 'value', 'two': 1}, 'two', 'new value'), ]
-    )
-    def test_inherited_dict_source(parent_source, key, new_parent_value):
-        """__init__() should inherit source InheritedDict"""
-        parent = InheritedDict(parent_source)
-        inh_dict = InheritedDict(parent)
-
-        parent_source[key] = new_parent_value
-        assert inh_dict.to_dictionary() == parent.to_dictionary()
-
-    @staticmethod
-    @mark.parametrize('parent_source', [{}, {'key': 'value'}, {'key': 'value', 'two': 1}])
-    def test_inheritance(parent_source):
-        """inherit() should use parent as source"""
-        parent = InheritedDict(parent_source)
-        inh_dict = InheritedDict()
-
-        inh_dict.inherit(parent)
-
-        assert inh_dict.to_dictionary() == parent.to_dictionary()
-
-    @staticmethod
-    @mark.parametrize(
-        'parent_source, key, new_parent_value',
-        [({}, 'key', 'value'), ({'key': 'value'}, 'key', 1), ({'key': 'value', 'two': 1}, 'two', 'new value'), ]
-    )
-    def test_using_parent_values(parent_source, key, new_parent_value):
-        """inherit() should subscribe to parent changes"""
-        parent = InheritedDict(parent_source)
-        inh_dict = InheritedDict()
-
-        inh_dict.inherit(parent)
-
-        parent[key] = new_parent_value
-        assert inh_dict[key] == parent[key]
-
-    @mark.parametrize(
-        'parent, own, result',
-        [
-            (None, {'key': 'value'}, {'key': 'value'}), ({}, {'key': 'value'}, {'key': 'value'}),
-            ({'key': 'value'}, {}, {'key': 'value'}), ({'key': 'value'}, {'key': 'own value'}, {'key': 'own value'}),
-            ({'key': 'value', 'one': 1}, {'key': 'own value'}, {'key': 'own value', 'one': 1})
-        ]
-    )
-    def test_to_dictionary(self, parent, own, result):
-        """to_dictionary() should return dict with own values then parent values"""
-        parent = InheritedDict(parent) if parent else None
-        inh_dict = self._create_inh_dict(own, parent)
-
-        assert inh_dict.to_dictionary() == result
-
-    @staticmethod
-    @mark.parametrize('source, key', [({'key': 'own value'}, 'key')])
-    def test_remove_key(source, key):
-        """remove_key() should remove own key"""
-        inh_dict = InheritedDict(source)
-
-        inh_dict.remove_key(key)
-
-        assert key not in inh_dict
-
-    @mark.parametrize('parent, own, key, value', [({'key': 'value'}, {'key': 'own value'}, 'key', 'value')])
-    def test_remove_key_start_using_parent(self, parent, own, key, value):
-        """remove_key() should start using parent value"""
-        parent = InheritedDict(parent)
-        inh_dict = self._create_inh_dict(own, parent)
-
-        inh_dict.remove_key(key)
-
-        assert key in inh_dict
-        assert inh_dict[key] == value
-
-    @mark.parametrize(
-        'parent, source, key, expected',
-        [
-            (None, {}, 'key', False), ({}, {}, 'key', False), ({'key': 'value'}, {}, 'key', True),
-            ({'key': 'value'}, {'key': 'value'}, 'key', True), (None, {'key': 'value'}, 'key', True),
-            ({}, {'key': 'value'}, 'key', True), ({'key': 'value'}, {}, 'other key', False),
-            ({}, {'key': 'value'}, 'other key', False)
-        ]
-    )
-    def test_key_check(self, parent, source, key, expected):
-        """__contains__() should return true if own or parent key exist"""
-        parent = InheritedDict(parent) if parent else None
-        inh_dict = self._create_inh_dict(source, parent)
-
-        assert (key in inh_dict) == expected
-
-    @staticmethod
-    def test_raises():
-        """__getitem__() should raise KeyError if key does not exist"""
-        inh_dict = InheritedDict()
-
-        with raises(KeyError):
-            _ = inh_dict['some key']
+        assert inh_dict == source
 
     @staticmethod
     def test_notifying_on_change():
         """__setitem__() should notify subscribers"""
-        inh_dict = InheritedDict()
-        callback = Mock()
-        key = 'key'
-
+        inh_dict = BindableDict()
+        key, callback = 'key', Mock()
         inh_dict.observe(key, callback)
+
         inh_dict[key] = 2
 
-        assert callback.called
+        assert callback.call_args == call(2, None)
 
     @staticmethod
-    def test_notifying_on_parent_change():
-        """__setitem__() should notify child subscribers"""
-        parent = InheritedDict()
-        inh_dict = InheritedDict(parent)
-        callback = Mock()
-        key = 'key'
-
+    def test_notifying_on_delete():
+        """__delitem__() should notify subscribers"""
+        key, value = 'key', 2
+        callback, all_callback = Mock(), Mock()
+        inh_dict = BindableDict({key: value})
         inh_dict.observe(key, callback)
-        parent[key] = 2
+        inh_dict.observe_all(all_callback)
 
-        assert callback.called
+        del inh_dict[key]
 
-    @staticmethod
-    @mark.parametrize('default', [None, '', 1, True])
-    def test_get(default):
-        """get() should return default if key doesn't exist"""
-        inh_dict = InheritedDict()
-
-        value = inh_dict.get('key', default)
-
-        assert value == default
+        assert key not in inh_dict
+        assert callback.call_args == call(None, value)
+        assert all_callback.call_args == call(key, None, value)
 
     @staticmethod
-    @mark.parametrize(
-        'source, parent_source, expected',
-        [
-            ({}, None, 0), ({'k': 1}, None, 1), ({'k': 1, 'a': 'v'}, None, 2), ({}, {'k': 1}, 1),
-            ({}, {'k': 1, 'a': 'v'}, 2), ({'k': 1}, {'a': 'v'}, 2), ({'k': 1}, {'k': 'v'}, 1),
-            ({'k': 1, 'a': 'v'}, {'k': 2}, 2), ({'k': 1, 'a': 'v'}, {'z': 2}, 3)
-        ]
-    )
-    def test_length(source, parent_source, expected):
-        """__len__() should return keys count"""
-        inh_dict = InheritedDict(source)
-        if parent_source is not None:
-            inh_dict.inherit(InheritedDict(parent_source))
+    def test_notifying_on_pop():
+        """pop() should notify subscribers"""
+        key, value = 'key', 2
+        callback, all_callback = Mock(), Mock()
+        inh_dict = BindableDict({key: value})
+        inh_dict.observe(key, callback)
+        inh_dict.observe_all(all_callback)
 
-        assert len(inh_dict) == expected
+        pop_value = inh_dict.pop(key)
+        default_pop_value = inh_dict.pop(key, 'default')
+
+        assert key not in inh_dict
+        assert pop_value == value
+        assert default_pop_value == 'default'
+        assert callback.call_args == call(None, value)
+        assert all_callback.call_args == call(key, None, value)
 
     @staticmethod
     def test_observe_all():
         """observe_all() should subscribe callback to all existing values changes and new values adding"""
-        inherited_dict = InheritedDict()
+        inherited_dict = BindableDict()
         callback = Mock()
+
         inherited_dict.observe_all(callback)
 
         inherited_dict['name'] = 'new name'
@@ -266,7 +178,7 @@ class InheritedDictTests:
     @staticmethod
     def test_release_all():
         """release_all() should remove callback subscription to all changes"""
-        inherited_dict = InheritedDict()
+        inherited_dict = BindableDict()
         callback = Mock()
         active_callback = Mock()
         inherited_dict.observe_all(callback)
@@ -282,7 +194,7 @@ class InheritedDictTests:
     @staticmethod
     def test_release_all_same_callback():
         """release_all() should remove callback subscription to all changes"""
-        inherited_dict = InheritedDict()
+        inherited_dict = BindableDict()
         callback = Mock()
         inherited_dict.observe_all(callback)
         inherited_dict.observe_all(callback)
@@ -292,3 +204,19 @@ class InheritedDictTests:
         inherited_dict['value'] = 'new value'
 
         assert not callback.called
+
+    @staticmethod
+    def test_recording():
+        source = {'name': 'some name', 'value': 5}
+        one = BindableDict(source)
+        _ = one['value']
+        with recording() as records:
+            two, three = BindableDict(source), BindableDict(source)
+
+            _ = two['name']
+            _ = three.get('value')
+            _ = three.get('other', None)
+
+        _ = one['name']
+
+        assert records == {BindableRecord(two, 'name'), BindableRecord(three, 'value'), BindableRecord(three, 'other')}
