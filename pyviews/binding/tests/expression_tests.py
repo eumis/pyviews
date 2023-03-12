@@ -3,7 +3,7 @@ from unittest.mock import Mock, call
 from pytest import fixture, mark
 
 from pyviews.binding.binder import BindingContext
-from pyviews.binding.expression import ExpressionBinding, bind_setter_to_expression
+from pyviews.binding.expression import ExpressionBinding, bind_setter_to_expression, get_expression_callback
 from pyviews.binding.tests.common import InnerViewModel, ParentViewModel
 from pyviews.core.bindable import BindableDict
 from pyviews.core.expression import Expression, execute
@@ -146,14 +146,9 @@ class ExpressionBindingTests:
 @fixture
 def binding_context_fixture(request):
     setter, xml_attr = Mock(), XmlAttr('name')
-    context = BindingContext(
-        {
-            'setter': setter,
-            'xml_attr': xml_attr,
-            'expression_body': '1+1',
-            'node': Mock(node_globals = NodeGlobals())
-        }
-    )
+    context = BindingContext({
+        'setter': setter, 'xml_attr': xml_attr, 'expression_body': '1+1', 'node': Mock(node_globals = NodeGlobals())
+    })
 
     request.cls.context = context
 
@@ -179,3 +174,19 @@ class BindSetterToExpressionTests:
         actual = bind_setter_to_expression(self.context)
 
         assert isinstance(actual, ExpressionBinding)
+
+@mark.parametrize('globals, expression, value, is_updated', [
+    ({}, 'key', 2, lambda g: g['key'] == 2),
+    ({'vm': ParentViewModel(1, None)}, 'vm.int_value', 2, lambda g: g['vm'].int_value == 2),
+    ({'vm': ParentViewModel(1, InnerViewModel(2, 'init value'))}, 'vm.inner_vm.str_value', 'updated value', lambda g: g['vm'].inner_vm.str_value == 'updated value'),
+]) # yapf: disable
+def test_get_expression_callback(globals, expression, value, is_updated):
+    """get_expression_callback() tests"""
+    globals = NodeGlobals(globals)
+    vm = ParentViewModel(1, None)
+    vm.int_value = 1
+    callback = get_expression_callback(Expression(expression), globals)
+
+    callback(value)
+
+    assert is_updated(globals)

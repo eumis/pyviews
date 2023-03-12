@@ -35,13 +35,13 @@ class ExpressionError(PyViewsError):
 class Expression:
     """Parses and executes expression."""
 
-    __slots__ = ('_code', '_compiled_code', '_object_tree')
+    __slots__ = ('_code', '_compiled_code')
 
-    def __init__(self, code):
+    def __init__(self, code: str, compile_mode: str = 'eval'):
         self._code: str = code
         self._compiled_code: CodeType
         if not self._init_from_cache():
-            self._compiled_code = self._compile(code)
+            self._compiled_code = self._compile(code, compile_mode)
             self._store_to_cache()
 
     def _init_from_cache(self) -> bool:
@@ -52,10 +52,10 @@ class Expression:
         return True
 
     @staticmethod
-    def _compile(code: str) -> CodeType:
+    def _compile(code: str, compile_mode: str) -> CodeType:
         try:
             code = code if code.strip(' ') else 'None'
-            return compile(code, '<string>', 'eval')
+            return compile(code, '<string>', compile_mode)
         except SyntaxError as syntax_error:
             error = ExpressionError(syntax_error.msg, code)
             error.cause_error = syntax_error
