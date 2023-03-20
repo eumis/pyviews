@@ -147,8 +147,12 @@ class ExpressionBindingTests:
 def binding_context_fixture(request):
     setter, xml_attr = Mock(), XmlAttr('name')
     context = BindingContext({
-        'setter': setter, 'xml_attr': xml_attr, 'expression_body': '1+1', 'node': Mock(node_globals = NodeGlobals())
-    })
+        'setter': setter,
+        'xml_attr': xml_attr,
+        'expression_body':
+        '1+1',
+        'node': Mock(node_globals = NodeGlobals())
+    }) # yapf: disable
 
     request.cls.context = context
 

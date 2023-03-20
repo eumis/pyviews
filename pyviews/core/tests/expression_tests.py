@@ -37,6 +37,18 @@ class ExecuteTests:
 
     @staticmethod
     @mark.parametrize('expression', ['2/0', Expression('print(some_variable)')])
+    def test_execute_scope(expression):
+        """execute() should keep scope for lambdas"""
+        expression = 'lambda: key'
+        globals = {'key': 2}
+        func = execute(expression, globals)
+
+        actual = func()
+
+        assert actual == 2
+
+    @staticmethod
+    @mark.parametrize('expression', ['2/0', Expression('print(some_variable)')])
     def test_execute_raises(expression):
         """execute() should raise error if expression is invalid"""
         with raises(ExpressionError):
