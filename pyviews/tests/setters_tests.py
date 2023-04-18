@@ -60,8 +60,9 @@ class TestNode(Node):
 class TestInstanceNode(InstanceNode):
 
     def __init__(self):
-        instance = Mock(mocked_method = Mock())
+        instance = Mock(one = Mock(), two = Mock())
         super().__init__(instance, XmlNode('', ''))
+        self.one = Mock()
 
 
 class CallTests:
@@ -106,9 +107,9 @@ class CallTests:
         """call setter should call node instance method"""
         node = TestInstanceNode()
 
-        call(node, 'mocked_method', args)
+        call(node, 'two', args)
 
-        assert node.instance.mocked_method.call_args == call_mock(*args.args, **args.kwargs)
+        assert node.instance.two.call_args == call_mock(*args.args, **args.kwargs)
 
     @staticmethod
     @mark.parametrize(
@@ -121,9 +122,8 @@ class CallTests:
     @staticmethod
     def test_uses_node_method_first():
         node = TestInstanceNode()
-        node.mocked_method = Mock()
 
-        call(node, 'mocked_method', call_args())
+        call(node, 'one', call_args())
 
-        assert node.mocked_method.called
+        assert node.one.called
         assert not node.instance.mocked_method.called

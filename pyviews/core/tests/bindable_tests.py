@@ -93,11 +93,11 @@ class BindableEntityTests:
         one.name = 'updated name'
 
         print('----------records-------------')
-        for r in records:
-            print(f'hash {hash(r)} id {id(r.bindable)} key {r.key}')
+        for rec in records:
+            print(f'hash {hash(rec)} id {id(rec.bindable)} key {rec.key}')
         print('----------items-------------')
-        for r in {BindableRecord(self.observable, 'name'), BindableRecord(two, 'value')}:
-            print(f'hash {hash(r)} id {id(r.bindable)} key {r.key}')
+        for rec in [BindableRecord(self.observable, 'name'), BindableRecord(two, 'value')]:
+            print(f'hash {hash(rec)} id {id(rec.bindable)} key {rec.key}')
         assert records == {BindableRecord(self.observable, 'name'), BindableRecord(two, 'value')}
 
 

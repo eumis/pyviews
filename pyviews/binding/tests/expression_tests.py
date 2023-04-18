@@ -179,18 +179,22 @@ class BindSetterToExpressionTests:
 
         assert isinstance(actual, ExpressionBinding)
 
-@mark.parametrize('globals, expression, value, is_updated', [
+@mark.parametrize('node_globals, expression, value, is_updated', [
     ({}, 'key', 2, lambda g: g['key'] == 2),
     ({'vm': ParentViewModel(1, None)}, 'vm.int_value', 2, lambda g: g['vm'].int_value == 2),
-    ({'vm': ParentViewModel(1, InnerViewModel(2, 'init value'))}, 'vm.inner_vm.str_value', 'updated value', lambda g: g['vm'].inner_vm.str_value == 'updated value'),
+    ({
+        'vm': ParentViewModel(1, InnerViewModel(2, 'init value'))},
+        'vm.inner_vm.str_value', 'updated value',
+        lambda g: g['vm'].inner_vm.str_value == 'updated value'
+    ),
 ]) # yapf: disable
-def test_get_expression_callback(globals, expression, value, is_updated):
+def test_get_expression_callback(node_globals, expression, value, is_updated):
     """get_expression_callback() tests"""
-    globals = NodeGlobals(globals)
-    vm = ParentViewModel(1, None)
-    vm.int_value = 1
-    callback = get_expression_callback(Expression(expression), globals)
+    node_globals = NodeGlobals(node_globals)
+    parent_view_model = ParentViewModel(1, None)
+    parent_view_model.int_value = 1
+    callback = get_expression_callback(Expression(expression), node_globals)
 
     callback(value)
 
-    assert is_updated(globals)
+    assert is_updated(node_globals)

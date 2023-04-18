@@ -103,9 +103,9 @@ class RenderingPipelineTests:
         """should create node using namespace as module and tag name as node class name"""
         create_node, node = Mock(), Mock()
         create_node.side_effect = lambda ctx: node if ctx == self.context else None
-        pipeline = RenderingPipeline(create_node = create_node)
+        rendering_pipeline = RenderingPipeline(create_node = create_node)
 
-        actual = pipeline.run(self.context)
+        actual = rendering_pipeline.run(self.context)
 
         assert actual == node
 
@@ -113,10 +113,10 @@ class RenderingPipelineTests:
         """should handle errors"""
         pipe = Mock()
         pipe.side_effect = Exception()
-        pipeline = RenderingPipeline(pipes = [pipe])
+        rendering_pipeline = RenderingPipeline(pipes = [pipe])
 
         try:
-            pipeline.run(self.context)
+            rendering_pipeline.run(self.context)
         except RenderingError as err:
             assert f'Pipe: {pipe}' in err.infos
         except BaseException:
@@ -127,10 +127,10 @@ class RenderingPipelineTests:
         """should handle errors"""
         pipe = Mock()
         pipe.side_effect = Exception()
-        pipeline = RenderingPipeline(name = name, pipes = [pipe])
+        rendering_pipeline = RenderingPipeline(name = name, pipes = [pipe])
 
         try:
-            pipeline.run(self.context)
+            rendering_pipeline.run(self.context)
         except RenderingError as err:
             assert f'Pipeline: {name}' in err.infos
         except BaseException:
@@ -153,9 +153,9 @@ class RenderingPipelineTests:
     def test_calls_pipes(self, pipes_count):
         """Should call pipes"""
         pipes = [Mock() for _ in range(pipes_count)]
-        pipeline = RenderingPipeline(pipes = pipes)
+        rendering_pipeline = RenderingPipeline(pipes = pipes)
 
-        node = pipeline.run(self.context)
+        node = rendering_pipeline.run(self.context)
 
         for pipe in pipes:
             assert pipe.call_args == call(node, self.context)
@@ -164,9 +164,9 @@ class RenderingPipelineTests:
         """should set current rendering context"""
         actual = Mock()
         pipes = [lambda *_: setattr(actual, 'value', get_rendering_context())]
-        pipeline = RenderingPipeline(pipes = pipes)
+        rendering_pipeline = RenderingPipeline(pipes = pipes)
 
-        pipeline.run(self.context)
+        rendering_pipeline.run(self.context)
 
         assert actual.value == self.context
 
@@ -292,11 +292,11 @@ class GetPipelineTests:
 @fixture
 def render_fixture(request):
     xml_node = XmlNode('pyviews.core.node', 'Node')
-    pipeline = RenderingPipeline()
-    use_pipeline(pipeline, f'{xml_node.namespace}.{xml_node.name}')
+    rendering_pipeline = RenderingPipeline()
+    use_pipeline(rendering_pipeline, f'{xml_node.namespace}.{xml_node.name}')
 
     request.cls.xml_node = xml_node
-    request.cls.pipeline = pipeline
+    request.cls.pipeline = rendering_pipeline
     request.cls.context = RenderingContext({'xml_node': xml_node})
 
 
@@ -308,8 +308,8 @@ class RenderTests:
     pipeline: RenderingPipeline
     context: RenderingContext
 
-    def _set_pipeline(self, xml_node, pipeline):
-        use_pipeline(pipeline, f'{xml_node.namespace}.{xml_node.name}')
+    def _set_pipeline(self, xml_node, rendering_pipeline):
+        use_pipeline(rendering_pipeline, f'{xml_node.namespace}.{xml_node.name}')
 
     @mark.parametrize('namespace, tag, node_type, init_args', [
         ('pyviews.core.rendering', 'Node', Node, {}),
@@ -336,11 +336,11 @@ class UsePipelineTests:
     @mark.parametrize('class_path', ['package.module.class', 'package.module'])
     def test_adds_pipeline_to_passed_resolver(self, class_path: str):
         """should add pipeline to passed resolver"""
-        pipeline = RenderingPipeline()
+        rendering_pipeline = RenderingPipeline()
 
-        use_pipeline(pipeline, class_path)
+        use_pipeline(rendering_pipeline, class_path)
 
-        assert resolve((RenderingPipeline, class_path)) is pipeline
+        assert resolve((RenderingPipeline, class_path)) is rendering_pipeline
 
 
 @fixture

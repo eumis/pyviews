@@ -80,7 +80,7 @@ def get_expression_callback(expression: Union[str, Expression], expr_vars: NodeG
     return partial(_expression_callback, set_expression, expr_vars)
 
 
-def _expression_callback(expression: Expression, globals: NodeGlobals, value: Any):
-    globals['_expression_callback_value'] = value
-    execute(expression, globals)
-    globals.pop('_expression_callback_value')
+def _expression_callback(expression: Expression, node_globals: NodeGlobals, value: Any):
+    node_globals['_expression_callback_value'] = value
+    execute(expression, node_globals)
+    node_globals.pop('_expression_callback_value')

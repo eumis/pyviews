@@ -39,9 +39,9 @@ class Bindable:
         self._callbacks = {}
 
     def __getattribute__(self, name: str):
-        recording = _CONTEXT_VAR.get(None)
-        if recording is not None and not name.startswith('_'):
-            recording.add(BindableRecord(self, name))
+        bindable_recording = _CONTEXT_VAR.get(None)
+        if bindable_recording is not None and not name.startswith('_'):
+            bindable_recording.add(BindableRecord(self, name))
         return super().__getattribute__(name)
 
     def observe(self, key: str, callback: Callable[[Any, Any], None]):
@@ -102,9 +102,9 @@ class BindableDict(dict, Bindable):
         return object.__getattribute__(self, name)
 
     def __getitem__(self, key: Any):
-        recording = _CONTEXT_VAR.get(None)
-        if recording is not None:
-            recording.add(BindableRecord(self, key))
+        bindable_recording = _CONTEXT_VAR.get(None)
+        if bindable_recording is not None:
+            bindable_recording.add(BindableRecord(self, key))
         return dict.__getitem__(self, key)
 
     def __setitem__(self, key: Any, value: Any):
@@ -121,9 +121,9 @@ class BindableDict(dict, Bindable):
         self._notify(key, None, value)
 
     def get(self, key: Any, default: Any = None) -> Any:
-        recording = _CONTEXT_VAR.get(None)
-        if recording is not None:
-            recording.add(BindableRecord(self, key))
+        bindable_recording = _CONTEXT_VAR.get(None)
+        if bindable_recording is not None:
+            bindable_recording.add(BindableRecord(self, key))
         return super().get(key, default)
 
     def pop(self, key: Any, default: Any = None) -> None:

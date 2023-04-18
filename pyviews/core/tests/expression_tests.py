@@ -40,8 +40,8 @@ class ExecuteTests:
     def test_execute_scope(expression):
         """execute() should keep scope for lambdas"""
         expression = 'lambda: key'
-        globals = {'key': 2}
-        func = execute(expression, globals)
+        node_globals = {'key': 2}
+        func = execute(expression, node_globals)
 
         actual = func()
 
