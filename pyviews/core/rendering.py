@@ -123,7 +123,7 @@ class InstanceNode(Node):
         return self._instance
 
 
-def _instance_attr_setter(node: InstanceNode, key, value):
+def _instance_attr_setter(node: InstanceNode, key: str, value: Any):
     ent = node if hasattr(node, key) else node.instance
     setattr(ent, key, value)
 

@@ -1,6 +1,6 @@
 """Common rendering pipes"""
 
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
 from injectool import resolve
 
@@ -40,7 +40,7 @@ def get_setter(attr: XmlAttr) -> Setter:
     return import_path(attr.namespace)
 
 
-def call_set_attr(node: Node, key: str, value):
+def call_set_attr(node: Node, key: str, value: Any):
     """Setter: calls node setter"""
     node.set_attr(key, value)
 
