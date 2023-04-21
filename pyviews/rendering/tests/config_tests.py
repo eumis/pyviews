@@ -4,7 +4,7 @@ from injectool import resolve
 from injectool.core import Container
 from pytest import mark
 
-from pyviews.rendering.setup import use_rendering
+from pyviews.rendering.config import use_rendering
 
 
 @mark.usefixtures('container_fixture')

@@ -2,7 +2,7 @@ from injectool import resolve
 from pytest import mark
 
 from pyviews.binding.binder import Binder
-from pyviews.binding.setup import use_binding
+from pyviews.binding.config import use_binding
 
 
 @mark.usefixtures('container_fixture')

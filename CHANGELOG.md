@@ -8,6 +8,7 @@
 - expression binding is refactored
 - InheritedDict is renamed to BindableDict
 - Added NodeGlobals class
+- setup modules are renamed to config
 
 ## 3.2.0
 
