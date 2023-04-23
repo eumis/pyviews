@@ -1,8 +1,8 @@
 # Changelog
 
-## Dev
+## 4.0.0
 
-- upgraded injectool
+- upgraded injectool to 3.0.0
 - Observable is renamed to Bindable
 - expression is moved to core
 - expression binding is refactored
