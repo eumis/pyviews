@@ -1,7 +1,6 @@
 """Observable binding"""
 
-from pyviews.core.bindable import Bindable
-from pyviews.core.binding import Binding, BindingCallback, BindingError
+from pyviews.core.binding import Bindable, Binding, BindingCallback, BindingError
 from pyviews.core.error import PyViewsError, error_handling
 
 

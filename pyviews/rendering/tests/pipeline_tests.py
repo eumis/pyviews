@@ -5,7 +5,7 @@ from injectool.core import Container
 from pytest import fail, fixture, mark, raises
 
 from pyviews.code import Code
-from pyviews.core.bindable import Bindable
+from pyviews.core.binding import Bindable
 from pyviews.core.error import ViewInfo
 from pyviews.core.rendering import InstanceNode, Node, RenderingContext, RenderingError
 from pyviews.core.xml import XmlNode
@@ -137,7 +137,7 @@ class RenderingPipelineTests:
             fail()
 
     @mark.parametrize('namespace, tag, inst_type', [
-        ('pyviews.core.bindable', 'Bindable', Bindable),
+        ('pyviews.core.binding', 'Bindable', Bindable),
         (__name__, 'InstWithKwargs', InstWithKwargs)
     ]) # yapf: disable
     def test_creates_instance_node(self, namespace, tag, inst_type):
@@ -177,7 +177,7 @@ class GetTypeTests:
     @staticmethod
     @mark.parametrize('xml_node, expected', [
         (XmlNode(__name__, 'Inst'), Inst),
-        (XmlNode('pyviews.core.bindable', 'Bindable'), Bindable),
+        (XmlNode('pyviews.core.binding', 'Bindable'), Bindable),
         (XmlNode(__name__, 'SecondInst'), SecondInst),
         (XmlNode('pyviews.core.rendering', 'Node'), Node)
     ]) # yapf: disable
@@ -190,7 +190,7 @@ class GetTypeTests:
     @staticmethod
     @mark.parametrize('xml_node', [
         (XmlNode(__name__, 'UnknownType')),
-        (XmlNode('pyviews.core.bindable', 'SomeClass')),
+        (XmlNode('pyviews.core.binding', 'SomeClass')),
         (XmlNode('pyviews.some_module.node', 'Node'))
     ]) # yapf: disable
     def test_raises_for_not_existing_type(xml_node):
@@ -260,8 +260,8 @@ class GetPipelineTests:
     @mark.parametrize('xml_node, key', [
         (XmlNode('pyviews.core.node', 'Node'), 'pyviews.core.node.Node'),
         (XmlNode('pyviews.core.node', 'Node'), 'pyviews.core.node'),
-        (XmlNode('pyviews.core.bindable', 'Bindable'), 'pyviews.core.bindable.Bindable'),
-        (XmlNode('pyviews.core.bindable', 'Bindable'), 'pyviews.core.bindable')
+        (XmlNode('pyviews.core.binding', 'Bindable'), 'pyviews.core.binding.Bindable'),
+        (XmlNode('pyviews.core.binding', 'Bindable'), 'pyviews.core.binding')
     ]) # yapf: disable
     def test_resolves_pipeline_by_xml_node_namespace_and_name(self, xml_node, key):
         """should resolve RenderingPipeline using namespace.name or namespace"""

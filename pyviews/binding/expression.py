@@ -4,8 +4,7 @@ from functools import partial
 from typing import Any, Callable, List, Set, Union
 
 from pyviews.binding.binder import BindingContext
-from pyviews.core.bindable import Bindable, BindableRecord, recording
-from pyviews.core.binding import Binding, BindingCallback, BindingError
+from pyviews.core.binding import Bindable, BindableRecord, Binding, BindingCallback, BindingError, recording
 from pyviews.core.error import PyViewsError, error_handling
 from pyviews.core.expression import Expression, execute
 from pyviews.core.rendering import NodeGlobals

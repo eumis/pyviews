@@ -2,7 +2,7 @@ from unittest.mock import Mock, call
 
 from pytest import fixture, mark, raises
 
-from pyviews.core.bindable import BindableDict, BindableEntity, BindableRecord, recording
+from pyviews.core.binding import BindableDict, BindableEntity, BindableRecord, recording
 
 
 class TestBindable(BindableEntity):

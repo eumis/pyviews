@@ -3,8 +3,7 @@
 from functools import partial
 from typing import Any, Callable, List, Optional, Set, Union
 
-from pyviews.core.bindable import BindableDict
-from pyviews.core.binding import Binding
+from pyviews.core.binding import BindableDict, Binding
 from pyviews.core.error import PyViewsError, ViewInfo
 from pyviews.core.xml import XmlNode
 

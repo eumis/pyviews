@@ -1,7 +1,7 @@
 """Contains methods for node setups creation"""
 from typing import Any, Optional
 
-from pyviews.core.bindable import Bindable
+from pyviews.core.binding import Bindable
 from pyviews.core.rendering import Node, NodeGlobals, RenderingContext
 from pyviews.core.xml import XmlNode
 from pyviews.pipes import apply_attributes, render_children

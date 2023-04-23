@@ -2,7 +2,7 @@ from unittest.mock import Mock, call
 
 from pytest import fixture, mark, raises
 
-from pyviews.core.bindable import BindableDict
+from pyviews.core.binding import BindableDict
 from pyviews.core.rendering import Node, NodeGlobals
 from pyviews.core.xml import XmlNode
 
