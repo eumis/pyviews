@@ -1,7 +1,8 @@
-from pyviews.core import ObservableEntity
+from pyviews.core.binding import BindableEntity
 
 
-class InnerViewModel(ObservableEntity):
+class InnerViewModel(BindableEntity):
+
     def __init__(self, int_value, str_value):
         super().__init__()
         self._val = ''
@@ -18,7 +19,8 @@ class InnerViewModel(ObservableEntity):
         return self._val
 
 
-class ParentViewModel(ObservableEntity):
+class ParentViewModel(BindableEntity):
+
     def __init__(self, int_value, inner_vm):
         super().__init__()
         self._val = ''

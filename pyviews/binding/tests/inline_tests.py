@@ -3,11 +3,13 @@ from unittest.mock import Mock
 
 from pytest import fixture, mark
 
-from pyviews.binding import BindingContext, InlineBinding
-from pyviews.binding.inline import bind_inline
+from pyviews.binding.binder import BindingContext
+from pyviews.binding.inline import InlineBinding, bind_inline
 from pyviews.binding.tests.common import InnerViewModel
-from pyviews.expression import Expression
-from pyviews.core import InheritedDict, XmlAttr, BindingCallback
+from pyviews.core.binding import BindingCallback
+from pyviews.core.expression import Expression
+from pyviews.core.rendering import NodeGlobals
+from pyviews.core.xml import XmlAttr
 
 
 @fixture
@@ -22,7 +24,7 @@ def inline_binding_fixture(request):
 
         return destroy
 
-    expr_globals = InheritedDict({'vm': source_instance, 'bind': bind})
+    expr_globals = NodeGlobals({'vm': source_instance, 'bind': bind})
     bind_expression = Expression('bind')
     value_expression = Expression('vm.int_value')
 
@@ -74,9 +76,8 @@ class InlineBindingTests:
 def test_bind_inline():
     bind = Mock()
     context = BindingContext({
-        'node': Mock(node_globals=InheritedDict({
-            'bind': bind,
-            'value': 1
+        'node': Mock(node_globals = NodeGlobals({
+            'bind': bind, 'value': 1
         })),
         'expression_body': 'bind()}:{value',
         'setter': Mock(),

@@ -1,13 +1,15 @@
 """Common rendering pipes"""
 
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
 from injectool import resolve
 
-from pyviews.binding import Binder, BindingContext
-from pyviews.core import Node, XmlAttr, import_path, XmlNode, Setter
-from pyviews.expression import is_expression, parse_expression
-from pyviews.rendering import RenderingContext, render
+from pyviews.binding.binder import Binder, BindingContext
+from pyviews.core.expression import is_expression, parse_expression
+from pyviews.core.reflection import import_path
+from pyviews.core.rendering import Node, RenderingContext, Setter
+from pyviews.core.xml import XmlAttr, XmlNode
+from pyviews.rendering.pipeline import render
 
 
 def apply_attributes(node: Node, _: RenderingContext):
@@ -23,12 +25,10 @@ def apply_attribute(node: Node, attr: XmlAttr, setter: Optional[Setter] = None):
     if is_expression(stripped_value):
         (binding_type, expr_body) = parse_expression(stripped_value)
         binder = resolve(Binder)
-        binder.bind(binding_type, BindingContext({
-            'node': node,
-            'expression_body': expr_body,
-            'setter': setter,
-            'xml_attr': attr
-        }))
+        binder.bind(
+            binding_type,
+            BindingContext({'node': node, 'expression_body': expr_body, 'setter': setter, 'xml_attr': attr})
+        )
     else:
         setter(node, attr.name, attr.value)
 
@@ -40,7 +40,7 @@ def get_setter(attr: XmlAttr) -> Setter:
     return import_path(attr.namespace)
 
 
-def call_set_attr(node: Node, key: str, value):
+def call_set_attr(node: Node, key: str, value: Any):
     """Setter: calls node setter"""
     node.set_attr(key, value)
 
@@ -48,8 +48,7 @@ def call_set_attr(node: Node, key: str, value):
 GetChildContextType = Callable[[XmlNode, Node, RenderingContext], RenderingContext]
 
 
-def render_children(node: Node, context: RenderingContext,
-                    get_child_context: GetChildContextType):
+def render_children(node: Node, context: RenderingContext, get_child_context: GetChildContextType):
     """renders node children"""
     for xml_node in node.xml_node.children:
         child_node = render(get_child_context(xml_node, node, context))

@@ -1,9 +1,12 @@
+from typing import Optional
 from unittest.mock import Mock, call
 
-from pytest import mark, raises, fixture
+from pytest import fixture, mark, raises
 
-from pyviews.core import BindingError, Node, XmlAttr, Binding
 from pyviews.binding.binder import Binder, BindingContext
+from pyviews.core.binding import Binding, BindingError
+from pyviews.core.rendering import Node
+from pyviews.core.xml import XmlAttr
 
 BINDING_TYPE = 'default_binding_type'
 
@@ -44,7 +47,7 @@ class BindingContextTests:
     def test_setter(self):
         """setter should use key 'setter'"""
 
-        def value(_, __, ___):
+        def value(*_):
             pass
 
         init_value = self.context.setter
@@ -68,7 +71,8 @@ class BindingContextTests:
 
 
 class TestRule:
-    def __init__(self, suitable: bool, binding: Binding = None):
+
+    def __init__(self, suitable: bool, binding: Optional[Binding] = None):
         self._suitable = suitable
         self.suitable_args = None
         self.apply_args = None
@@ -83,26 +87,11 @@ class TestRule:
         return self.binding
 
 
-def _find_suitable_rule(rules):
-    try:
-        expected = next(rule for rule in reversed(rules) if rule.suitable())
-    except StopIteration:
-        expected = None
-    return expected
-
-
 def _create_binder(binding_type, rules):
     binder = Binder()
     for rule in rules:
         binder.add_rule(binding_type, rule.bind, rule.suitable)
     return binder
-
-
-_binding_args = [
-    {},
-    {'node': Mock()},
-    {'node': Mock(), 'setter': lambda *args: None}
-]
 
 
 class BinderTests:
@@ -121,12 +110,12 @@ class BinderTests:
         [[TestRule(True), TestRule(True)], 1],
         [[TestRule(False), TestRule(True)], 1],
         [[TestRule(True), TestRule(False)], 0]
-    ])
+    ]) # yapf: disable
     def test_bind_by_rule(rules, rule_index):
         """apply() should call bind() for found rule"""
         binder = _create_binder(BINDING_TYPE, rules)
         expected = rules[rule_index]
-        context = BindingContext({'node': Mock(), 'setter': lambda *args: None})
+        context = BindingContext({'node': Mock(), 'setter': lambda *_: None})
 
         binder.bind(BINDING_TYPE, context)
 

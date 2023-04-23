@@ -2,11 +2,13 @@ from unittest.mock import Mock, call
 
 from pytest import fixture, mark
 
-from pyviews.binding import BindingContext
-from pyviews.binding.expression import ExpressionBinding, bind_setter_to_expression
+from pyviews.binding.binder import BindingContext
+from pyviews.binding.expression import ExpressionBinding, bind_setter_to_expression, get_expression_callback
 from pyviews.binding.tests.common import InnerViewModel, ParentViewModel
-from pyviews.expression import Expression, execute
-from pyviews.core import InheritedDict, XmlAttr
+from pyviews.core.binding import BindableDict
+from pyviews.core.expression import Expression, execute
+from pyviews.core.rendering import NodeGlobals
+from pyviews.core.xml import XmlAttr
 
 
 @fixture
@@ -25,7 +27,7 @@ class ExpressionBindingTests:
 
     callback: Mock
 
-    def _bind(self, expression: Expression, global_vars: InheritedDict) -> ExpressionBinding:
+    def _bind(self, expression: Expression, global_vars: NodeGlobals) -> ExpressionBinding:
         binding = ExpressionBinding(self.callback, expression, global_vars)
         binding.bind()
 
@@ -39,12 +41,12 @@ class ExpressionBindingTests:
             'vm': InnerViewModel(2, 'asdf'),
             'parent': ParentViewModel(0, InnerViewModel(0, ''))
         }),
-    ])
+    ]) # yapf: disable
     def test_initialize_target(self, source: str, global_dict: dict):
         """Target should be updated with expression value on Binding.bind() call"""
         expression = Expression(source)
 
-        self._bind(expression, InheritedDict(global_dict))
+        self._bind(expression, NodeGlobals(global_dict))
 
         expected = execute(expression, global_dict)
         assert self.callback.call_args == call(expected)
@@ -82,16 +84,16 @@ class ExpressionBindingTests:
         },
          lambda gl: setattr(gl['ivm'], 'int_value', 1)
          )
-    ])
+    ]) # yapf: disable
     def test_expression_changed(self, source: str, global_dict: dict, change):
         """Target should be updated after expression result is changed"""
         expression = Expression(source)
-        global_vars = InheritedDict(global_dict)
+        global_vars = NodeGlobals(global_dict)
         self._bind(expression, global_vars)
 
         change(global_vars)
 
-        expected = execute(expression, global_vars.to_dictionary())
+        expected = execute(expression, global_vars)
         assert self.callback.call_args_list[1:] == [call(expected)]
 
     @mark.parametrize('source, global_dict, change', [
@@ -127,11 +129,11 @@ class ExpressionBindingTests:
         },
          lambda gl: setattr(gl['ivm'], 'int_value', 1)
          )
-    ])
+    ]) # yapf: disable
     def test_destroy(self, source: str, global_dict: dict, change):
         """Destroy should stop handling expression changes and update target"""
         expression = Expression(source)
-        global_vars = InheritedDict(global_dict)
+        global_vars = NodeGlobals(global_dict)
         binding = self._bind(expression, global_vars)
         self.callback.reset_mock()
 
@@ -147,9 +149,10 @@ def binding_context_fixture(request):
     context = BindingContext({
         'setter': setter,
         'xml_attr': xml_attr,
-        'expression_body': '1+1',
-        'node': Mock(node_globals=InheritedDict())
-    })
+        'expression_body':
+        '1+1',
+        'node': Mock(node_globals = NodeGlobals())
+    }) # yapf: disable
 
     request.cls.context = context
 
@@ -161,18 +164,37 @@ class BindSetterToExpressionTests:
 
     def test_binds_setter_to_expression_changes(self):
         """should bind setter to expression changes"""
-        self.context.node = Mock(node_globals=InheritedDict({'value': 1}))
+        self.context.node = Mock(node_globals = BindableDict({'value': 1}))
         self.context.expression_body = 'value'
 
         bind_setter_to_expression(self.context)
         self.context.setter.reset_mock()
         self.context.node.node_globals['value'] = 2
 
-        assert self.context.setter.call_args == call(self.context.node, self.context.xml_attr.name,
-                                                     2)
+        assert self.context.setter.call_args == call(self.context.node, self.context.xml_attr.name, 2)
 
     def test_returns_binding(self):
         """should return expression binding"""
         actual = bind_setter_to_expression(self.context)
 
         assert isinstance(actual, ExpressionBinding)
+
+@mark.parametrize('node_globals, expression, value, is_updated', [
+    ({}, 'key', 2, lambda g: g['key'] == 2),
+    ({'vm': ParentViewModel(1, None)}, 'vm.int_value', 2, lambda g: g['vm'].int_value == 2),
+    ({
+        'vm': ParentViewModel(1, InnerViewModel(2, 'init value'))},
+        'vm.inner_vm.str_value', 'updated value',
+        lambda g: g['vm'].inner_vm.str_value == 'updated value'
+    ),
+]) # yapf: disable
+def test_get_expression_callback(node_globals, expression, value, is_updated):
+    """get_expression_callback() tests"""
+    node_globals = NodeGlobals(node_globals)
+    parent_view_model = ParentViewModel(1, None)
+    parent_view_model.int_value = 1
+    callback = get_expression_callback(Expression(expression), node_globals)
+
+    callback(value)
+
+    assert is_updated(node_globals)

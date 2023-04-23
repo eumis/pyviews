@@ -2,14 +2,14 @@ from tempfile import TemporaryFile
 
 from pytest import mark, raises
 
-from pyviews.core.xml import Parser, XmlAttr, XmlError, XmlNode
+from pyviews.core.xml import XmlAttr, XmlError, XmlNode, parse
 
 
 def _parse(xml_string):
     with TemporaryFile() as xml_file:
         xml_file.write(xml_string.encode())
         xml_file.seek(0)
-        return Parser().parse(xml_file)
+        return parse(xml_file)
 
 
 def _get_child(root: XmlNode, level: int):
@@ -28,7 +28,7 @@ class ParsingTests:
         ('<r xmlns="nsp"/>', 'nsp'),
         ('<r xmlns="nsp" xmlns:h="h"/>', 'nsp'),
         ('<h:r xmlns="nsp" xmlns:h="h"/>', 'h')
-    ])
+    ]) # yapf: disable
     def test_namespace_definition(xml_string, expected):
         """namespaces should be parsed"""
         root = _parse(xml_string)
@@ -44,7 +44,7 @@ class ParsingTests:
         ('<r xmlns="nsp"><c1><c2/></c1></r>', 'nsp', 2),
         ('<r xmlns="nsp" xmlns:h="h"><c1><c2/></c1></r>', 'nsp', 2),
         ('<r xmlns="nsp" xmlns:h="h"><c1><h:c2/></c1></r>', 'h', 2)
-    ])
+    ]) # yapf: disable
     def test_parent_namespace_definition(xml_string, expected, child_level):
         """child namespaces should be parsed"""
         root = _parse(xml_string)
@@ -56,7 +56,7 @@ class ParsingTests:
         ("<r xmlns='n'><c1/></r>", [0]),
         ("<r xmlns='n'><c1/><c1/><c1/></r>", [0, 0, 0]),
         ("<r xmlns='n'><c1/><c1><c2/><c2/></c1><c1><c2/></c1></r>", [0, [0, 0], [0]])
-    ])
+    ]) # yapf: disable
     def test_nodes_structure(self, xml_string, structure):
         """should return right nodes tree"""
         root = _parse(xml_string)
@@ -83,7 +83,7 @@ class ParsingTests:
         ("<r xmlns='n' xmlns:m='nsp'><c1><c2 k='{1}' m:k='v' m:a='value'/></c1></r>",
          [XmlAttr('k', '{1}'), XmlAttr('k', 'v', 'nsp'), XmlAttr('a', 'value', 'nsp')],
          2)
-    ])
+    ]) # yapf: disable
     def test_attribute_parsing(xml_string, expected, level):
         """should parse attributes"""
         root = _parse(xml_string)
@@ -116,7 +116,7 @@ class ParsingTests:
                 </c1>
             </r>
           '''
-    ])
+    ]) # yapf: disable
     def test_raises_for_bad_xml(xml_string):
         """should raise XmlError for bad formed xml"""
         with raises(XmlError):

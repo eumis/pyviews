@@ -1,8 +1,10 @@
 """Binder"""
 
-from typing import Optional, Union, Callable, NamedTuple
+from typing import Callable, NamedTuple, Optional, Union
 
-from pyviews.core import BindingError, Node, Setter, XmlAttr, Binding, InstanceNode
+from pyviews.core.binding import Binding, BindingError
+from pyviews.core.rendering import InstanceNode, Node, Setter
+from pyviews.core.xml import XmlAttr
 
 
 class BindingContext(dict):
@@ -57,8 +59,12 @@ class Binder:
     def __init__(self):
         self._rules = {}
 
-    def add_rule(self, binding_type: str, bind: Callable[[BindingContext], Optional[Binding]],
-                 suitable: Optional[Callable[[BindingContext], bool]] = None):
+    def add_rule(
+        self,
+        binding_type: str,
+        bind: Callable[[BindingContext], Optional[Binding]],
+        suitable: Optional[Callable[[BindingContext], bool]] = None
+    ):
         """Adds new rule"""
         suitable = suitable if suitable else lambda _: True
         if binding_type not in self._rules:

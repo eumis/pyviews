@@ -3,15 +3,17 @@ from unittest.mock import Mock, call
 
 from pytest import fixture, mark, raises
 
-from pyviews.core import PyViewsError, ViewInfo, error_handling
+from pyviews.core.error import PyViewsError, ViewInfo, error_handling
 
 
 class TestError(PyViewsError):
-    def __init__(self, message=None, view_info=None):
-        super().__init__(message=message, view_info=view_info)
+
+    def __init__(self, message = None, view_info = None):
+        super().__init__(message = message, view_info = view_info)
 
 
 class PyViewsErrorTests:
+
     @staticmethod
     def test_error_output():
         error = TestError()

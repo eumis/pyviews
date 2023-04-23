@@ -1,17 +1,18 @@
 from unittest.mock import Mock, call
 
-from pyviews.core import Node, InheritedDict
-from pyviews.presenter import Presenter, PresenterNode, add_presenter_to_globals, call_on_rendered, add_reference
-from pyviews.rendering import RenderingContext
+from pyviews.core.rendering import Node, NodeGlobals, RenderingContext
+from pyviews.presenter import Presenter, PresenterNode, add_presenter_to_globals, add_reference, call_on_rendered
 
 
 class TestPresenter(Presenter):
+
     @property
     def one(self):
         return self._references['one']
 
 
 class PresenterTests:
+
     @staticmethod
     def test_add_reference():
         """should add reference"""
@@ -45,8 +46,8 @@ def test_call_on_rendered():
 
 def test_add_reference():
     """should add reference to node to presenter by passed key"""
-    presenter = Mock(add_reference=Mock())
-    node = Node(Mock(), node_globals=InheritedDict({'presenter': presenter}))
+    presenter = Mock(add_reference = Mock())
+    node = Node(Mock(), node_globals = NodeGlobals({'presenter': presenter}))
 
     add_reference(node, '', 'key')
 

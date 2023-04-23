@@ -1,26 +1,32 @@
 """Rendering pipeline. Node creation from xml node, attribute setup and binding creation"""
 
 from importlib import import_module
-from inspect import signature, Parameter
-from typing import Generic, List, Callable, Optional, TypeVar, Union, Type, Tuple, Dict, Any, cast, Collection
+from inspect import Parameter, signature
+from typing import Any, Callable, Collection, Dict, Generic, List, Optional, Tuple, Type, TypeVar, Union
 
-from injectool import resolve, DependencyError, dependency, SingletonResolver, get_container
+from injectool import DependencyError, add_singleton, dependency, resolve
 
-from pyviews.core import Node, InstanceNode, XmlNode
-from .common import RenderingContext, RenderingError, use_context
-from ..core.error import error_handling, PyViewsError
+from pyviews.core.error import PyViewsError, ViewInfo, error_handling
+from pyviews.core.rendering import InstanceNode, Node, RenderingContext, RenderingError
+from pyviews.core.xml import XmlNode
+from pyviews.rendering.context import use_context
+from pyviews.rendering.views import ViewError, get_view_root
 
-
-N = TypeVar('N', bound=Node)
-RC = TypeVar('RC', bound=RenderingContext)
+N = TypeVar('N', bound = Node)
+RC = TypeVar('RC', bound = RenderingContext)
 Pipe = Callable[[N, RC], None]
 CreateNode = Callable[[RC], N]
 
+
 class RenderingPipeline(Generic[N, RC]):
     """Creates and renders node"""
-    def __init__(self, pipes: Optional[List[Pipe[N, RC]]] = None,
-                 create_node: Optional[CreateNode[RC, N]] = None,
-                 name: Optional[str] = None):
+
+    def __init__(
+        self,
+        pipes: Optional[List[Pipe[N, RC]]] = None,
+        create_node: Optional[CreateNode[RC, N]] = None,
+        name: Optional[str] = None
+    ):
         self._name: Optional[str] = name
         self._pipes: List[Callable[[N, RC], None]] = pipes if pipes else []
         self._create_node: CreateNode = create_node if create_node else _create_node
@@ -82,17 +88,18 @@ def _get_init_args(inst_type: Type, values: dict) -> Tuple[List, Dict]:
 
 
 def _get_positional_args(parameters: Collection[Parameter], param_values: dict) -> List[Any]:
-    keys = [p.name for p in parameters
-            if p.kind in [Parameter.POSITIONAL_ONLY, Parameter.POSITIONAL_OR_KEYWORD]
-            and p.default == Parameter.empty]
+    keys = [
+        p.name for p in parameters
+        if p.kind in [Parameter.POSITIONAL_ONLY, Parameter.POSITIONAL_OR_KEYWORD] and p.default == Parameter.empty
+    ]
     return [param_values[key] for key in keys]
 
 
 def _get_optional_args(parameters: List[Parameter], param_values: dict) -> dict:
-    keys = [p.name for p in parameters
-            if p.kind in [Parameter.KEYWORD_ONLY, Parameter.POSITIONAL_OR_KEYWORD]
-            and p.default != Parameter.empty
-            and p.name in param_values]
+    keys = [
+        p.name for p in parameters if p.kind in [Parameter.KEYWORD_ONLY, Parameter.POSITIONAL_OR_KEYWORD]
+        and p.default != Parameter.empty and p.name in param_values
+    ]
     return {key: param_values[key] for key in keys}
 
 
@@ -100,14 +107,22 @@ def get_pipeline(xml_node: XmlNode) -> RenderingPipeline:
     """Resolves pipeline by namespace and name or by namespace"""
     key = f'{xml_node.namespace}.{xml_node.name}'
     try:
-        return resolve(RenderingPipeline, key)
+        return resolve((RenderingPipeline, key))
     except DependencyError:
         try:
-            return resolve(RenderingPipeline, xml_node.namespace)
+            return resolve((RenderingPipeline, xml_node.namespace))
         except DependencyError as error:
             render_error = RenderingError('RenderingPipeline is not found')
             render_error.add_info('Used keys to resolve pipeline', f'{key}, {xml_node.namespace}')
             raise render_error from error
+
+
+@dependency
+def render_view(view_name: str, context: RenderingContext) -> Node:
+    """Renders view"""
+    with error_handling(ViewError, lambda e: e.add_view_info(ViewInfo(view_name, None))):
+        context.xml_node = get_view_root(view_name)
+        return render(context)
 
 
 @dependency
@@ -118,9 +133,6 @@ def render(context: RenderingContext) -> Node:
         return pipeline.run(context)
 
 
-def use_pipeline(pipeline: RenderingPipeline, class_path: str, resolver: Optional[SingletonResolver] = None):
+def use_pipeline(pipeline: RenderingPipeline, class_path: str):
     """Adds rendering pipeline for class path"""
-    if resolver is None:
-        container = get_container()
-        resolver = cast(SingletonResolver, container.get_resolver(RenderingPipeline))
-    resolver.set_value(pipeline, class_path)
+    add_singleton((RenderingPipeline, class_path), pipeline)

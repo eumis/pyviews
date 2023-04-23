@@ -3,14 +3,15 @@ from unittest.mock import Mock
 from _pytest.fixtures import fixture
 from pytest import mark
 
-from pyviews.binding_node import BindingNode, apply_attributes, BindingProperty, set_target
-from pyviews.core import XmlNode, XmlAttr, InheritedDict
-from pyviews.expression import Expression
+from pyviews.binding_node import BindingNode, BindingProperty, apply_attributes, set_target
+from pyviews.core.expression import Expression
+from pyviews.core.rendering import NodeGlobals, RenderingContext
+from pyviews.core.xml import XmlAttr, XmlNode
 from pyviews.pipes import get_setter
-from pyviews.rendering import RenderingContext
 
 
 class BindingNodeTests:
+
     @staticmethod
     def test_destroy():
         """should destroy binding"""
@@ -33,11 +34,10 @@ class BindingNodeTests:
         assert node.binding is None
 
 
-
 @fixture
 def node_fixture(request):
-    xml_node = XmlNode('', 'Binding', attrs=[])
-    node = BindingNode(xml_node, InheritedDict())
+    xml_node = XmlNode('', 'Binding', attrs = [])
+    node = BindingNode(xml_node, NodeGlobals())
 
     request.cls.xml_node = xml_node
     request.cls.node = node
@@ -73,7 +73,7 @@ class ApplyAttributesTests:
     @mark.parametrize('attr_value, value', [
         ('{True}', True),
         ('{False}', False)
-    ])
+    ]) # yapf: disable
     def test_execute_on_bind(self, attr_value, value):
         """should set value"""
         self.xml_node.attrs.append(XmlAttr('execute_on_bind', attr_value))
@@ -82,9 +82,7 @@ class ApplyAttributesTests:
 
         assert self.node.execute_on_bind == value
 
-    @mark.parametrize('value, target', [
-        ('{target}', Mock())
-    ])
+    @mark.parametrize('value, target', [('{target}', Mock())])
     def test_target(self, value, target):
         """should set target"""
         self.xml_node.attrs.append(XmlAttr('target', value))
@@ -106,6 +104,7 @@ class ApplyAttributesTests:
 
 
 class SetTargetTests:
+
     @staticmethod
     def test_uses_parent_node():
         """should set parent_node as target"""

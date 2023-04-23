@@ -1,9 +1,11 @@
 from unittest.mock import Mock, call
 
-from injectool import use_container, add_singleton
-from pyviews.binding import BindingContext
+from injectool import add_singleton, use_container
+
+from pyviews.binding.binder import BindingContext
 from pyviews.binding.inject import inject_binding
-from pyviews.core import Node, XmlAttr
+from pyviews.core.rendering import Node
+from pyviews.core.xml import XmlAttr
 
 
 def test_inject_binding():
@@ -17,7 +19,7 @@ def test_inject_binding():
         'expression_body': '"key"',
         'xml_attr': xml_attr,
         'setter': setter
-    })
+    }) # yapf: disable
 
     with use_container():
         dependency = Mock()

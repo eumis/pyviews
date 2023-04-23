@@ -1,5 +1,16 @@
 # Changelog
 
+## 4.0.0
+
+- upgraded injectool to 3.0.0
+- Observable is renamed to Bindable
+- expression is moved to core
+- expression binding is refactored
+- InheritedDict is renamed to BindableDict
+- Added NodeGlobals class
+- setup modules are renamed to config
+- added parse function to core xml module
+
 ## 3.2.0
 
 - added BindingNode

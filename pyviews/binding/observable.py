@@ -1,13 +1,13 @@
 """Observable binding"""
 
-from pyviews.core import Binding, BindingCallback, BindingError, PyViewsError
-from pyviews.core import Observable, error_handling
+from pyviews.core.binding import Bindable, Binding, BindingCallback, BindingError
+from pyviews.core.error import PyViewsError, error_handling
 
 
 class ObservableBinding(Binding):
     """Binds to observable property"""
 
-    def __init__(self, callback: BindingCallback, observable: Observable, observable_property: str):
+    def __init__(self, callback: BindingCallback, observable: Bindable, observable_property: str):
         super().__init__()
         self._callback = callback
         self._observable = observable

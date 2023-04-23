@@ -1,10 +1,10 @@
 """Common core functionality"""
 
+from collections import namedtuple
 from contextlib import contextmanager
 from os import linesep
-from collections import namedtuple
 from sys import exc_info
-from typing import Callable, Optional, Union, Type, Generator, List, Any
+from typing import Any, Callable, Generator, List, Optional, Type, Union
 
 ViewInfo = namedtuple('ViewInfo', ['view', 'line'])
 
@@ -12,13 +12,12 @@ ViewInfo = namedtuple('ViewInfo', ['view', 'line'])
 class PyViewsError(Exception):
     """Base error class for custom exceptions"""
 
-    def __init__(self, message: str = '', view_info: Optional[ViewInfo] = None):
+    def __init__(self, message: Optional[str] = None, view_info: Optional[ViewInfo] = None):
         super().__init__(linesep)
         self.infos: List[str] = []
         self.view_infos: List[ViewInfo] = []
-        # noinspection PyTypeChecker
         self.cause_error: Optional[BaseException] = None
-        self.message = message
+        self.message = message if message else ''
         if view_info:
             self.add_view_info(view_info)
 
@@ -41,7 +40,7 @@ class PyViewsError(Exception):
             self.view_infos.insert(0, view_info)
 
     def __str__(self) -> str:
-        self.args = (linesep.join(self._get_messages()),) + self.args[1:]
+        self.args = (linesep.join(self._get_messages()), ) + self.args[1:]
         return super().__str__()
 
     def _get_messages(self) -> Generator[str, None, None]:
@@ -56,8 +55,7 @@ class PyViewsError(Exception):
     def _get_error(self) -> Generator[str, None, None]:
         yield self._get_separator(self.__class__.__name__)
         if self.cause_error:
-            yield self._format_info('Cause error',
-                                    f'{type(self.cause_error).__name__} - {self.cause_error}')
+            yield self._format_info('Cause error', f'{type(self.cause_error).__name__} - {self.cause_error}')
         if self.message:
             yield self._format_info('Message', self.message)
 
@@ -73,8 +71,10 @@ class PyViewsError(Exception):
 
 
 @contextmanager
-def error_handling(error_to_raise: Union[PyViewsError, Type[PyViewsError]],
-                   add_error_info: Optional[Callable[[PyViewsError], None]] = None):
+def error_handling(
+    error_to_raise: Union[PyViewsError, Type[PyViewsError]],
+    add_error_info: Optional[Callable[[PyViewsError], None]] = None
+):
     """handles error and raises PyViewsError with custom error info"""
     add_error_info = add_error_info if add_error_info is not None else _do_nothing
     try:
