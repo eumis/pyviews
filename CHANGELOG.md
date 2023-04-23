@@ -9,6 +9,7 @@
 - InheritedDict is renamed to BindableDict
 - Added NodeGlobals class
 - setup modules are renamed to config
+- added parse function to core xml module
 
 ## 3.2.0
 

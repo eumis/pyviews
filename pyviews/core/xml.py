@@ -4,6 +4,8 @@ from collections import namedtuple
 from typing import Generator, List, NamedTuple, Optional, Tuple, cast
 from xml.parsers.expat import ExpatError, ParserCreate, XMLParserType
 
+from injectool import dependency
+
 from pyviews.core.error import PyViewsError, ViewInfo
 
 
@@ -143,3 +145,7 @@ class Parser:
 
     def _get_view_info(self):
         return ViewInfo(self._view_name, self._parser.CurrentLineNumber)
+
+@dependency
+def parse(xml_file, view_name: Optional[str] = None) -> XmlNode:
+    return Parser().parse(xml_file, view_name)

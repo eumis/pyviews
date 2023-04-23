@@ -5,7 +5,7 @@ from os.path import join
 from injectool import resolve
 
 from pyviews.core.error import PyViewsError
-from pyviews.core.xml import Parser, XmlNode
+from pyviews.core.xml import XmlNode, parse
 
 
 class ViewError(PyViewsError):
@@ -23,11 +23,10 @@ def get_view_root(view_name: str) -> XmlNode:
     return _XML_CACHE[path]
 
 
-def _parse_root(path, view_name):
+def _parse_root(path: str, view_name: str):
     try:
-        parser = Parser()
         with open(path, 'rb') as xml_file:
-            _XML_CACHE[path] = parser.parse(xml_file, view_name)
+            _XML_CACHE[path] = parse(xml_file, view_name)
     except FileNotFoundError as exc:
         error = ViewError('View is not found')
         error.add_info('View name', view_name)

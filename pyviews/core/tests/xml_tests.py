@@ -2,14 +2,14 @@ from tempfile import TemporaryFile
 
 from pytest import mark, raises
 
-from pyviews.core.xml import Parser, XmlAttr, XmlError, XmlNode
+from pyviews.core.xml import XmlAttr, XmlError, XmlNode, parse
 
 
 def _parse(xml_string):
     with TemporaryFile() as xml_file:
         xml_file.write(xml_string.encode())
         xml_file.seek(0)
-        return Parser().parse(xml_file)
+        return parse(xml_file)
 
 
 def _get_child(root: XmlNode, level: int):
