@@ -13,8 +13,8 @@ from pyviews.binding.once import run_once
 def use_binding(binder: Optional[Binder] = None):
     """setup binder and default bindings"""
     binder = binder if binder else Binder()
+    add_singleton(Binder, binder)
     binder.add_rule('once', run_once)
     binder.add_rule('oneway', bind_setter_to_expression)
     binder.add_rule('inline', bind_inline)
     binder.add_rule('inject', inject_binding)
-    add_singleton(Binder, binder)

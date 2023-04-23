@@ -7,7 +7,7 @@ from pyviews.core.error import ViewInfo
 from pyviews.core.expression import ExpressionError
 from pyviews.core.rendering import Node, NodeGlobals
 from pyviews.core.xml import XmlNode
-from pyviews.rendering.common import RenderingContext
+from pyviews.rendering.context import RenderingContext
 
 
 class CodeTests:

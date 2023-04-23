@@ -9,7 +9,7 @@ from injectool import DependencyError, add_singleton, dependency, resolve
 from pyviews.core.error import PyViewsError, ViewInfo, error_handling
 from pyviews.core.rendering import InstanceNode, Node, RenderingContext, RenderingError
 from pyviews.core.xml import XmlNode
-from pyviews.rendering.common import use_context
+from pyviews.rendering.context import use_context
 from pyviews.rendering.views import ViewError, get_view_root
 
 N = TypeVar('N', bound = Node)

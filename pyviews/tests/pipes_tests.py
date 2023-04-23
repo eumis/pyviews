@@ -10,7 +10,7 @@ from pyviews.binding.once import run_once
 from pyviews.core.rendering import Node
 from pyviews.core.xml import XmlAttr, XmlNode
 from pyviews.pipes import apply_attribute, apply_attributes, call_set_attr, get_setter, render_children
-from pyviews.rendering.common import RenderingContext
+from pyviews.rendering.context import RenderingContext
 from pyviews.rendering.pipeline import render
 
 
@@ -86,9 +86,9 @@ class ApplyAttributeTests:
         node = Node(Mock())
         binder = Mock()
         add_singleton(Binder, binder)
-        binding_context = BindingContext(
-            {'node': node, 'xml_attr': xml_attr, 'setter': self.setter_mock, 'expression_body': expr_body}
-        )
+        binding_context = BindingContext({
+            'node': node, 'xml_attr': xml_attr, 'setter': self.setter_mock, 'expression_body': expr_body
+        })
 
         apply_attribute(node, xml_attr)
         assert binder.bind.call_args == call(binding_type, binding_context)

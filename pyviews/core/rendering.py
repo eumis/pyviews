@@ -113,11 +113,11 @@ class InstanceNode(Node):
 
     def __init__(self, instance: Any, xml_node: XmlNode, node_globals: Optional[NodeGlobals] = None):
         super().__init__(xml_node, node_globals)
-        self._instance = instance
-        self.set_attr = partial(_instance_attr_setter, self)
+        self._instance: Any = instance
+        self.set_attr: Callable[[str, Any], None] = partial(_instance_attr_setter, self)
 
     @property
-    def instance(self):
+    def instance(self) -> Any:
         """Returns rendered instance"""
         return self._instance
 

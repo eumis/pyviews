@@ -8,7 +8,7 @@ from pyviews.containers import (Container, For, If, View, render_container_child
                                 rerender_on_view_change)
 from pyviews.core.rendering import Node, NodeGlobals, RenderingContext
 from pyviews.core.xml import XmlNode
-from pyviews.rendering import common
+from pyviews.rendering import context
 from pyviews.rendering.pipeline import render, render_view
 
 
@@ -18,13 +18,13 @@ def test_render_container_children(nodes_count):
     """should render all xml children for every item"""
     render_mock = Mock()
     add_singleton(render, render_mock)
-    with patch(common.__name__ + '.NodeGlobals') as inherited_dict_mock:
+    with patch(context.__name__ + '.NodeGlobals') as inherited_dict_mock:
         inherited_dict_mock.side_effect = lambda p: {'source': p} if p else p
         xml_node = Mock(children = [Mock() for _ in range(nodes_count)])
         node = Container(xml_node)
-        context = RenderingContext({'node': node})
+        rendering_context = RenderingContext({'node': node})
 
-        render_container_children(node, context)
+        render_container_children(node, rendering_context)
 
         for actual_call, child_xml_node in zip(render_mock.call_args_list, xml_node.children):
             child_context = RenderingContext({

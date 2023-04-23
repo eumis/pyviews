@@ -5,7 +5,7 @@ from pytest import fixture, mark
 
 from pyviews.core.rendering import Node, NodeGlobals
 from pyviews.core.xml import XmlNode
-from pyviews.rendering.common import RenderingContext, get_rendering_context, pass_rendering_context, use_context
+from pyviews.rendering.context import RenderingContext, get_rendering_context, pass_rendering_context, use_context
 
 
 @fixture

@@ -10,7 +10,7 @@ from pyviews.core.error import ViewInfo
 from pyviews.core.rendering import InstanceNode, Node, RenderingContext, RenderingError
 from pyviews.core.xml import XmlNode
 from pyviews.rendering import pipeline
-from pyviews.rendering.common import get_rendering_context
+from pyviews.rendering.context import get_rendering_context
 from pyviews.rendering.pipeline import (RenderingPipeline, create_instance, get_pipeline, get_type, render, render_view,
                                         use_pipeline)
 
